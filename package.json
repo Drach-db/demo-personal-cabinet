@@ -1,0 +1,30 @@
+{
+  "name": "demo-personal-cabinet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "doppler run -- vite",
+    "build": "doppler run -- vite build",
+    "preview": "doppler run -- vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Drach-db/demo-personal-cabinet.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Drach-db/demo-personal-cabinet/issues"
+  },
+  "homepage": "https://github.com/Drach-db/demo-personal-cabinet#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.52.1"
+  },
+  "devDependencies": {
+    "vite": "^7.0.6"
+  }
+}
