@@ -1,0 +1,432 @@
+/* Navbar Component Styles */
+
+/* Main navbar container */
+.navbar {
+    width: 260px;
+    min-width: 72px;
+    background-color: #243132;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: fixed;
+    left: 0;
+    top: 0;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    user-select: none;
+    cursor: w-resize;
+    z-index: 1000;
+}
+
+.navbar.collapsed {
+    width: 72px;
+    cursor: e-resize;
+}
+
+/* Header section */
+.navbar-header {
+    height: 80px;
+    padding: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: inherit;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: inherit;
+    position: relative;
+    z-index: 5;
+    margin-left: 18px;
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    background: linear-gradient(135deg, #cc6633 0%, #e67e4d 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.logo-icon span {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    position: relative;
+    z-index: 1;
+}
+
+.logo-text-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+    overflow: hidden;
+    opacity: 1;
+    visibility: visible;
+    position: relative;
+}
+
+.navbar.collapsed .logo-text-wrapper {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    left: -9999px;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+.logo-subtitle {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+/* Collapse button */
+.collapse-btn {
+    width: 32px;
+    height: 32px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    opacity: 1;
+    transform: scale(1);
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    margin-top: -16px;
+}
+
+.collapse-btn:hover {
+    background-color: #cc6633;
+    border-color: #cc6633;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 2px rgba(204, 102, 51, 0.2), 0 4px 12px rgba(204, 102, 51, 0.3);
+}
+
+.collapse-btn:hover svg {
+    color: white;
+}
+
+.navbar.collapsed .collapse-btn {
+    opacity: 0;
+    transform: scale(0);
+    pointer-events: none;
+}
+
+.collapse-btn svg {
+    width: 16px;
+    height: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.2s ease;
+    pointer-events: none;
+}
+
+/* Navigation menu */
+.nav-menu {
+    flex: 1;
+    padding: 24px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    min-height: 0;
+    cursor: inherit;
+}
+
+.nav-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nav-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.nav-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.nav-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.nav-item {
+    position: relative;
+    margin-bottom: 4px;
+    cursor: inherit;
+    height: 44px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    height: 44px;
+    min-height: 44px;
+    max-height: 44px;
+    line-height: 44px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.nav-link:hover {
+    color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.nav-link.active {
+    color: #cc6633;
+    background-color: rgba(204, 102, 51, 0.15);
+}
+
+.nav-link.active:hover {
+    background-color: rgba(204, 102, 51, 0.15);
+}
+
+.nav-indicator {
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 24px;
+    background-color: #cc6633;
+    border-radius: 0 3px 3px 0;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.nav-text {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    white-space: nowrap;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.navbar.collapsed .nav-text {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    left: -9999px;
+}
+
+/* Tooltip */
+.nav-tooltip {
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #1a1a1a;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.nav-tooltip::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-right: 4px solid #1a1a1a;
+}
+
+.navbar.collapsed .nav-item:hover .nav-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* User section */
+.user-section {
+    height: 80px;
+    padding: 14px 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(0, 0, 0, 0.2);
+    cursor: inherit;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar:not(.collapsed) .user-section {
+    padding: 14px 12px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    cursor: inherit;
+    position: relative;
+    width: 56px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    justify-content: center;
+}
+
+.navbar:not(.collapsed) .user-info {
+    width: 100%;
+    padding: 10px 10px 10px 18px;
+    justify-content: flex-start;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.user-avatar svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+}
+
+.user-details {
+    flex: 1;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s, margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: inherit;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    margin-left: 0;
+}
+
+.navbar:not(.collapsed) .user-details {
+    opacity: 1;
+    visibility: visible;
+    width: auto;
+    margin-left: 12px;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-role {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Initial glow animation */
+@keyframes initialGlow {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.1); }
+}
+
+.initial-glow {
+    position: absolute;
+    inset: -8px;
+    background: radial-gradient(circle at center, rgba(204, 102, 51, 0.4), transparent);
+    border-radius: 16px;
+    pointer-events: none;
+    z-index: -1;
+    animation: initialGlow 1.5s ease-out;
+}
+
+/* Content area adjustment when navbar is present */
+.with-navbar {
+    margin-left: 260px;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar.collapsed ~ .with-navbar,
+body.navbar-collapsed .with-navbar {
+    margin-left: 72px;
+}

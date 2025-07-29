@@ -3,10 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Management</title>
+    <title>Team Management - {{title}}</title>
+    
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="../../components/navbar.css">
+    
+    <!-- Page Styles -->
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Layout adjustments for navbar */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            background-color: #f0e7ef;
+        }
+        
+        /* Adjust main container to work with navbar */
+        .main-container {
+            flex: 1;
+            margin-left: 260px;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 100vh;
+            padding: 24px;
+            background-color: #f0eee7;
+        }
+        
+        body.navbar-collapsed .main-container {
+            margin-left: 72px;
+        }
+        
+        /* Hide loading screen background */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2000;
+        }
+    </style>
 </head>
 <body>
+    <!-- Include Navbar Component -->
+    {{> navbar activePage="team" userName="Anonymous User" userRole="Guest Access"}}
+
     <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-content">
@@ -215,6 +258,20 @@
         </div>
     </div>
 
+    <!-- Navbar JavaScript -->
+    <script src="../../components/navbar.js"></script>
+    <script>
+        // Initialize navbar
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.Navbar && !window.navbarInstance) {
+                window.navbarInstance = new Navbar({
+                    activeItem: 'team'
+                });
+            }
+        });
+    </script>
+
+    <!-- Page Scripts -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
