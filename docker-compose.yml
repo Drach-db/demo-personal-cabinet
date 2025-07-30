@@ -1,10 +1,13 @@
 version: '3.8'
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DOPPLER_TOKEN: ${DOPPLER_TOKEN}
+    image: demo-cabinet-test:latest
     ports:
       - "3000:3000"
-    volumes:
-      - ./src:/app/src  # Hot reload!
     environment:
-      - DOPPLER_TOKEN=${DOPPLER_TOKEN}  # Берёт из вашего локального .env
+      - DOPPLER_TOKEN=${DOPPLER_TOKEN}
