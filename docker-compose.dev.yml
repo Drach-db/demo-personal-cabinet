@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   app:
-    image: ghcr.io/drach-db/demo-personal-cabinet:latest
+    image: ghcr.io/drach-db/demo-personal-cabinet:dev
     ports:
       - "3000:3000"
     environment:
