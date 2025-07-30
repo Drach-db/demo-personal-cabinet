@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src  # Hot reload!
+    environment:
+      - DOPPLER_TOKEN=${DOPPLER_TOKEN}  # Берёт из вашего локального .env

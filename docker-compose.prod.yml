@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  app:
+    image: ghcr.io/yourusername/demo-cabinet:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - DOPPLER_TOKEN=${DOPPLER_TOKEN}  # Берёт с сервера
+    restart: unless-stopped  # Перезапуск при падении
