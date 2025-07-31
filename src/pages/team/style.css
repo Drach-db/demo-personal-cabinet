@@ -1630,38 +1630,132 @@ body {
     }
 }
 
-/* Mobile specific fixes */
-@media (max-width: 768px) {
-    .employee-card {
-        transform: none !important;
-        will-change: auto !important;
+/* ========================================
+   КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ ДЛЯ ~405px
+   ======================================== */
+
+/* Промежуточный диапазон 480-380px */
+@media (max-width: 480px) {
+    /* Fluid typography для плавного изменения размеров */
+    .page-title {
+        font-size: clamp(20px, 5vw + 10px, 24px);
     }
     
-    .employee-card:hover {
-        transform: none !important;
+    .stat-value {
+        font-size: clamp(20px, 5vw + 8px, 24px);
+    }
+    
+    /* Оптимизация контейнера */
+    .container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
+    /* Flexbox fixes для filters */
+    .filters-content {
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+    
+    .search-container {
+        min-width: 0;
+        flex: 1 1 100%;
+    }
+    
+    .mobile-filter-controls {
+        min-width: 0;
+        flex-wrap: nowrap;
     }
 }
-@media (max-width: 480px) {
-    /* Even smaller padding */
+
+/* Специфичные правила для 380-450px */
+@media (max-width: 450px) and (min-width: 380px) {
+    /* Stats Grid - auto-fit вместо фиксированных 2 колонок */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+    
+    /* Минимальная ширина карточки */
+    .stat-card {
+        min-width: 150px;
+        padding: 14px;
+    }
+    
+    /* Оптимизация отступов */
     .main-container {
-        padding: 12px;
+        padding: 16px 14px;
     }
     
-    /* Smaller header */
     .page-header {
-        margin-bottom: 16px;
+        margin-bottom: 20px;
     }
     
+    .stats-grid {
+        margin-bottom: 20px;
+    }
+    
+    /* Компактный filters */
+    .filters-container {
+        padding: 14px;
+    }
+    
+    .filters-content {
+        gap: 10px;
+    }
+}
+
+/* Критический диапазон 400-420px */
+@media (max-width: 420px) and (min-width: 400px) {
+    /* Вертикальная компоновка в stat cards */
+    .stat-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .stat-info {
+        margin-bottom: 8px;
+    }
+    
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        margin: 0;
+    }
+    
+    /* Уменьшаем font-size */
+    .page-title {
+        font-size: 22px;
+    }
+    
+    /* Компактнее search */
+    .search-input {
+        padding: 10px 36px;
+        font-size: 13px;
+    }
+}
+
+/* Ультра-малые экраны < 380px */
+@media (max-width: 380px) {
+    /* Минимальные отступы */
+    .main-container {
+        padding: 12px 10px;
+    }
+    
+    /* Header минимальный */
     .header-card {
-        padding: 12px;
+        padding: 14px;
     }
     
     .page-title {
         font-size: 20px;
     }
     
-    /* Smaller stats */
+    /* Stats - 1 колонка */
     .stats-grid {
+        grid-template-columns: 1fr;
         gap: 8px;
     }
     
@@ -1669,37 +1763,28 @@ body {
         padding: 12px;
     }
     
+    .stat-value {
+        font-size: 22px;
+    }
+    
     .stat-label {
         font-size: 11px;
     }
     
-    .stat-value {
-        font-size: 20px;
-    }
-    
-    .stat-icon {
-        width: 24px;
-        height: 24px;
-    }
-    
-    .icon {
-        width: 14px;
-        height: 14px;
-    }
-    
-    /* Smaller filters */
+    /* Filters - максимальная компактность */
     .filters-container {
         padding: 12px;
         margin-bottom: 16px;
     }
     
-    .search-input {
-        font-size: 13px;
-        padding: 10px 36px;
+    /* Сокращаем placeholder */
+    .search-input::placeholder {
+        font-size: 12px;
     }
     
+    /* Mobile filter controls */
     .mobile-filter-toggle {
-        padding: 6px 12px;
+        padding: 6px 10px;
         font-size: 13px;
     }
     
@@ -1708,7 +1793,7 @@ body {
         font-size: 12px;
     }
     
-    /* Smaller cards */
+    /* Employee cards - уменьшаем отступы */
     .team-grid {
         gap: 10px;
     }
@@ -1717,20 +1802,10 @@ body {
         padding: 12px;
     }
     
+    /* Меньше avatar */
     .avatar-container {
-        position: relative;
-        margin-right: 10px;
-        flex-shrink: 0;
         width: 44px;
         height: 44px;
-        display: inline-block;
-    }
-    
-    .avatar,
-    .avatar-img {
-        width: 44px;
-        height: 44px;
-        position: relative;
     }
     
     .avatar,
@@ -1760,12 +1835,56 @@ body {
     }
 }
 
+/* JS-управляемые классы для адаптивности */
+.filters-container.compact {
+    padding: 14px;
+}
+
+.filters-container.ultra-compact {
+    padding: 12px;
+}
+
+.filters-container.ultra-compact .search-input {
+    font-size: 12px;
+    padding: 8px 32px;
+}
+
+[data-mobile-layout="1x4"] {
+    grid-template-columns: 1fr !important;
+}
+
+[data-mobile-layout="auto-fit"] {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+}
+
+/* Safe area для iOS */
+@supports (padding: env(safe-area-inset-left)) {
+    @media (max-width: 480px) {
+        .main-container {
+            padding-left: max(12px, env(safe-area-inset-left));
+            padding-right: max(12px, env(safe-area-inset-right));
+        }
+    }
+}
+
+/* Mobile specific fixes */
+@media (max-width: 768px) {
+    .employee-card {
+        transform: none !important;
+        will-change: auto !important;
+    }
+    
+    .employee-card:hover {
+        transform: none !important;
+    }
+}
+
 /* Fix for mobile status indicator positioning */
 @media (max-width: 768px) {
     .avatar-container {
         position: relative !important;
         display: inline-block !important;
-        transform: translateZ(0); /* Force GPU acceleration */
+        transform: translateZ(0);
         -webkit-transform: translateZ(0);
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;

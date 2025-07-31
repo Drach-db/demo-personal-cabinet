@@ -17,7 +17,9 @@ const state = {
     // Mobile specific state
     isMobile: window.innerWidth < 768,
     showMobileFilters: false,
-    activeMobileFilterTab: 'project'
+    activeMobileFilterTab: 'project',
+    // Device type для более точного определения
+    deviceType: null
 };
 
 // Utility functions
@@ -62,6 +64,17 @@ function getExperienceLevel(years) {
     if (years <= 2) return 'Junior';
     if (years <= 5) return 'Middle';
     return 'Senior';
+}
+
+// Расширенная проверка размеров экрана
+function getDeviceType() {
+    const width = window.innerWidth;
+    
+    if (width < 380) return 'ultra-mobile';
+    if (width < 480) return 'small-mobile';
+    if (width < 768) return 'mobile';
+    if (width < 1024) return 'tablet';
+    return 'desktop';
 }
 
 // Filter and search logic
@@ -705,12 +718,69 @@ function renderEmployees() {
     }
 }
 
+// Адаптивная настройка stats grid
+function adjustStatsGrid() {
+    const statsGrid = document.querySelector('.stats-grid');
+    if (!statsGrid) return;
+    
+    const width = window.innerWidth;
+    
+    // Динамически меняем data атрибут для CSS
+    if (width < 380) {
+        statsGrid.setAttribute('data-mobile-layout', '1x4');
+    } else if (width < 450) {
+        statsGrid.setAttribute('data-mobile-layout', 'auto-fit');
+    } else if (width < 768) {
+        statsGrid.setAttribute('data-mobile-layout', '2x2');
+    } else {
+        statsGrid.removeAttribute('data-mobile-layout');
+    }
+}
+
+// Оптимизация текста для малых экранов
+function optimizeTextForSmallScreens() {
+    const width = window.innerWidth;
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchInput) {
+        if (width < 420) {
+            searchInput.placeholder = width < 380 
+                ? 'Search...' 
+                : 'Search employees...';
+        } else {
+            searchInput.placeholder = 'Search employees by name, position, or project...';
+        }
+    }
+}
+
+// Динамическая адаптация filters panel
+function adaptFiltersForScreenSize() {
+    const width = window.innerWidth;
+    const filtersContainer = document.querySelector('.filters-container');
+    
+    if (!filtersContainer) return;
+    
+    // Добавляем класс для специфичных размеров
+    filtersContainer.classList.remove('ultra-compact', 'compact');
+    
+    if (width < 380) {
+        filtersContainer.classList.add('ultra-compact');
+    } else if (width < 480) {
+        filtersContainer.classList.add('compact');
+    }
+}
+
 function updateUI() {
     updateStats();
     updateResultsCount();
     updateFilterButtons();
     renderDropdowns();
     renderEmployees();
+    
+    // Дополнительные адаптивные настройки
+    adjustStatsGrid();
+    optimizeTextForSmallScreens();
+    adaptFiltersForScreenSize();
 }
 
 // Event Handlers
@@ -958,9 +1028,22 @@ function updateDropdownVisibility() {
 }
 
 function handleResize() {
-    const wasMobile = state.isMobile;
-    state.isMobile = window.innerWidth < 768;
+    const previousDeviceType = state.deviceType || getDeviceType();
+    const currentDeviceType = getDeviceType();
     
+    // Сохраняем тип устройства
+    state.deviceType = currentDeviceType;
+    
+    // Обновляем isMobile для обратной совместимости
+    const wasMobile = state.isMobile;
+    state.isMobile = ['ultra-mobile', 'small-mobile', 'mobile'].includes(currentDeviceType);
+    
+    // Применяем адаптации
+    adjustStatsGrid();
+    optimizeTextForSmallScreens();
+    adaptFiltersForScreenSize();
+    
+    // Переинициализация только при изменении основного типа (mobile/desktop)
     if (wasMobile !== state.isMobile) {
         // Remove all event listeners
         const oldSearchInput = document.getElementById('searchInput');
@@ -970,6 +1053,11 @@ function handleResize() {
         // Re-initialize
         initializeEventListeners();
         updateUI();
+    }
+    
+    // Логирование для отладки
+    if (previousDeviceType !== currentDeviceType) {
+        console.log(`Device type changed: ${previousDeviceType} → ${currentDeviceType}`);
     }
 }
 
@@ -989,6 +1077,10 @@ async function initialize() {
         // Показываем реальную загрузку
         document.getElementById('loadingScreen').style.display = 'flex';
         document.getElementById('mainContainer').style.display = 'none';
+        
+        // Определяем начальный тип устройства
+        state.deviceType = getDeviceType();
+        state.isMobile = ['ultra-mobile', 'small-mobile', 'mobile'].includes(state.deviceType);
         
         // Загружаем данные из Supabase
         const employees = await api.getEmployees();
