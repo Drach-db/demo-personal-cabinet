@@ -13,7 +13,11 @@ const state = {
     hoveredTooltip: null,
     showProjectDropdown: false,
     showStageDropdown: false,
-    showPositionDropdown: false
+    showPositionDropdown: false,
+    // Mobile specific state
+    isMobile: window.innerWidth < 768,
+    showMobileFilters: false,
+    activeMobileFilterTab: 'project'
 };
 
 // Utility functions
@@ -121,10 +125,25 @@ function updateStats() {
 }
 
 function updateResultsCount() {
-    document.getElementById('resultsCount').textContent = `${state.filteredEmployees.length} of ${state.employees.length}`;
+    const resultsText = `${state.filteredEmployees.length} of ${state.employees.length}`;
+    document.getElementById('resultsCount').textContent = resultsText;
+    
+    // Update mobile results count too
+    const mobileResultsCount = document.getElementById('mobileResultsCount');
+    if (mobileResultsCount) {
+        mobileResultsCount.textContent = resultsText;
+    }
 }
 
 function updateFilterButtons() {
+    if (state.isMobile) {
+        updateMobileFilterButtons();
+    } else {
+        updateDesktopFilterButtons();
+    }
+}
+
+function updateDesktopFilterButtons() {
     // Project filter
     const projectText = state.filterProject.length === 0 ? 'All Projects' : `${state.filterProject.length} Selected`;
     document.getElementById('projectFilterText').textContent = projectText;
@@ -141,7 +160,55 @@ function updateFilterButtons() {
     document.getElementById('clearPositionFilter').style.display = state.filterPosition.length > 0 ? 'block' : 'none';
 }
 
+function updateMobileFilterButtons() {
+    const totalFilters = state.filterProject.length + state.filterStage.length + state.filterPosition.length;
+    const hasFilters = totalFilters > 0;
+    
+    // Update filter toggle button
+    const filterToggle = document.getElementById('mobileFilterToggle');
+    const filterCount = document.getElementById('mobileFilterCount');
+    const clearAllMobile = document.getElementById('clearAllFiltersMobile');
+    
+    if (hasFilters) {
+        filterToggle.style.color = '#cc6633';
+        filterCount.style.display = 'inline-block';
+        filterCount.textContent = totalFilters;
+        clearAllMobile.style.display = 'flex';
+    } else {
+        filterToggle.style.color = '#6b7280';
+        filterCount.style.display = 'none';
+        clearAllMobile.style.display = 'none';
+    }
+    
+    // Update tab counts
+    document.getElementById('projectTabCount').style.display = state.filterProject.length > 0 ? 'inline-block' : 'none';
+    document.getElementById('projectTabCount').textContent = state.filterProject.length;
+    
+    document.getElementById('stageTabCount').style.display = state.filterStage.length > 0 ? 'inline-block' : 'none';
+    document.getElementById('stageTabCount').textContent = state.filterStage.length;
+    
+    document.getElementById('positionTabCount').style.display = state.filterPosition.length > 0 ? 'inline-block' : 'none';
+    document.getElementById('positionTabCount').textContent = state.filterPosition.length;
+    
+    // Update footer
+    const filterPanelFooter = document.getElementById('filterPanelFooter');
+    if (hasFilters) {
+        filterPanelFooter.style.display = 'block';
+        document.getElementById('totalFilterCount').textContent = totalFilters;
+    } else {
+        filterPanelFooter.style.display = 'none';
+    }
+}
+
 function renderDropdowns() {
+    if (state.isMobile) {
+        renderMobileFilterTabs();
+    } else {
+        renderDesktopDropdowns();
+    }
+}
+
+function renderDesktopDropdowns() {
     const options = getFilterOptions();
 
     // Render project dropdown
@@ -187,10 +254,61 @@ function renderDropdowns() {
         '</div>';
 }
 
+function renderMobileFilterTabs() {
+    const options = getFilterOptions();
+    
+    // Render project tab content
+    const projectTabContent = document.getElementById('projectTabContent');
+    projectTabContent.innerHTML = options.projects.map(project => `
+        <label class="filter-option">
+            <input type="checkbox" class="filter-option-checkbox" value="${project}"
+                ${state.filterProject.includes(project) ? 'checked' : ''}
+                onchange="toggleFilter('project', '${project}')">
+            <span class="filter-option-color" style="background-color: ${getProjectColor(project)}"></span>
+            <span class="filter-option-label">${project}</span>
+            <span class="filter-option-count">${state.employees.filter(e => e.project === project).length}</span>
+        </label>
+    `).join('');
+    
+    // Render stage tab content
+    const stageTabContent = document.getElementById('stageTabContent');
+    stageTabContent.innerHTML = options.stages.map(stage => `
+        <label class="filter-option">
+            <input type="checkbox" class="filter-option-checkbox" value="${stage}"
+                ${state.filterStage.includes(stage) ? 'checked' : ''}
+                onchange="toggleFilter('stage', '${stage}')">
+            <span class="filter-option-color" style="background-color: ${getStageColor(stage)}"></span>
+            <span class="filter-option-label">${stage}</span>
+            <span class="filter-option-count">${state.employees.filter(e => e.stage === stage).length}</span>
+        </label>
+    `).join('');
+    
+    // Render position tab content
+    const positionTabContent = document.getElementById('positionTabContent');
+    positionTabContent.innerHTML = options.positions.map(position => `
+        <label class="filter-option">
+            <input type="checkbox" class="filter-option-checkbox" value="${position}"
+                ${state.filterPosition.includes(position) ? 'checked' : ''}
+                onchange="toggleFilter('position', '${position}')">
+            <span class="filter-option-color" style="background-color: #8b5cf6"></span>
+            <span class="filter-option-label">${position}</span>
+            <span class="filter-option-count">${state.employees.filter(e => e.position === position).length}</span>
+        </label>
+    `).join('');
+}
+
 function renderEmployeeCard(employee) {
     const avatarColor = getAvatarColor(employee.full_name);
     const isSelected = state.selectedEmployee === employee.id;
     
+    if (state.isMobile) {
+        return renderMobileEmployeeCard(employee, avatarColor, isSelected);
+    } else {
+        return renderDesktopEmployeeCard(employee, avatarColor, isSelected);
+    }
+}
+
+function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
     const timelineEvents = [
         { date: employee.interview_date || '', type: 'interview', label: 'Interview', short: 'Int.' },
         { date: employee.transfer_planned_date || '', type: 'transfer_planned', label: 'Transfer Plan', short: 'T.Plan' },
@@ -213,8 +331,7 @@ function renderEmployeeCard(employee) {
     return `
         <div class="employee-card ${isSelected ? 'selected' : ''}" 
              onclick="toggleEmployee(${employee.id})"
-             onmouseenter="handleCardHover(this, true)"
-             onmouseleave="handleCardHover(this, false)">
+             ${!state.isMobile ? `onmouseenter="handleCardHover(this, true)" onmouseleave="handleCardHover(this, false)"` : ''}>
             
             <!-- Employee Header -->
             <div class="employee-header">
@@ -391,6 +508,189 @@ function renderEmployeeCard(employee) {
     `;
 }
 
+function renderMobileEmployeeCard(employee, avatarColor, isSelected) {
+    const timelineEvents = [
+        { date: employee.interview_date || '', type: 'interview', label: 'Interview', color: '#8b5cf6' },
+        { date: employee.start_date || '', type: 'start', label: 'Start Date', color: '#22c55e' },
+        { date: employee.end_date || '', type: 'end', label: 'End Date', color: '#ef4444' }
+    ];
+
+    return `
+        <div class="employee-card ${isSelected ? 'selected' : ''}" 
+             onclick="toggleEmployee(${employee.id})">
+            
+            <!-- Employee Header -->
+            <div class="employee-header">
+                <div style="display: flex; align-items: center; flex: 1; min-width: 0;">
+                    <div class="avatar-container">
+                        ${employee.avatar ? 
+                            `<img src="${employee.avatar}" alt="${employee.full_name}" class="avatar-img" 
+                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+                        <div class="avatar" style="background: ${avatarColor.bg}; ${employee.avatar ? 'display: none;' : ''}">
+                            <span class="avatar-text">${employee.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
+                        </div>
+                        <div class="status-indicator" style="background-color: ${getStageColor(employee.stage)}"></div>
+                    </div>
+                    <div class="employee-info">
+                        <h3 class="employee-name">${employee.full_name}</h3>
+                        <p class="employee-position">${employee.position}</p>
+                    </div>
+                </div>
+                
+                <!-- Mobile Expand Indicator -->
+                <svg class="mobile-expand-indicator ${isSelected ? 'expanded' : ''}" 
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </div>
+
+            <!-- Tags -->
+            <div class="tags">
+                <span class="tag" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
+                    ${employee.stage}
+                </span>
+                <span class="tag" style="background-color: ${getProjectColor(employee.project)}20; color: ${getProjectColor(employee.project)}">
+                    ${employee.project}
+                </span>
+                ${employee.staffing_type === 'Backup' ? 
+                    '<span class="tag" style="background-color: #f1f5f9; color: #475569">Backup</span>' : ''}
+            </div>
+
+            ${isSelected ? `
+                <!-- Mobile Employee Details -->
+                <div class="employee-details">
+                    
+                    <!-- Personal Info - FIRST -->
+                    <div class="detail-section">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            Personal Info
+                        </h4>
+                        <div>
+                            <div class="detail-item">
+                                <span class="detail-label">Age</span>
+                                <span class="detail-value">${calculateAge(employee.date_of_birth)} years</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Gender</span>
+                                <span class="detail-value" style="text-transform: capitalize">${employee.gender}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Date of Birth</span>
+                                <span class="detail-value">${employee.date_of_birth}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills & Experience - SECOND -->
+                    <div class="detail-section">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                            </svg>
+                            Skills & Experience
+                        </h4>
+                        <div>
+                            <div>
+                                <div class="detail-item">
+                                    <span class="detail-label">English Level</span>
+                                    <span class="detail-value" style="color: #7c3aed; font-weight: 600">${employee.english_level}%</span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${employee.english_level}%; background-color: ${employee.english_level >= 90 ? '#22c55e' : employee.english_level >= 70 ? '#eab308' : '#ef4444'}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Typing Speed</span>
+                                    <span class="detail-value" style="color: #7c3aed; font-weight: 600">${employee.typing_speed} WPM</span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${Math.min(employee.typing_speed, 100)}%; background-color: ${employee.typing_speed >= 80 ? '#22c55e' : employee.typing_speed >= 60 ? '#eab308' : '#ef4444'}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-item" style="margin-top: 12px;">
+                                <span class="detail-label">BPO Experience</span>
+                                <span class="detail-value" style="color: #4f46e5; font-weight: 600">
+                                    ${employee.bpo_experience}y (${getExperienceLevel(employee.bpo_experience)})
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Timeline - THIRD -->
+                    <div class="detail-section">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Timeline
+                        </h4>
+                        <div class="mobile-timeline">
+                            <div class="mobile-timeline-container">
+                                <div class="mobile-timeline-line"></div>
+                                <div class="mobile-timeline-events">
+                                    ${timelineEvents.map((event, index) => {
+                                        const hasDate = !!event.date;
+                                        return `
+                                            <div class="mobile-timeline-event">
+                                                <div class="mobile-event-dot" 
+                                                     style="background-color: ${hasDate ? event.color : '#f3f4f6'}">
+                                                    ${hasDate ? '<div class="mobile-event-dot-inner"></div>' : ''}
+                                                </div>
+                                                <div class="mobile-event-content ${!hasDate ? 'no-date' : ''}">
+                                                    <span class="mobile-event-label ${!hasDate ? 'no-date' : ''}">${event.label}</span>
+                                                    <span class="mobile-event-date ${!hasDate ? 'no-date' : ''}">${event.date || '—'}</span>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assessment Actions -->
+                    <div class="assessment-section">
+                        <p class="assessment-label">Assessment Results</p>
+                        <div class="assessment-actions">
+                            <button class="action-button primary" 
+                                    onclick="event.stopPropagation(); window.open('${employee.english_proficiency_test}', '_blank')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                View
+                            </button>
+                            <button class="action-button secondary"
+                                    onclick="event.stopPropagation(); downloadReport('${employee.english_proficiency_test}', '${employee.full_name}')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
 function renderEmployees() {
     const teamGrid = document.getElementById('teamGrid');
     const emptyState = document.getElementById('emptyState');
@@ -415,14 +715,23 @@ function updateUI() {
 
 // Event Handlers
 function handleCardHover(element, isHover) {
+    if (state.isMobile) return; // No hover effects on mobile
+    
     const transform = isHover ? 'translateY(-4px)' : 'translateY(0px)';
-    const shadow = isHover ? '0 16px 40px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(204, 102, 51, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.1)';
+    const shadow = isHover ? '0 16px 40px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(204, 102, 51, 0.2)' : '';
     const bg = isHover ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.8)';
     
-    Object.assign(element.style, { transform, boxShadow: shadow, backgroundColor: bg });
+    // Avoid transform on mobile to prevent status indicator displacement
+    if (window.innerWidth > 768) {
+        element.style.transform = transform;
+    }
+    element.style.boxShadow = shadow;
+    element.style.backgroundColor = bg;
 }
 
 function handleButtonHover(element, isHover, type) {
+    if (state.isMobile) return; // No hover effects on mobile
+    
     const transform = isHover ? 'translateY(-2px)' : 'translateY(0px)';
     const shadow = isHover ? '0 4px 12px rgba(0, 0, 0, 0.15)' : '0 1px 2px rgba(0, 0, 0, 0.05)';
     
@@ -461,7 +770,16 @@ function toggleFilter(type, value) {
     filterEmployees();
 }
 
+function clearAllFilters() {
+    state.filterProject = [];
+    state.filterStage = [];
+    state.filterPosition = [];
+    filterEmployees();
+}
+
 function showTooltip(element, text) {
+    if (state.isMobile) return; // No tooltips on mobile
+    
     const tooltip = document.createElement('div');
     tooltip.className = 'tooltip';
     tooltip.innerHTML = `
@@ -474,6 +792,80 @@ function showTooltip(element, text) {
 function hideTooltip() {
     const tooltips = document.querySelectorAll('.tooltip');
     tooltips.forEach(tooltip => tooltip.remove());
+}
+
+function downloadReport(url, name) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${name.replace(/\s+/g, '-').toLowerCase()}-test-results.pdf`;
+    link.click();
+}
+
+// Mobile specific handlers
+function initializeMobileHandlers() {
+    // Mobile filter toggle
+    const mobileFilterToggle = document.getElementById('mobileFilterToggle');
+    if (mobileFilterToggle) {
+        mobileFilterToggle.addEventListener('click', () => {
+            state.showMobileFilters = !state.showMobileFilters;
+            const filterPanel = document.getElementById('mobileFilterPanel');
+            const filterToggle = document.getElementById('mobileFilterToggle');
+            
+            if (state.showMobileFilters) {
+                filterPanel.style.display = 'block';
+                filterToggle.classList.add('active');
+            } else {
+                filterPanel.style.display = 'none';
+                filterToggle.classList.remove('active');
+            }
+        });
+    }
+    
+    // Clear all filters mobile
+    const clearAllMobile = document.getElementById('clearAllFiltersMobile');
+    if (clearAllMobile) {
+        clearAllMobile.addEventListener('click', clearAllFilters);
+    }
+    
+    // Filter tabs
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+            state.activeMobileFilterTab = tabName;
+            
+            // Update active tab
+            filterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Show correct content
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.style.display = 'none';
+            });
+            document.getElementById(`${tabName}TabContent`).style.display = 'block';
+        });
+    });
+    
+    // Clear all button in filter panel
+    const clearAllButton = document.getElementById('clearAllFilters');
+    if (clearAllButton) {
+        clearAllButton.addEventListener('click', () => {
+            clearAllFilters();
+            // Close filter panel after clearing
+            state.showMobileFilters = false;
+            document.getElementById('mobileFilterPanel').style.display = 'none';
+            document.getElementById('mobileFilterToggle').classList.remove('active');
+        });
+    }
+    
+    // Close filter panel on outside click
+    document.addEventListener('click', (e) => {
+        if (state.showMobileFilters && !e.target.closest('.filters-container')) {
+            state.showMobileFilters = false;
+            document.getElementById('mobileFilterPanel').style.display = 'none';
+            document.getElementById('mobileFilterToggle').classList.remove('active');
+        }
+    });
 }
 
 // Initialize event listeners
@@ -495,56 +887,67 @@ function initializeEventListeners() {
         filterEmployees();
     });
 
-    // Filter dropdowns
-    document.getElementById('projectFilterBtn').addEventListener('click', () => {
-        state.showProjectDropdown = !state.showProjectDropdown;
-        state.showStageDropdown = false;
-        state.showPositionDropdown = false;
-        updateDropdownVisibility();
-    });
-
-    document.getElementById('stageFilterBtn').addEventListener('click', () => {
-        state.showStageDropdown = !state.showStageDropdown;
-        state.showProjectDropdown = false;
-        state.showPositionDropdown = false;
-        updateDropdownVisibility();
-    });
-
-    document.getElementById('positionFilterBtn').addEventListener('click', () => {
-        state.showPositionDropdown = !state.showPositionDropdown;
-        state.showProjectDropdown = false;
-        state.showStageDropdown = false;
-        updateDropdownVisibility();
-    });
-
-    // Clear filter buttons
-    document.getElementById('clearProjectFilter').addEventListener('click', (e) => {
-        e.stopPropagation();
-        state.filterProject = [];
-        filterEmployees();
-    });
-
-    document.getElementById('clearStageFilter').addEventListener('click', (e) => {
-        e.stopPropagation();
-        state.filterStage = [];
-        filterEmployees();
-    });
-
-    document.getElementById('clearPositionFilter').addEventListener('click', (e) => {
-        e.stopPropagation();
-        state.filterPosition = [];
-        filterEmployees();
-    });
-
-    // Close dropdowns on outside click
-    document.addEventListener('click', (e) => {
-        const isDropdownClick = e.target.closest('.filter-dropdown');
-        if (!isDropdownClick) {
-            state.showProjectDropdown = false;
+    if (state.isMobile) {
+        initializeMobileHandlers();
+    } else {
+        // Desktop filter dropdowns
+        document.getElementById('projectFilterBtn').addEventListener('click', () => {
+            state.showProjectDropdown = !state.showProjectDropdown;
             state.showStageDropdown = false;
             state.showPositionDropdown = false;
             updateDropdownVisibility();
-        }
+        });
+
+        document.getElementById('stageFilterBtn').addEventListener('click', () => {
+            state.showStageDropdown = !state.showStageDropdown;
+            state.showProjectDropdown = false;
+            state.showPositionDropdown = false;
+            updateDropdownVisibility();
+        });
+
+        document.getElementById('positionFilterBtn').addEventListener('click', () => {
+            state.showPositionDropdown = !state.showPositionDropdown;
+            state.showProjectDropdown = false;
+            state.showStageDropdown = false;
+            updateDropdownVisibility();
+        });
+
+        // Clear filter buttons
+        document.getElementById('clearProjectFilter').addEventListener('click', (e) => {
+            e.stopPropagation();
+            state.filterProject = [];
+            filterEmployees();
+        });
+
+        document.getElementById('clearStageFilter').addEventListener('click', (e) => {
+            e.stopPropagation();
+            state.filterStage = [];
+            filterEmployees();
+        });
+
+        document.getElementById('clearPositionFilter').addEventListener('click', (e) => {
+            e.stopPropagation();
+            state.filterPosition = [];
+            filterEmployees();
+        });
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', (e) => {
+            const isDropdownClick = e.target.closest('.filter-dropdown');
+            if (!isDropdownClick) {
+                state.showProjectDropdown = false;
+                state.showStageDropdown = false;
+                state.showPositionDropdown = false;
+                updateDropdownVisibility();
+            }
+        });
+    }
+    
+    // Handle window resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => handleResize(), 250);
     });
 }
 
@@ -554,6 +957,22 @@ function updateDropdownVisibility() {
     document.getElementById('positionDropdown').style.display = state.showPositionDropdown ? 'block' : 'none';
 }
 
+function handleResize() {
+    const wasMobile = state.isMobile;
+    state.isMobile = window.innerWidth < 768;
+    
+    if (wasMobile !== state.isMobile) {
+        // Remove all event listeners
+        const oldSearchInput = document.getElementById('searchInput');
+        const newSearchInput = oldSearchInput.cloneNode(true);
+        oldSearchInput.parentNode.replaceChild(newSearchInput, oldSearchInput);
+        
+        // Re-initialize
+        initializeEventListeners();
+        updateUI();
+    }
+}
+
 // Делаем функции доступными глобально для onclick в HTML
 window.toggleEmployee = toggleEmployee;
 window.toggleFilter = toggleFilter;
@@ -561,6 +980,8 @@ window.handleCardHover = handleCardHover;
 window.handleButtonHover = handleButtonHover;
 window.showTooltip = showTooltip;
 window.hideTooltip = hideTooltip;
+window.downloadReport = downloadReport;
+window.clearAllFilters = clearAllFilters;
 
 // Initialize the application with real data from Supabase
 async function initialize() {
