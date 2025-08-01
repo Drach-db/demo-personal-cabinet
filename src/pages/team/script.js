@@ -1,5 +1,6 @@
 // Импортируем API модуль
 import api from './api.js'
+import '../../components/navbar.js';
 
 // State management
 const state = {
@@ -1171,3 +1172,12 @@ async function initialize() {
 
 // Start the application
 initialize();
+
+// Инициализация Navbar после загрузки всех модулей
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.Navbar && !window.navbarInstance) {
+        window.navbarInstance = new Navbar({
+            activeItem: 'team'
+        });
+    }
+});
