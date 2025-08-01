@@ -1022,9 +1022,45 @@ function initializeEventListeners() {
 }
 
 function updateDropdownVisibility() {
-    document.getElementById('projectDropdown').style.display = state.showProjectDropdown ? 'block' : 'none';
-    document.getElementById('stageDropdown').style.display = state.showStageDropdown ? 'block' : 'none';
-    document.getElementById('positionDropdown').style.display = state.showPositionDropdown ? 'block' : 'none';
+    const projectDropdown = document.getElementById('projectDropdown');
+    const stageDropdown = document.getElementById('stageDropdown');
+    const positionDropdown = document.getElementById('positionDropdown');
+    
+    // Позиционирование dropdown над контейнером
+    if (state.showProjectDropdown) {
+        positionDropdownAbove(projectDropdown, 'projectFilterBtn');
+        projectDropdown.style.display = 'block';
+    } else {
+        projectDropdown.style.display = 'none';
+    }
+    
+    if (state.showStageDropdown) {
+        positionDropdownAbove(stageDropdown, 'stageFilterBtn');
+        stageDropdown.style.display = 'block';
+    } else {
+        stageDropdown.style.display = 'none';
+    }
+    
+    if (state.showPositionDropdown) {
+        positionDropdownAbove(positionDropdown, 'positionFilterBtn');
+        positionDropdown.style.display = 'block';
+    } else {
+        positionDropdown.style.display = 'none';
+    }
+}
+
+function positionDropdownAbove(dropdown, buttonId) {
+    const button = document.getElementById(buttonId);
+    const buttonRect = button.getBoundingClientRect();
+    const container = document.getElementById('filtersContainer');
+    const containerRect = container.getBoundingClientRect();
+    
+    // Позиционируем dropdown над контейнером
+    dropdown.style.position = 'fixed';
+    dropdown.style.top = `${containerRect.top - 8}px`;
+    dropdown.style.left = `${buttonRect.left}px`;
+    dropdown.style.width = `${buttonRect.width}px`;
+    dropdown.style.zIndex = '10000';
 }
 
 function handleResize() {

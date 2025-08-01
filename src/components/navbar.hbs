@@ -103,7 +103,7 @@
 
         <!-- User Section -->
         <div class="navbar__user">
-            <button type="button" class="navbar__user-button" aria-label="User menu">
+            <div class="navbar__user-toggle" tabindex="0" aria-label="Toggle navbar">
                 <div class="navbar__user-avatar">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -114,10 +114,7 @@
                     <span class="navbar__user-name">{{userName}}</span>
                     <span class="navbar__user-role">{{userRole}}</span>
                 </div>
-                <svg class="navbar__user-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-            </button>
+            </div>
         </div>
     </div>
 </nav>

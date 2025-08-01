@@ -117,14 +117,18 @@ class UnifiedNavbar {
             this.elements.userButton.addEventListener('click', () => this.handleUserClick());
         }
 
-        // Navbar click to expand (only when collapsed)
+        // Navbar click to expand/collapse (по не кликабельной области)
         this.elements.navbar.addEventListener('click', (e) => {
-            // Check if click is on empty area (not button or link)
-            if (this.isCollapsed && 
-                !e.target.closest('.navbar__link') && 
-                !e.target.closest('.navbar__user-button') &&
-                !e.target.closest('.navbar__collapse')) {
-                this.toggleCollapse();
+            // Если клик по стрелочке — не обрабатываем тут (уже есть отдельный обработчик)
+            if (e.target.closest('.navbar__collapse')) return;
+            // Если клик по ссылке меню или по кнопке пользователя — не обрабатываем
+            if (e.target.closest('.navbar__link') || e.target.closest('.navbar__user-button')) return;
+
+            // Клик по не кликабельной области
+            if (this.isCollapsed) {
+                this.expand();
+            } else {
+                this.collapse();
             }
         });
 
@@ -137,6 +141,30 @@ class UnifiedNavbar {
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+
+        // User toggle (Anonymous User) — раскрытие/сворачивание navbar
+        const userToggle = document.querySelector('.navbar__user-toggle');
+        if (userToggle) {
+            userToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.isCollapsed) {
+                    this.expand();
+                } else {
+                    this.collapse();
+                }
+            });
+            // Доступность: по Enter/Space
+            userToggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (this.isCollapsed) {
+                        this.expand();
+                    } else {
+                        this.collapse();
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -301,7 +329,7 @@ class UnifiedNavbar {
         this.toggleCollapse();
     }
 
-    getActivePage() {
+    getActivePage() { стал
         return this.activePage;
     }
 
