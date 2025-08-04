@@ -24,9 +24,7 @@ class LayoutController {
             layout: document.querySelector('.app-layout'),
             navbar: document.querySelector('.app-navbar'),
             header: document.querySelector('.app-header'),
-            overlay: document.querySelector('.app-overlay'),
-            mobileToggle: document.querySelector('.header__mobile-toggle'),
-            navbarToggle: document.querySelector('.navbar__toggle')
+            overlay: document.querySelector('.app-overlay')
         };
     }
     
@@ -34,11 +32,15 @@ class LayoutController {
         if (!this.state.isMobile) {
             const saved = localStorage.getItem('layout-state');
             if (saved) {
-                const state = JSON.parse(saved);
-                this.state.navbarCollapsed = state.navbarCollapsed || false;
+                try {
+                    const state = JSON.parse(saved);
+                    this.state.navbarCollapsed = state.navbarCollapsed || false;
+                } catch (e) {
+                    console.warn('Failed to parse saved state');
+                }
             }
         } else {
-            // На мобильных всегда начинаем со скрытым меню
+            // На мобильных navbar всегда скрыт изначально
             this.state.navbarCollapsed = true;
         }
     }
@@ -46,27 +48,26 @@ class LayoutController {
     saveState() {
         if (!this.state.isMobile) {
             localStorage.setItem('layout-state', JSON.stringify({
-                navbarCollapsed: this.state.navbarCollapsed
+                navbarCollapsed: this.state.navbarCollapsed,
+                timestamp: Date.now()
             }));
         }
     }
     
     bindEvents() {
-        // Desktop navbar toggle
-        if (this.elements.navbarToggle) {
-            this.elements.navbarToggle.addEventListener('click', () => {
-                this.toggleNavbar();
-            });
-        }
+        // Listen for navbar toggle from navbar component
+        document.addEventListener('navbar:toggled', (e) => {
+            this.state.navbarCollapsed = e.detail.collapsed;
+            this.updateLayout();
+            this.saveState();
+        });
         
-        // Mobile menu toggle
-        if (this.elements.mobileToggle) {
-            this.elements.mobileToggle.addEventListener('click', () => {
-                this.toggleMobileMenu();
-            });
-        }
+        // Listen for mobile menu toggle from header
+        document.addEventListener('header:mobile-toggle', () => {
+            this.toggleMobileMenu();
+        });
         
-        // Overlay click
+        // Overlay click (close mobile menu)
         if (this.elements.overlay) {
             this.elements.overlay.addEventListener('click', () => {
                 this.closeMobileMenu();
@@ -74,26 +75,18 @@ class LayoutController {
         }
         
         // Window resize
+        let resizeTimer;
         window.addEventListener('resize', () => {
-            this.handleResize();
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => this.handleResize(), 250);
         });
         
-        // Listen for navbar state changes
-        document.addEventListener('navbar:toggled', (e) => {
-            this.state.navbarCollapsed = e.detail.collapsed;
-            this.updateLayout();
+        // ESC key to close mobile menu
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.state.mobileMenuOpen) {
+                this.closeMobileMenu();
+            }
         });
-    }
-    
-    toggleNavbar() {
-        this.state.navbarCollapsed = !this.state.navbarCollapsed;
-        this.updateLayout();
-        this.saveState();
-        
-        // Notify navbar component
-        document.dispatchEvent(new CustomEvent('layout:navbar-toggle', {
-            detail: { collapsed: this.state.navbarCollapsed }
-        }));
     }
     
     toggleMobileMenu() {
@@ -119,10 +112,33 @@ class LayoutController {
             this.elements.navbar.classList.add('mobile-open');
             this.elements.overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Анимация бургер-меню в X
+            const toggle = document.getElementById('headerMobileToggle');
+            if (toggle) {
+                toggle.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                `;
+            }
         } else {
             this.elements.navbar.classList.remove('mobile-open');
             this.elements.overlay.classList.remove('active');
             document.body.style.overflow = '';
+            
+            // Вернуть бургер-меню
+            const toggle = document.getElementById('headerMobileToggle');
+            if (toggle) {
+                toggle.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                `;
+            }
         }
     }
     
@@ -134,8 +150,10 @@ class LayoutController {
             if (this.state.isMobile) {
                 // Switching to mobile
                 this.closeMobileMenu();
+                // Не сохраняем состояние на мобильных
             } else {
                 // Switching to desktop
+                this.closeMobileMenu();
                 this.loadState();
                 this.updateLayout();
             }
@@ -144,10 +162,21 @@ class LayoutController {
     
     applyInitialState() {
         this.updateLayout();
+        
+        // Уведомляем navbar о начальном состоянии
+        if (window.navbarInstance && window.navbarInstance.isNavbarCollapsed() !== this.state.navbarCollapsed) {
+            if (this.state.navbarCollapsed) {
+                window.navbarInstance.collapse();
+            } else {
+                window.navbarInstance.expand();
+            }
+        }
     }
 }
 
 // Auto-initialize
 document.addEventListener('DOMContentLoaded', () => {
-    window.layoutController = new LayoutController();
+    if (!window.layoutController) {
+        window.layoutController = new LayoutController();
+    }
 });

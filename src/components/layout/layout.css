@@ -17,7 +17,7 @@ body {
     min-height: 100vh;
 }
 
-/* Main Layout Grid */
+/* Main Layout Grid - ОБНОВЛЕННАЯ СТРУКТУРА */
 .app-layout {
     display: grid;
     grid-template-columns: var(--navbar-width) 1fr;
@@ -29,7 +29,7 @@ body {
     transition: grid-template-columns var(--layout-transition);
 }
 
-/* Collapsed state */
+/* Collapsed state - navbar свернут */
 .app-layout.navbar-collapsed {
     grid-template-columns: var(--navbar-collapsed-width) 1fr;
 }
@@ -37,10 +37,14 @@ body {
 /* Grid areas assignment */
 .app-navbar {
     grid-area: navbar;
+    grid-row: 1 / -1; /* Занимает всю высоту */
 }
 
 .app-header {
     grid-area: header;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .app-main {
@@ -60,10 +64,11 @@ body {
             "main";
     }
     
+    /* Navbar как overlay справа */
     .app-navbar {
         position: fixed;
         top: 0;
-        right: -100%;
+        right: -280px; /* Скрыт по умолчанию */
         width: 280px;
         height: 100vh;
         z-index: 2000;
@@ -75,7 +80,7 @@ body {
         box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
     }
     
-    /* Overlay for mobile */
+    /* Overlay для затемнения */
     .app-overlay {
         display: none;
         position: fixed;
@@ -92,5 +97,9 @@ body {
     .app-overlay.active {
         display: block;
         opacity: 1;
+    }
+    
+    .app-main {
+        padding: 16px;
     }
 }
