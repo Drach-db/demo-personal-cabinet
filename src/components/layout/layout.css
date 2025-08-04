@@ -1,6 +1,6 @@
 /* ========================================
    LAYOUT SYSTEM - Grid Foundation
-   ИСПРАВЛЕННАЯ ВЕРСИЯ
+   УЛУЧШЕННАЯ ВЕРСИЯ с исправленными отступами
    ======================================== */
 
    :root {
@@ -16,7 +16,6 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    /* НЕ добавляем margin-left здесь! */
 }
 
 /* Main Layout Grid - ОСНОВНАЯ СТРУКТУРА */
@@ -33,14 +32,14 @@ body {
 }
 
 /* Collapsed state - navbar свернут */
-.app-layout.navbar-collapsed {
+.app-layout.navbar-collapsed,
+body.navbar-collapsed .app-layout {
     grid-template-columns: var(--navbar-collapsed-width) 1fr;
 }
 
 /* Grid areas assignment */
 .app-navbar {
     grid-area: navbar;
-    /* Navbar на всю высоту - это правильно! */
 }
 
 .app-header {
@@ -48,8 +47,8 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    /* Убедимся, что header начинается от края navbar */
-    margin-left: 0;
+    /* Важно: убираем любые margins */
+    margin: 0;
 }
 
 .app-main {
@@ -57,8 +56,16 @@ body {
     padding: 24px;
     background-color: #f0eee7;
     overflow-y: auto;
-    /* Убедимся, что main начинается от края navbar */
-    margin-left: 0;
+    /* Важно: убираем любые margins */
+    margin: 0;
+    /* Добавляем transition для контента */
+    transition: padding-left var(--layout-transition);
+}
+
+/* Уменьшаем левый padding когда navbar свернут */
+body.navbar-collapsed .app-main,
+.app-layout.navbar-collapsed .app-main {
+    padding-left: 16px;
 }
 
 /* Mobile Layout */
@@ -107,6 +114,12 @@ body {
     }
     
     .app-main {
+        padding: 16px;
+    }
+    
+    /* На мобильных не меняем padding */
+    body.navbar-collapsed .app-main,
+    .app-layout.navbar-collapsed .app-main {
         padding: 16px;
     }
 }

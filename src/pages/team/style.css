@@ -1616,3 +1616,27 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ========================================
+   ФИНАЛЬНЫЙ ФИКС ОТСТУПОВ
+   ======================================== */
+
+/* Убираем любые программные отступы */
+body,
+body.navbar-collapsed,
+.app-layout,
+.app-header,
+.app-main {
+    margin-left: 0 !important;
+}
+
+/* Grid сам управляет позиционированием */
+.app-layout {
+    gap: 0 !important;
+}
+
+/* Navbar не должен создавать отступ */
+.navbar {
+    margin: 0;
+    padding: 0;
+}

@@ -1,22 +1,71 @@
 /* ========================================
    HEADER COMPONENT - Glassmorphism Style
+   ИСПРАВЛЕННАЯ ВЕРСИЯ с адаптивными отступами
    ======================================== */
 
-   .header {
-    background: rgba(160, 18, 18, 0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(28, 0, 151, 0.2);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+   :root {
+    /* Header specific variables - Warm Glassmorphism */
+    --header-bg: rgba(252, 246, 238, 0.75);
+    --header-blur: 12px;
+    --header-saturate: 1.1;
+    --header-border: rgba(204, 102, 51, 0.15);
+    --header-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 
+                     0 2px 8px rgba(204, 102, 51, 0.08);
+    
+    /* Inherit from brand */
+    --primary-cream: #f0eee7;
+    --accent-orange: #cc6633;
+    --deep-gray: #111827;
+    --medium-gray: #6b7280;
+    --light-gray: #d1d5db;
+}
+
+.header {
+    /* Warm Glassmorphism - Best variant */
+    background: var(--header-bg);
+    backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+    -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+    
+    /* Brand-aligned border and enhanced shadow */
+    border-bottom: 1px solid var(--header-border);
+    box-shadow: var(--header-shadow);
+    
     z-index: 100;
+    position: relative;
+    /* Убираем любые margins */
+    margin: 0;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(
+            ellipse at top left,
+            rgba(204, 102, 51, 0.04) 0%,
+            transparent 40%
+        );
+    pointer-events: none;
+    z-index: 1;
 }
 
 .header__container {
     height: var(--header-height);
-    padding: 0 24px;
+    /* СТАНДАРТНЫЕ ОТСТУПЫ для админ-панелей */
+    padding: 0 24px 0 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    /* Добавляем transition для плавной анимации */
+    transition: padding-left var(--layout-transition);
+    position: relative;
+    z-index: 2;
+}
+
+/* Когда navbar свернут - стандартный уменьшенный отступ */
+.navbar-collapsed .header__container {
+    padding-left: 16px;
 }
 
 /* Content section (левая часть) */
@@ -32,17 +81,19 @@
     margin: 0;
     font-size: 20px;
     font-weight: 600;
-    color: #111827;
+    color: var(--deep-gray);
     display: flex;
     align-items: center;
     gap: 12px;
     white-space: nowrap;
+    /* Добавляем transition для плавности */
+    transition: transform var(--layout-transition);
 }
 
 .header__icon {
     width: 24px;
     height: 24px;
-    color: #cc6633;
+    color: var(--accent-orange);
     flex-shrink: 0;
 }
 
@@ -56,34 +107,33 @@
 }
 
 .breadcrumb-link {
-    color: #6b7280;
+    color: var(--medium-gray);
     text-decoration: none;
     transition: color 0.2s;
     white-space: nowrap;
+    font-weight: 500;
 }
 
 .breadcrumb-link:hover {
-    color: #cc6633;
+    color: var(--accent-orange);
 }
 
 .breadcrumb-separator {
-    color: #d1d5db;
+    color: var(--light-gray);
     flex-shrink: 0;
 }
 
 .breadcrumb-current {
-    color: #111827;
+    color: var(--deep-gray);
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* Actions section (правая часть) */
+/* Actions section (правая часть) - ВРЕМЕННО СКРЫТА */
 .header__actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display: none !important; /* Скрываем до реализации функционала */
 }
 
 .header__action {
@@ -97,17 +147,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 
 .header__action:hover {
-    background: rgba(243, 244, 246, 0.6);
+    background: rgba(204, 102, 51, 0.08);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(204, 102, 51, 0.12);
+}
+
+.header__action:active {
+    transform: scale(0.95);
 }
 
 .header__action svg {
     width: 20px;
     height: 20px;
-    color: #6b7280;
+    color: var(--medium-gray);
+    transition: color 0.2s ease;
+}
+
+.header__action:hover svg {
+    color: var(--accent-orange);
 }
 
 /* Notification badge */
@@ -126,7 +187,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(252, 246, 238, 0.9);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
 }
 
 /* User button */
@@ -134,16 +209,17 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border: none;
+    border: 2px solid transparent;
     padding: 0;
     cursor: pointer;
     overflow: hidden;
     background: transparent;
-    transition: transform 0.2s;
+    transition: all 0.2s ease;
 }
 
 .header__user:hover {
     transform: scale(1.05);
+    border-color: var(--accent-orange);
 }
 
 .header__avatar {
@@ -155,7 +231,7 @@
 .header__avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    background: linear-gradient(135deg, var(--medium-gray) 0%, #4b5563 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,6 +251,11 @@
 /* Mobile styles */
 @media (max-width: 768px) {
     .header__container {
+        padding: 0 16px;
+    }
+    
+    /* На мобильных не меняем padding при collapsed */
+    .navbar-collapsed .header__container {
         padding: 0 16px;
     }
     
@@ -212,17 +293,22 @@
         background: transparent;
         cursor: pointer;
         border-radius: 8px;
-        transition: background 0.2s;
+        transition: all 0.2s ease;
     }
     
     .header__mobile-toggle:active {
-        background: rgba(243, 244, 246, 0.6);
+        background: rgba(204, 102, 51, 0.08);
     }
     
     .header__mobile-toggle svg {
         width: 24px;
         height: 24px;
-        color: #111827;
+        color: var(--deep-gray);
+        transition: transform 0.2s ease;
+    }
+    
+    .header__mobile-toggle:active svg {
+        transform: scale(0.9);
     }
 }
 
@@ -236,5 +322,40 @@
     .header__title span {
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+}
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .header__container {
+        padding: 0 20px;
+    }
+    
+    /* На планшетах тоже применяем адаптивные отступы */
+    .navbar-collapsed .header__container {
+        padding-left: 16px;
+    }
+    
+    .header__content {
+        gap: 20px;
+    }
+}
+
+/* Focus states */
+.header__action:focus-visible,
+.header__user:focus-visible,
+.header__mobile-toggle:focus-visible {
+    outline: 2px solid var(--accent-orange);
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .header__badge {
+        animation: none;
+    }
+    
+    * {
+        transition-duration: 0.01ms !important;
     }
 }

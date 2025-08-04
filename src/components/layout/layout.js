@@ -1,6 +1,6 @@
 /**
  * Layout Controller - координирует navbar и header
- * ИСПРАВЛЕННАЯ ВЕРСИЯ
+ * ИСПРАВЛЕННАЯ ВЕРСИЯ с правильным управлением классами
  */
 class LayoutController {
     constructor() {
@@ -99,16 +99,22 @@ class LayoutController {
     }
     
     updateLayout() {
-        // Обновляем класс на layout контейнере
+        // ВАЖНО: Обновляем классы на ВСЕХ необходимых элементах
         if (this.state.navbarCollapsed) {
+            // Добавляем класс на body для глобального доступа
+            document.body.classList.add('navbar-collapsed');
+            // Добавляем класс на layout контейнер
             this.elements.layout.classList.add('navbar-collapsed');
-            // Также обновляем класс на самом navbar
+            // Добавляем класс на сам navbar
             if (this.elements.navbarElement) {
                 this.elements.navbarElement.classList.add('navbar--collapsed');
             }
         } else {
+            // Убираем класс с body
+            document.body.classList.remove('navbar-collapsed');
+            // Убираем класс с layout контейнера
             this.elements.layout.classList.remove('navbar-collapsed');
-            // Также обновляем класс на самом navbar
+            // Убираем класс с navbar
             if (this.elements.navbarElement) {
                 this.elements.navbarElement.classList.remove('navbar--collapsed');
             }

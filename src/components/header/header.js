@@ -1,5 +1,5 @@
 /**
- * Header Component
+ * Header Component - CLEANED VERSION
  * Управляет header и координирует с navbar
  */
 class HeaderComponent {
@@ -16,10 +16,7 @@ class HeaderComponent {
     cacheElements() {
         this.elements = {
             header: document.querySelector('.header'),
-            mobileToggle: document.getElementById('headerMobileToggle'),
-            searchBtn: document.querySelector('.header__action[aria-label="Search"]'),
-            notificationsBtn: document.querySelector('.header__action[aria-label="Notifications"]'),
-            userBtn: document.querySelector('.header__user')
+            mobileToggle: document.getElementById('headerMobileToggle')
         };
     }
     
@@ -28,30 +25,6 @@ class HeaderComponent {
         if (this.elements.mobileToggle) {
             this.elements.mobileToggle.addEventListener('click', () => {
                 this.toggleMobileMenu();
-            });
-        }
-        
-        // Search button
-        if (this.elements.searchBtn) {
-            this.elements.searchBtn.addEventListener('click', () => {
-                console.log('Search clicked');
-                // Implement search functionality
-            });
-        }
-        
-        // Notifications
-        if (this.elements.notificationsBtn) {
-            this.elements.notificationsBtn.addEventListener('click', () => {
-                console.log('Notifications clicked');
-                // Implement notifications dropdown
-            });
-        }
-        
-        // User menu
-        if (this.elements.userBtn) {
-            this.elements.userBtn.addEventListener('click', () => {
-                console.log('User menu clicked');
-                // Implement user dropdown menu
             });
         }
         
