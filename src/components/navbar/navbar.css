@@ -14,6 +14,7 @@
     --navbar-hover: rgba(255, 255, 255, 0.05);
     --navbar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --navbar-z-index: 1000;
+    --header-height: 60px;
 }
 
 /* ========================================
@@ -25,19 +26,6 @@
     box-sizing: border-box;
 }
 
-/* Body adjustments for navbar */
-body {
-    margin: 0;
-    padding: 0;
-    margin-left: var(--navbar-width);
-    transition: margin-left var(--navbar-transition);
-    background-color: #f0eee7; /* Main background color */
-}
-
-body.navbar-collapsed {
-    margin-left: var(--navbar-collapsed-width);
-}
-
 /* ========================================
    NAVBAR STRUCTURE
    ======================================== */
@@ -46,6 +34,10 @@ body.navbar-collapsed {
 .navbar {
     position: relative;
     z-index: var(--navbar-z-index);
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 /* Main navigation container */
@@ -63,6 +55,8 @@ body.navbar-collapsed {
     box-shadow: 2px 0 16px rgba(0, 0, 0, 0.15);
     overflow: hidden;
     cursor: w-resize;
+    margin: 0;
+    padding: 0;
 }
 
 /* Collapsed state */
@@ -76,32 +70,42 @@ body.navbar-collapsed {
    ======================================== */
 
 .navbar__header {
-    height: 80px;
+    height: 60px;
     padding: 0 12px;
+    margin: 0;
     border-bottom: 1px solid var(--navbar-border);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background-color: rgba(0, 0, 0, 0.1);
+    justify-content: flex-end;
+    background-color: transparent;
     flex-shrink: 0;
     cursor: inherit;
+    position: relative;
+    box-sizing: border-box;
 }
 
 .navbar--collapsed .navbar__header {
-    padding: 0 18px;
+    padding: 0 12px;
 }
 
-/* Logo section */
+/* Logo section - АБСОЛЮТНОЕ ПОЗИЦИОНИРОВАНИЕ */
 .navbar__logo {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-left: 6px;
     cursor: pointer;
+    z-index: 10;
+    margin: 0;
+    padding: 0;
 }
 
+/* В свернутом состоянии логотип НЕ ДВИГАЕТСЯ */
 .navbar--collapsed .navbar__logo {
-    padding-left: 0;
+    left: 18px;
 }
 
 .navbar__logo-icon {
@@ -113,8 +117,9 @@ body.navbar-collapsed {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(204, 102, 51, 0.3);
+    box-shadow: 0 2px 8px rgba(204, 102, 51, 0.25);
     position: relative;
+    margin: 0;
 }
 
 .navbar__logo-icon span {
@@ -123,38 +128,34 @@ body.navbar-collapsed {
     color: white;
     position: relative;
     z-index: 1;
+    line-height: 1;
 }
 
 .navbar__logo-text {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    align-items: center;
     transition: opacity var(--navbar-transition), visibility var(--navbar-transition);
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
 }
 
 /* Hide logo text when collapsed */
 .navbar--collapsed .navbar__logo-text {
     opacity: 0;
     visibility: hidden;
-    position: absolute;
-    left: -9999px;
+    width: 0;
+    overflow: hidden;
 }
 
 .navbar__brand {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--navbar-text-active);
-    line-height: 1.2;
+    line-height: 1;
     white-space: nowrap;
-}
-
-.navbar__tagline {
-    font-size: 9px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    white-space: nowrap;
+    margin: 0;
+    padding: 0;
 }
 
 /* Collapse button */
@@ -170,6 +171,7 @@ body.navbar-collapsed {
     cursor: pointer;
     transition: all var(--navbar-transition);
     flex-shrink: 0;
+    margin: 0;
 }
 
 .navbar__collapse:hover {
@@ -259,6 +261,7 @@ body.navbar-collapsed {
     background-color: rgba(204, 102, 51, 0.15);
 }
 
+/* Активная линия слева */
 .navbar__link.active::before {
     content: '';
     position: absolute;
@@ -271,6 +274,7 @@ body.navbar-collapsed {
     border-radius: 0 3px 3px 0;
 }
 
+/* Иконка ссылки */
 .navbar__link-icon {
     width: 20px;
     height: 20px;
@@ -278,6 +282,7 @@ body.navbar-collapsed {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-left: 4px;
 }
 
 .navbar__link-icon svg {
@@ -285,6 +290,7 @@ body.navbar-collapsed {
     height: 100%;
 }
 
+/* Текст ссылки */
 .navbar__link-text {
     font-size: 14px;
     font-weight: 500;
@@ -298,6 +304,7 @@ body.navbar-collapsed {
     flex: 1;
 }
 
+/* Badge (для Onboarding) */
 .navbar__link-badge {
     background-color: #ef4444;
     color: white;
@@ -309,16 +316,27 @@ body.navbar-collapsed {
     text-align: center;
 }
 
-/* Hide text and badges when collapsed */
+/* Скрываем текст и badge когда свернуто */
 .navbar--collapsed .navbar__link-text,
 .navbar--collapsed .navbar__link-badge {
     opacity: 0;
     visibility: hidden;
-    position: absolute;
-    left: -9999px;
+    width: 0;
+    overflow: hidden;
 }
 
-/* Tooltip for collapsed state */
+/* В свернутом состоянии НЕ центрируем иконки */
+.navbar--collapsed .navbar__link {
+    justify-content: flex-start;
+    padding: 0 16px;
+}
+
+/* Иконка остается на месте в свернутом состоянии */
+.navbar--collapsed .navbar__link-icon {
+    margin-left: 4px;
+}
+
+/* Tooltip для свернутого состояния */
 .navbar__link-tooltip {
     position: absolute;
     left: calc(100% + 8px);
@@ -511,23 +529,26 @@ body.navbar-collapsed {
    ======================================== */
 
 @media (max-width: 768px) {
-    /* Start with collapsed navbar on mobile */
-    body {
-        margin-left: var(--navbar-collapsed-width);
+    /* Header с фиксированным логотипом */
+    .navbar__header {
+        padding: 0 12px;
+        justify-content: flex-end;
     }
     
-    /* Larger touch targets */
-    .navbar__link {
-        height: 48px;
-        min-height: 48px;
+    /* Логотип остается фиксированным */
+    .navbar__logo {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
     }
     
-    .navbar__collapse {
-        width: 36px;
-        height: 36px;
+    /* В свернутом состоянии позиция НЕ меняется */
+    .navbar--collapsed .navbar__logo {
+        left: 16px;
     }
     
-    /* Slightly smaller logo on mobile for more space */
+    /* Размер логотипа */
     .navbar__logo-icon {
         width: 32px;
         height: 32px;
@@ -537,10 +558,57 @@ body.navbar-collapsed {
         font-size: 18px;
     }
     
-    /* Larger user avatar for easier tapping */
+    /* Навигационные ссылки */
+    .navbar__link {
+        height: 48px;
+        min-height: 48px;
+        padding: 0 16px;
+        justify-content: flex-start;
+    }
+    
+    /* Фиксированная иконка */
+    .navbar__link-icon {
+        margin-left: 4px;
+    }
+    
+    /* В свернутом состоянии */
+    .navbar--collapsed .navbar__link {
+        padding: 0 16px;
+        justify-content: flex-start;
+    }
+    
+    .navbar--collapsed .navbar__link-icon {
+        margin-left: 4px;
+    }
+    
+    /* Активная линия слева */
+    .navbar__link.active::before {
+        left: 0;
+    }
+    
+    /* Стрелка collapse */
+    .navbar__collapse {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .navbar__collapse svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* User section */
+    .navbar__user {
+        padding: 12px;
+    }
+    
+    .navbar__user-toggle {
+        padding: 0 16px 0 4px;
+    }
+    
     .navbar__user-avatar {
-        width: 40px;
-        height: 40px;
+        width: 32px;
+        height: 32px;
     }
 }
 

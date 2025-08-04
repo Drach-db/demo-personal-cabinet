@@ -1,5 +1,6 @@
 /* ========================================
    LAYOUT SYSTEM - Grid Foundation
+   ИСПРАВЛЕННАЯ ВЕРСИЯ
    ======================================== */
 
    :root {
@@ -10,16 +11,18 @@
     --mobile-breakpoint: 768px;
 }
 
-/* Reset body margins */
+/* Reset body margins - ВАЖНО! */
 body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    /* НЕ добавляем margin-left здесь! */
 }
 
-/* Main Layout Grid - ОБНОВЛЕННАЯ СТРУКТУРА */
+/* Main Layout Grid - ОСНОВНАЯ СТРУКТУРА */
 .app-layout {
     display: grid;
+    /* БЕЗ gap! Чтобы header прилегал к navbar */
     grid-template-columns: var(--navbar-width) 1fr;
     grid-template-rows: var(--header-height) 1fr;
     grid-template-areas:
@@ -37,7 +40,7 @@ body {
 /* Grid areas assignment */
 .app-navbar {
     grid-area: navbar;
-    grid-row: 1 / -1; /* Занимает всю высоту */
+    /* Navbar на всю высоту - это правильно! */
 }
 
 .app-header {
@@ -45,6 +48,8 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    /* Убедимся, что header начинается от края navbar */
+    margin-left: 0;
 }
 
 .app-main {
@@ -52,6 +57,8 @@ body {
     padding: 24px;
     background-color: #f0eee7;
     overflow-y: auto;
+    /* Убедимся, что main начинается от края navbar */
+    margin-left: 0;
 }
 
 /* Mobile Layout */
@@ -64,11 +71,11 @@ body {
             "main";
     }
     
-    /* Navbar как overlay справа */
+    /* Navbar как overlay справа на мобильных */
     .app-navbar {
         position: fixed;
         top: 0;
-        right: -280px; /* Скрыт по умолчанию */
+        right: -280px;
         width: 280px;
         height: 100vh;
         z-index: 2000;

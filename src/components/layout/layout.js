@@ -1,5 +1,6 @@
 /**
  * Layout Controller - координирует navbar и header
+ * ИСПРАВЛЕННАЯ ВЕРСИЯ
  */
 class LayoutController {
     constructor() {
@@ -24,7 +25,8 @@ class LayoutController {
             layout: document.querySelector('.app-layout'),
             navbar: document.querySelector('.app-navbar'),
             header: document.querySelector('.app-header'),
-            overlay: document.querySelector('.app-overlay')
+            overlay: document.querySelector('.app-overlay'),
+            navbarElement: document.getElementById('navbar')
         };
     }
     
@@ -39,9 +41,6 @@ class LayoutController {
                     console.warn('Failed to parse saved state');
                 }
             }
-        } else {
-            // На мобильных navbar всегда скрыт изначально
-            this.state.navbarCollapsed = true;
         }
     }
     
@@ -100,10 +99,19 @@ class LayoutController {
     }
     
     updateLayout() {
+        // Обновляем класс на layout контейнере
         if (this.state.navbarCollapsed) {
             this.elements.layout.classList.add('navbar-collapsed');
+            // Также обновляем класс на самом navbar
+            if (this.elements.navbarElement) {
+                this.elements.navbarElement.classList.add('navbar--collapsed');
+            }
         } else {
             this.elements.layout.classList.remove('navbar-collapsed');
+            // Также обновляем класс на самом navbar
+            if (this.elements.navbarElement) {
+                this.elements.navbarElement.classList.remove('navbar--collapsed');
+            }
         }
     }
     
@@ -150,7 +158,6 @@ class LayoutController {
             if (this.state.isMobile) {
                 // Switching to mobile
                 this.closeMobileMenu();
-                // Не сохраняем состояние на мобильных
             } else {
                 // Switching to desktop
                 this.closeMobileMenu();
@@ -163,11 +170,11 @@ class LayoutController {
     applyInitialState() {
         this.updateLayout();
         
-        // Уведомляем navbar о начальном состоянии
-        if (window.navbarInstance && window.navbarInstance.isNavbarCollapsed() !== this.state.navbarCollapsed) {
-            if (this.state.navbarCollapsed) {
+        // Синхронизируем navbar с layout состоянием
+        if (window.navbarInstance) {
+            if (this.state.navbarCollapsed && !window.navbarInstance.isNavbarCollapsed()) {
                 window.navbarInstance.collapse();
-            } else {
+            } else if (!this.state.navbarCollapsed && window.navbarInstance.isNavbarCollapsed()) {
                 window.navbarInstance.expand();
             }
         }
