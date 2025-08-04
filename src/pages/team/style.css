@@ -1,30 +1,29 @@
-/* Reset and Base Styles */
+/* ========================================
+   TEAM PAGE STYLES
+   Работает с новой Layout системой
+   ======================================== */
+
+/* Reset для страницы */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html {
-    background-color: #f0eee7;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: #f0eee7;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-/* Loading Screen */
+/* ========================================
+   LOADING SCREEN
+   ======================================== */
 .loading-screen {
-    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: #f0eee7;
+    z-index: 999;
 }
 
 .loading-content {
@@ -50,48 +49,38 @@ body {
     font-size: 16px;
 }
 
-/* Main Container */
-.main-container {
-    min-height: 100vh;
-    padding: 24px;
-    background-color: #f0eee7;
-}
-
-.container {
-    max-width: 1280px;
-    margin: 0 auto;
+/* ========================================
+   CONTENT WRAPPER (заменяет main-container)
+   ======================================== */
+.content-wrapper {
     width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0;
 }
 
-/* Page Header */
-.page-header {
-    margin-bottom: 32px;
+/* ========================================
+   SECTIONS
+   ======================================== */
+.stats-section {
+    margin-bottom: 24px;
 }
 
-.header-card {
-    background-color: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    padding: 24px;
+.filters-section {
+    margin-bottom: 24px;
 }
 
-.page-title {
-    font-size: 30px;
-    font-weight: 700;
-    color: #111827;
+.team-section {
+    margin-bottom: 24px;
 }
 
-.accent-text {
-    color: #cc6633;
-}
-
-/* Analytics Dashboard */
+/* ========================================
+   ANALYTICS DASHBOARD
+   ======================================== */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-    margin-bottom: 24px;
 }
 
 .stat-card {
@@ -145,17 +134,18 @@ body {
 .icon-red { color: #ef4444; }
 .icon-blue { color: #3b82f6; }
 
-/* Search and Filters */
+/* ========================================
+   SEARCH AND FILTERS
+   ======================================== */
 .filters-container {
     background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 24px;
-    margin-bottom: 24px;
     position: relative;
     z-index: 100;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .filters-content {
@@ -163,7 +153,6 @@ body {
     align-items: center;
     justify-content: flex-start;
     gap: 12px;
-    margin: 0 auto;
     max-width: 100%;
 }
 
@@ -183,6 +172,7 @@ body {
     height: 20px;
     color: #9ca3af;
     z-index: 10;
+    pointer-events: none;
 }
 
 .search-input {
@@ -252,6 +242,7 @@ body {
     height: 16px;
     color: #9ca3af;
     z-index: 30;
+    pointer-events: none;
 }
 
 .filter-button {
@@ -310,13 +301,9 @@ body {
     pointer-events: none;
 }
 
-/* Dropdown Menu - Fixed positioning to appear above container */
+/* Dropdown Menu */
 .dropdown-menu {
     position: fixed;
-    top: auto;
-    left: auto;
-    right: auto;
-    margin-top: 8px;
     background-color: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(12px);
     border-radius: 12px;
@@ -325,8 +312,7 @@ body {
     z-index: 9999;
     max-height: 240px;
     overflow-y: auto;
-    transform: translateY(-100%);
-    margin-top: -8px;
+    margin-top: 8px;
 }
 
 .dropdown-content {
@@ -372,7 +358,7 @@ body {
     color: #111827;
 }
 
-/* Mobile Filter Controls (Hidden by default) */
+/* Mobile Filter Controls */
 .mobile-filter-controls {
     display: none;
     gap: 12px;
@@ -448,13 +434,27 @@ body {
     color: white;
 }
 
-/* Desktop/Mobile Results Count */
+/* Results Count */
 .desktop-results {
     display: block;
 }
 
 .mobile-results {
     display: none;
+}
+
+.results-count {
+    padding: 10px 16px;
+    border-radius: 8px;
+    background-color: rgba(204, 102, 51, 0.1);
+    color: #cc6633;
+    font-size: 14px;
+    font-weight: 600;
+    flex: 0 0 auto;
+    min-width: 96px;
+    text-align: center;
+    white-space: nowrap;
+    margin-left: auto;
 }
 
 /* Mobile Filter Panel */
@@ -589,29 +589,18 @@ body {
     border-color: #fecaca;
 }
 
-/* Results Count */
-.results-count {
-    padding: 10px 16px;
-    border-radius: 8px;
-    background-color: rgba(204, 102, 51, 0.1);
-    color: #cc6633;
-    font-size: 14px;
-    font-weight: 600;
-    flex: 0 0 auto;
-    min-width: 96px;
-    text-align: center;
-    white-space: nowrap;
-    margin-left: auto;
-}
-
-/* Team Grid */
+/* ========================================
+   TEAM GRID
+   ======================================== */
 .team-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
 }
 
-/* Employee Card */
+/* ========================================
+   EMPLOYEE CARD
+   ======================================== */
 .employee-card {
     background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
@@ -684,7 +673,7 @@ body {
     color: white;
 }
 
-/* Status Indicator - Fixed positioning */
+/* Status Indicator */
 .status-indicator {
     position: absolute;
     bottom: -2px;
@@ -772,7 +761,7 @@ body {
     height: 14px;
 }
 
-/* Mobile Chevron Indicator */
+/* Mobile Expand Indicator */
 .mobile-expand-indicator {
     display: none;
     margin-left: 8px;
@@ -924,7 +913,7 @@ body {
     text-align: center;
 }
 
-/* Mobile Timeline (Hidden by default) */
+/* Mobile Timeline */
 .mobile-timeline {
     display: none;
 }
@@ -1135,67 +1124,12 @@ body {
 }
 
 /* ========================================
-   RESPONSIVE BREAKPOINTS
+   RESPONSIVE DESIGN
    ======================================== */
 
-/* Specific fixes for problematic screen sizes */
-@media (min-width: 769px) and (max-width: 1024px) {
-    /* Ensure filters don't break layout */
-    .filters-content {
-        gap: 12px;
-    }
-    
-    .search-container {
-        flex: 0 1 280px;
-        min-width: 240px;
-    }
-    
-    .filters-group {
-        max-width: 100%;
-        gap: 12px;
-    }
-    
-    .filter-dropdown {
-        flex: 0 0 auto;
-        min-width: 140px;
-        max-width: 180px;
-        width: auto;
-    }
-    
-    /* Prevent container overflow */
-    .container {
-        overflow: hidden;
-    }
-    
-    /* Adjust stats for medium screens */
-    .stats-grid {
-        max-width: 100%;
-    }
-    
-    .stat-card {
-        min-width: 0;
-    }
-}
-
-/* Tablet Styles (768px - 1024px) */
+/* Tablet (768px - 1024px) */
 @media (max-width: 1024px) {
-    /* Container adjustments */
-    .container {
-        max-width: 100%;
-        padding: 0;
-    }
-    
-    /* Main container padding adjustment */
-    .main-container {
-        padding: 20px;
-    }
-    
-    /* Header adjustments */
-    .header-card {
-        padding: 20px;
-    }
-    
-    /* Stats Grid - 2 columns on tablet */
+    /* Stats Grid - 2 columns */
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 14px;
@@ -1205,7 +1139,7 @@ body {
         padding: 20px;
     }
     
-    /* Filters - Stack vertically */
+    /* Filters */
     .filters-container {
         padding: 20px;
     }
@@ -1228,24 +1162,8 @@ body {
         gap: 10px;
         flex-wrap: nowrap;
         overflow-x: auto;
-        overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
         padding-bottom: 4px;
-        margin: 0 -4px;
-        padding: 0 4px 4px 4px;
-    }
-    
-    .filters-group::-webkit-scrollbar {
-        height: 4px;
-    }
-    
-    .filters-group::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    
-    .filters-group::-webkit-scrollbar-thumb {
-        background: rgba(204, 102, 51, 0.3);
-        border-radius: 2px;
     }
     
     .filter-dropdown {
@@ -1258,19 +1176,9 @@ body {
         order: 3;
         width: auto;
         margin-left: auto;
-        flex-shrink: 0;
     }
     
-    /* Team Grid adjustments */
-    .details-grid {
-        gap: 16px;
-    }
-    
-    /* Smaller text on tablets */
-    .page-title {
-        font-size: 26px;
-    }
-    
+    /* Smaller text */
     .stat-value {
         font-size: 26px;
     }
@@ -1284,56 +1192,24 @@ body {
         padding: 16px;
     }
     
-    /* Fix avatar container on tablets */
-    .avatar-container {
-        position: relative;
-        width: 50px;
-        height: 50px;
-        flex-shrink: 0;
-    }
-    
-    .avatar,
-    .avatar-img {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .status-indicator {
-        width: 15px;
-        height: 15px;
-        bottom: -2px;
-        right: -2px;
+    .details-grid {
+        gap: 16px;
     }
 }
 
-/* ========================================
-   MOBILE STYLES
-   ======================================== */
-
+/* Mobile (< 768px) */
 @media (max-width: 768px) {
-    /* Main Container */
-    .main-container {
-        padding: 16px;
+    /* Content sections */
+    .stats-section,
+    .filters-section,
+    .team-section {
+        margin-bottom: 20px;
     }
     
-    /* Page Header */
-    .page-header {
-        margin-bottom: 24px;
-    }
-    
-    .header-card {
-        padding: 16px;
-    }
-    
-    .page-title {
-        font-size: 24px;
-    }
-    
-    /* Mobile Stats Grid - 2x2 */
+    /* Stats Grid - 2x2 */
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
-        margin-bottom: 24px;
     }
     
     .stat-card {
@@ -1368,7 +1244,6 @@ body {
     /* Mobile Filters */
     .filters-container {
         padding: 16px;
-        margin-bottom: 20px;
     }
     
     .filters-content {
@@ -1377,7 +1252,6 @@ body {
         align-items: stretch;
     }
     
-    /* Search Full Width */
     .search-container {
         width: 100%;
         order: 1;
@@ -1392,10 +1266,6 @@ body {
         left: 12px;
         width: 16px;
         height: 16px;
-    }
-    
-    .clear-search {
-        right: 12px;
     }
     
     /* Hide Desktop Filters */
@@ -1421,7 +1291,6 @@ body {
         display: block !important;
     }
     
-    /* Results Count Mobile */
     .results-count {
         padding: 8px 12px;
         font-size: 13px;
@@ -1438,41 +1307,25 @@ body {
         padding: 16px;
     }
     
-    /* Employee Header Container Fix */
-    .employee-header {
-        position: relative;
-        display: flex;
-        align-items: center;
-        overflow: visible;
+    .employee-card:hover {
+        transform: none;
     }
     
-    .employee-header > div:first-child {
-        display: flex;
-        align-items: center;
-        flex: 1;
-        min-width: 0;
-        overflow: visible;
-    }
-    
-    /* Mobile Employee Header */
     .employee-header {
         justify-content: space-between;
         margin-bottom: 12px;
     }
     
     .avatar-container {
-        position: relative;
-        margin-right: 12px;
-        flex-shrink: 0;
         width: 48px;
         height: 48px;
+        margin-right: 12px;
     }
     
     .avatar,
     .avatar-img {
         width: 48px;
         height: 48px;
-        position: relative;
     }
     
     .avatar-text {
@@ -1484,7 +1337,6 @@ body {
         height: 14px;
         bottom: -2px;
         right: -2px;
-        border: 2px solid white;
     }
     
     .employee-name {
@@ -1521,7 +1373,6 @@ body {
         margin-top: 16px;
     }
     
-    /* Mobile Details Sections */
     .details-grid {
         grid-template-columns: 1fr;
         gap: 0;
@@ -1627,153 +1478,11 @@ body {
     .empty-text {
         font-size: 14px;
     }
-    
-    /* Mobile specific fixes for status indicator */
-    .employee-card {
-        transform: none !important;
-        will-change: auto !important;
-        position: relative;
-        overflow: visible !important;
-    }
-    
-    .employee-card:hover {
-        transform: none !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Ensure avatar container doesn't clip */
-    .employee-header,
-    .employee-info,
-    .tags-container,
-    .tags {
-        overflow: visible !important;
-    }
 }
 
-/* ========================================
-   КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ ДЛЯ ~405px
-   ======================================== */
-
-/* Промежуточный диапазон 480-380px */
-@media (max-width: 480px) {
-    /* Fluid typography для плавного изменения размеров */
-    .page-title {
-        font-size: clamp(20px, 5vw + 10px, 24px);
-    }
-    
-    .stat-value {
-        font-size: clamp(20px, 5vw + 8px, 24px);
-    }
-    
-    /* Оптимизация контейнера */
-    .container {
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-    
-    /* Flexbox fixes для filters */
-    .filters-content {
-        flex-wrap: wrap;
-        min-width: 0;
-    }
-    
-    .search-container {
-        min-width: 0;
-        flex: 1 1 100%;
-    }
-    
-    .mobile-filter-controls {
-        min-width: 0;
-        flex-wrap: nowrap;
-    }
-}
-
-/* Специфичные правила для 380-450px */
-@media (max-width: 450px) and (min-width: 380px) {
-    /* Stats Grid - auto-fit вместо фиксированных 2 колонок */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 10px;
-    }
-    
-    /* Минимальная ширина карточки */
-    .stat-card {
-        min-width: 150px;
-        padding: 14px;
-    }
-    
-    /* Оптимизация отступов */
-    .main-container {
-        padding: 16px 14px;
-    }
-    
-    .page-header {
-        margin-bottom: 20px;
-    }
-    
-    .stats-grid {
-        margin-bottom: 20px;
-    }
-    
-    /* Компактный filters */
-    .filters-container {
-        padding: 14px;
-    }
-    
-    .filters-content {
-        gap: 10px;
-    }
-}
-
-/* Критический диапазон 400-420px */
-@media (max-width: 420px) and (min-width: 400px) {
-    /* Вертикальная компоновка в stat cards */
-    .stat-content {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .stat-info {
-        margin-bottom: 8px;
-    }
-    
-    .stat-icon {
-        width: 36px;
-        height: 36px;
-        margin: 0;
-    }
-    
-    /* Уменьшаем font-size */
-    .page-title {
-        font-size: 22px;
-    }
-    
-    /* Компактнее search */
-    .search-input {
-        padding: 10px 36px;
-        font-size: 13px;
-    }
-}
-
-/* Ультра-малые экраны < 380px */
+/* Ultra-small screens (< 380px) */
 @media (max-width: 380px) {
-    /* Минимальные отступы */
-    .main-container {
-        padding: 12px 10px;
-    }
-    
-    /* Header минимальный */
-    .header-card {
-        padding: 14px;
-    }
-    
-    .page-title {
-        font-size: 20px;
-    }
-    
-    /* Stats - 1 колонка */
+    /* Stats - 1 column */
     .stats-grid {
         grid-template-columns: 1fr;
         gap: 8px;
@@ -1794,15 +1503,12 @@ body {
     /* Filters - максимальная компактность */
     .filters-container {
         padding: 12px;
-        margin-bottom: 16px;
     }
     
-    /* Сокращаем placeholder */
     .search-input::placeholder {
         font-size: 12px;
     }
     
-    /* Mobile filter controls */
     .mobile-filter-toggle {
         padding: 6px 10px;
         font-size: 13px;
@@ -1813,7 +1519,7 @@ body {
         font-size: 12px;
     }
     
-    /* Employee cards - уменьшаем отступы */
+    /* Employee cards */
     .team-grid {
         gap: 10px;
     }
@@ -1822,7 +1528,6 @@ body {
         padding: 12px;
     }
     
-    /* Меньше avatar */
     .avatar-container {
         width: 44px;
         height: 44px;
@@ -1855,7 +1560,16 @@ body {
     }
 }
 
-/* JS-управляемые классы для адаптивности */
+/* Adaptive data attributes */
+[data-mobile-layout="1x4"] {
+    grid-template-columns: 1fr !important;
+}
+
+[data-mobile-layout="auto-fit"] {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+}
+
+/* Compact filters classes */
 .filters-container.compact {
     padding: 14px;
 }
@@ -1869,64 +1583,12 @@ body {
     padding: 8px 32px;
 }
 
-[data-mobile-layout="1x4"] {
-    grid-template-columns: 1fr !important;
-}
-
-[data-mobile-layout="auto-fit"] {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
-}
-
-/* Safe area для iOS */
+/* iOS Safe Areas */
 @supports (padding: env(safe-area-inset-left)) {
     @media (max-width: 480px) {
-        .main-container {
-            padding-left: max(12px, env(safe-area-inset-left));
-            padding-right: max(12px, env(safe-area-inset-right));
-        }
-    }
-}
-
-/* Mobile specific fixes */
-@media (max-width: 768px) {
-    .employee-card {
-        transform: none !important;
-        will-change: auto !important;
-    }
-    
-    .employee-card:hover {
-        transform: none !important;
-    }
-}
-
-/* Fix for mobile status indicator positioning */
-@media (max-width: 768px) {
-    .avatar-container {
-        position: relative !important;
-        display: inline-block !important;
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden;
-        isolation: isolate;
-    }
-    
-    .status-indicator {
-        position: absolute !important;
-        bottom: -2px !important;
-        right: -2px !important;
-    }
-}
-
-/* iOS Safe Areas */
-@supports (-webkit-touch-callout: none) {
-    .main-container {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-    
-    @media (max-width: 768px) {
-        .mobile-filter-panel {
-            padding-bottom: env(safe-area-inset-bottom);
+        .content-wrapper {
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
     }
 }

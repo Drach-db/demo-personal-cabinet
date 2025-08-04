@@ -6,16 +6,21 @@ export default defineConfig({
   root: 'src',
   plugins: [
     handlebars({
-      // Путь к компонентам (partials)
-      partialDirectory: resolve(__dirname, 'src/components'),
+      // Изменяем на массив путей для поиска partials
+      partialDirectory: [
+        resolve(__dirname, 'src/components'),
+        resolve(__dirname, 'src/components/navbar'),
+        resolve(__dirname, 'src/components/header'),
+        resolve(__dirname, 'src/components/layout')
+      ],
       
-      // Контекст для всех страниц
+      // Или используем glob pattern для всех подпапок
+      // partialDirectory: resolve(__dirname, 'src/components/**'),
+      
       context: {
         title: 'MarkeTel',
-        // Можно добавить глобальные переменные
       },
       
-      // Помощники для определения активной страницы
       helpers: {
         isActive: (currentPage, pageName) => {
           return currentPage === pageName ? 'active' : '';
@@ -30,7 +35,6 @@ export default defineConfig({
         main: resolve(__dirname, 'src/index.html'),
         team: resolve(__dirname, 'src/pages/team/index.html'),
         dashboard: resolve(__dirname, 'src/pages/dashboard/index.html'),
-        // Добавьте другие страницы
       }
     }
   },

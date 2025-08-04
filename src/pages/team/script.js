@@ -1,6 +1,8 @@
-// Импортируем API модуль
-import api from './api.js'
-import '../../components/navbar.js';
+// Импортируем компоненты layout системы
+import '../../components/layout/layout.js';
+import '../../components/navbar/navbar.js';
+import '../../components/header/header.js';
+import api from './api.js';
 
 // State management
 const state = {
@@ -136,6 +138,15 @@ function updateStats() {
     document.getElementById('statOnboarding').textContent = stats.onboarding;
     document.getElementById('statTerminated').textContent = stats.terminated;
     document.getElementById('statBackup').textContent = stats.backup;
+    
+    // Отправляем статистику в header (опционально)
+    document.dispatchEvent(new CustomEvent('stats:updated', {
+        detail: { 
+            total: state.employees.length,
+            active: stats.active,
+            stats: stats
+        }
+    }));
 }
 
 function updateResultsCount() {
@@ -945,62 +956,84 @@ function initializeEventListeners() {
     const searchInput = document.getElementById('searchInput');
     const clearSearch = document.getElementById('clearSearch');
     
-    searchInput.addEventListener('input', (e) => {
-        state.searchTerm = e.target.value;
-        clearSearch.style.display = state.searchTerm ? 'block' : 'none';
-        filterEmployees();
-    });
+    if (searchInput && clearSearch) {
+        searchInput.addEventListener('input', (e) => {
+            state.searchTerm = e.target.value;
+            clearSearch.style.display = state.searchTerm ? 'block' : 'none';
+            filterEmployees();
+        });
 
-    clearSearch.addEventListener('click', () => {
-        state.searchTerm = '';
-        searchInput.value = '';
-        clearSearch.style.display = 'none';
-        filterEmployees();
-    });
+        clearSearch.addEventListener('click', () => {
+            state.searchTerm = '';
+            searchInput.value = '';
+            clearSearch.style.display = 'none';
+            filterEmployees();
+        });
+    }
 
     if (state.isMobile) {
         initializeMobileHandlers();
     } else {
         // Desktop filter dropdowns
-        document.getElementById('projectFilterBtn').addEventListener('click', () => {
-            state.showProjectDropdown = !state.showProjectDropdown;
-            state.showStageDropdown = false;
-            state.showPositionDropdown = false;
-            updateDropdownVisibility();
-        });
+        const projectFilterBtn = document.getElementById('projectFilterBtn');
+        const stageFilterBtn = document.getElementById('stageFilterBtn');
+        const positionFilterBtn = document.getElementById('positionFilterBtn');
+        
+        if (projectFilterBtn) {
+            projectFilterBtn.addEventListener('click', () => {
+                state.showProjectDropdown = !state.showProjectDropdown;
+                state.showStageDropdown = false;
+                state.showPositionDropdown = false;
+                updateDropdownVisibility();
+            });
+        }
 
-        document.getElementById('stageFilterBtn').addEventListener('click', () => {
-            state.showStageDropdown = !state.showStageDropdown;
-            state.showProjectDropdown = false;
-            state.showPositionDropdown = false;
-            updateDropdownVisibility();
-        });
+        if (stageFilterBtn) {
+            stageFilterBtn.addEventListener('click', () => {
+                state.showStageDropdown = !state.showStageDropdown;
+                state.showProjectDropdown = false;
+                state.showPositionDropdown = false;
+                updateDropdownVisibility();
+            });
+        }
 
-        document.getElementById('positionFilterBtn').addEventListener('click', () => {
-            state.showPositionDropdown = !state.showPositionDropdown;
-            state.showProjectDropdown = false;
-            state.showStageDropdown = false;
-            updateDropdownVisibility();
-        });
+        if (positionFilterBtn) {
+            positionFilterBtn.addEventListener('click', () => {
+                state.showPositionDropdown = !state.showPositionDropdown;
+                state.showProjectDropdown = false;
+                state.showStageDropdown = false;
+                updateDropdownVisibility();
+            });
+        }
 
         // Clear filter buttons
-        document.getElementById('clearProjectFilter').addEventListener('click', (e) => {
-            e.stopPropagation();
-            state.filterProject = [];
-            filterEmployees();
-        });
+        const clearProjectFilter = document.getElementById('clearProjectFilter');
+        const clearStageFilter = document.getElementById('clearStageFilter');
+        const clearPositionFilter = document.getElementById('clearPositionFilter');
+        
+        if (clearProjectFilter) {
+            clearProjectFilter.addEventListener('click', (e) => {
+                e.stopPropagation();
+                state.filterProject = [];
+                filterEmployees();
+            });
+        }
 
-        document.getElementById('clearStageFilter').addEventListener('click', (e) => {
-            e.stopPropagation();
-            state.filterStage = [];
-            filterEmployees();
-        });
+        if (clearStageFilter) {
+            clearStageFilter.addEventListener('click', (e) => {
+                e.stopPropagation();
+                state.filterStage = [];
+                filterEmployees();
+            });
+        }
 
-        document.getElementById('clearPositionFilter').addEventListener('click', (e) => {
-            e.stopPropagation();
-            state.filterPosition = [];
-            filterEmployees();
-        });
+        if (clearPositionFilter) {
+            clearPositionFilter.addEventListener('click', (e) => {
+                e.stopPropagation();
+                state.filterPosition = [];
+                filterEmployees();
+            });
+        }
 
         // Close dropdowns on outside click
         document.addEventListener('click', (e) => {
@@ -1173,11 +1206,19 @@ async function initialize() {
 // Start the application
 initialize();
 
-// Инициализация Navbar после загрузки всех модулей
+// Синхронизация с новой Layout системой
 document.addEventListener('DOMContentLoaded', () => {
-    if (window.Navbar && !window.navbarInstance) {
-        window.navbarInstance = new Navbar({
-            activeItem: 'team'
-        });
-    }
+    // Отправляем событие о загрузке страницы для Layout Controller
+    const event = new CustomEvent('page:loaded', {
+        detail: { 
+            page: 'team',
+            title: 'Team Management',
+            breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'HR', url: '/hr' },
+                { label: 'Team Management', url: '#' }
+            ]
+        }
+    });
+    document.dispatchEvent(event);
 });
