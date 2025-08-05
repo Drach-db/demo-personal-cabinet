@@ -28,7 +28,7 @@ class HeaderComponent {
             });
         }
         
-        // Listen for navbar state changes
+        // Listen for navbar state changes (только для десктопа)
         document.addEventListener('navbar:toggled', (e) => {
             this.handleNavbarToggle(e.detail.collapsed);
         });
@@ -40,8 +40,10 @@ class HeaderComponent {
     }
     
     handleNavbarToggle(isCollapsed) {
-        // Можем добавить дополнительную логику при изменении navbar
-        console.log('Navbar is', isCollapsed ? 'collapsed' : 'expanded');
+        // Логика только для десктопа - на мобильных navbar не коллапсится
+        if (window.innerWidth >= 768) {
+            console.log('Navbar is', isCollapsed ? 'collapsed' : 'expanded');
+        }
     }
 }
 

@@ -89,6 +89,9 @@ class LayoutController {
     }
     
     toggleMobileMenu() {
+        // Проверяем, что мы на мобильном устройстве
+        if (!this.state.isMobile) return;
+        
         this.state.mobileMenuOpen = !this.state.mobileMenuOpen;
         this.updateMobileMenu();
     }
@@ -99,7 +102,10 @@ class LayoutController {
     }
     
     updateLayout() {
-        // ВАЖНО: Обновляем классы на ВСЕХ необходимых элементах
+        // На мобильных не применяем collapsed классы
+        if (this.state.isMobile) return;
+        
+        // ВАЖНО: Обновляем классы на ВСЕХ необходимых элементах (только для десктопа)
         if (this.state.navbarCollapsed) {
             // Добавляем класс на body для глобального доступа
             document.body.classList.add('navbar-collapsed');
@@ -122,14 +128,17 @@ class LayoutController {
     }
     
     updateMobileMenu() {
+        const toggle = document.getElementById('headerMobileToggle');
+        
         if (this.state.mobileMenuOpen) {
             this.elements.navbar.classList.add('mobile-open');
             this.elements.overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
             
-            // Анимация бургер-меню в X
-            const toggle = document.getElementById('headerMobileToggle');
+            // Добавляем класс для кнопки
             if (toggle) {
+                toggle.classList.add('menu-open');
+                // Анимация бургер-меню в X
                 toggle.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -142,9 +151,10 @@ class LayoutController {
             this.elements.overlay.classList.remove('active');
             document.body.style.overflow = '';
             
-            // Вернуть бургер-меню
-            const toggle = document.getElementById('headerMobileToggle');
+            // Убираем класс с кнопки
             if (toggle) {
+                toggle.classList.remove('menu-open');
+                // Вернуть бургер-меню
                 toggle.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -164,6 +174,12 @@ class LayoutController {
             if (this.state.isMobile) {
                 // Switching to mobile
                 this.closeMobileMenu();
+                // Убираем все collapsed классы при переходе на мобильную версию
+                document.body.classList.remove('navbar-collapsed');
+                this.elements.layout.classList.remove('navbar-collapsed');
+                if (this.elements.navbarElement) {
+                    this.elements.navbarElement.classList.remove('navbar--collapsed');
+                }
             } else {
                 // Switching to desktop
                 this.closeMobileMenu();
@@ -174,14 +190,17 @@ class LayoutController {
     }
     
     applyInitialState() {
-        this.updateLayout();
-        
-        // Синхронизируем navbar с layout состоянием
-        if (window.navbarInstance) {
-            if (this.state.navbarCollapsed && !window.navbarInstance.isNavbarCollapsed()) {
-                window.navbarInstance.collapse();
-            } else if (!this.state.navbarCollapsed && window.navbarInstance.isNavbarCollapsed()) {
-                window.navbarInstance.expand();
+        // Применяем layout только для десктопа
+        if (!this.state.isMobile) {
+            this.updateLayout();
+            
+            // Синхронизируем navbar с layout состоянием
+            if (window.navbarInstance) {
+                if (this.state.navbarCollapsed && !window.navbarInstance.isNavbarCollapsed()) {
+                    window.navbarInstance.collapse();
+                } else if (!this.state.navbarCollapsed && window.navbarInstance.isNavbarCollapsed()) {
+                    window.navbarInstance.expand();
+                }
             }
         }
     }

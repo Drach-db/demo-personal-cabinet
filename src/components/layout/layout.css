@@ -98,20 +98,20 @@ body.navbar-collapsed .app-main,
             "main";
     }
     
-    /* Navbar как overlay справа на мобильных */
+    /* Navbar как overlay СЛЕВА на мобильных */
     .app-navbar {
         position: fixed;
         top: 0;
-        right: -280px;
-        width: 280px;
+        left: -70%; /* Изменено: скрыт слева */
+        width: 70%; /* Изменено: 70% ширины экрана */
         height: 100vh;
         z-index: 2000;
-        transition: right var(--layout-transition);
+        transition: left var(--layout-transition); /* Изменено: анимация left вместо right */
     }
     
     .app-navbar.mobile-open {
-        right: 0;
-        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
+        left: 0; /* Изменено: выезжает слева */
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2); /* Изменено: тень справа */
     }
     
     /* Overlay для затемнения */

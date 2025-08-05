@@ -522,34 +522,166 @@
    MOBILE ADJUSTMENTS
    ======================================== */
 
+/* Mobile Layout */
 @media (max-width: 768px) {
-    /* Header с фиксированным логотипом */
+    .app-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: var(--header-height) 1fr;
+        grid-template-areas:
+            "header"
+            "main";
+    }
+    
+    /* Navbar как overlay СЛЕВА на мобильных */
+    .app-navbar {
+        position: fixed;
+        top: 0;
+        left: -70%; /* Скрыт слева */
+        width: 70%; /* 70% ширины экрана */
+        height: 100vh;
+        z-index: 2000; /* Выше header (900) */
+        transition: left var(--layout-transition);
+    }
+    
+    /* Убираем стили для navbar контейнера на мобильных */
+    .navbar__container {
+        position: relative;
+        left: 0;
+        width: 100%;
+        transition: none; /* Отключаем transition для контейнера */
+    }
+    
+    /* Открытое состояние */
+    .app-navbar.mobile-open {
+        left: 0; /* Выезжает слева */
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* НЕ применяем collapsed стили на мобильных */
+    .navbar--collapsed .navbar__container {
+        width: var(--navbar-width); /* Остается полная ширина */
+    }
+    
+    /* Отключаем все collapsed состояния для мобильных */
+    .navbar--collapsed .navbar__logo-text,
+    .navbar--collapsed .navbar__link-text,
+    .navbar--collapsed .navbar__link-badge,
+    .navbar--collapsed .navbar__user-info {
+        opacity: 1;
+        visibility: visible;
+        width: auto;
+    }
+    
+    /* Скрываем кнопку collapse на мобильных */
+    .navbar__collapse {
+        display: none !important;
+    }
+    
+    /* Отключаем курсоры ресайза */
+    .navbar__container,
+    .navbar--collapsed .navbar__container {
+        cursor: default;
+    }
+    
+    /* Overlay для затемнения */
+    .app-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1999; /* Ниже navbar, но выше всего остального */
+        opacity: 0;
+        transition: opacity var(--layout-transition);
+    }
+    
+    .app-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+    
+    .app-main {
+        padding: 16px;
+    }
+    
+    /* На мобильных не меняем padding */
+    body.navbar-collapsed .app-main,
+    .app-layout.navbar-collapsed .app-main {
+        padding: 16px;
+    }
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Mobile specific adjustments inside navbar */
+@media (max-width: 768px) {
+    /* Контейнер navbar на мобильных */
+    .navbar__container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background-color: var(--navbar-bg);
+    }
+    
+    /* Header с логотипом фиксированной высоты */
     .navbar__header {
-        padding: 0 12px;
-        justify-content: flex-end;
+        height: 60px;
+        min-height: 60px;
+        padding: 0 16px;
+        justify-content: space-between;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--navbar-border);
     }
     
-    /* Логотип остается фиксированным */
+    /* Логотип остается на месте */
     .navbar__logo {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
     
-    /* В свернутом состоянии позиция НЕ меняется */
-    .navbar--collapsed .navbar__logo {
-        left: 16px;
+    /* Показываем текст логотипа */
+    .navbar__logo-text {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
     }
     
-    /* Размер логотипа */
-    .navbar__logo-icon {
-        width: 32px;
-        height: 32px;
+    /* Меню занимает оставшееся пространство */
+    .navbar__menu {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 12px;
     }
     
-    .navbar__logo-icon span {
-        font-size: 18px;
+    /* User section внизу БЕЗ прозрачного фона */
+    .navbar__user {
+        margin-top: auto;
+        padding: 16px;
+        border-top: 1px solid var(--navbar-border);
+        background-color: rgba(0, 0, 0, 0.2); /* Непрозрачный темный фон */
+        flex-shrink: 0;
+    }
+    
+    /* User toggle на мобильных */
+    .navbar__user-toggle {
+        width: 100%;
+        justify-content: flex-start;
+        cursor: default;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .navbar--collapsed .navbar__user-toggle {
+        width: 100%;
     }
     
     /* Навигационные ссылки */
@@ -560,100 +692,18 @@
         justify-content: flex-start;
     }
     
-    /* В свернутом состоянии */
-    .navbar--collapsed .navbar__link {
-        padding: 0 16px;
-        justify-content: flex-start;
+    /* Убираем hover эффекты на мобильных */
+    .navbar__link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
     }
     
-    /* Активная линия слева */
-    .navbar__link.active::before {
-        left: 0;
+    /* Убираем tooltips на мобильных */
+    .navbar__link-tooltip {
+        display: none !important;
     }
     
-    /* Стрелка collapse */
+    /* Скрываем кнопку collapse */
     .navbar__collapse {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .navbar__collapse svg {
-        width: 16px;
-        height: 16px;
-    }
-    
-    /* User section */
-    .navbar__user {
-        padding: 12px;
-    }
-    
-    .navbar__user-toggle {
-        padding: 0 16px 0 4px;
-    }
-    
-    .navbar__user-avatar {
-        width: 32px;
-        height: 32px;
-    }
-}
-
-/* ========================================
-   ANIMATIONS
-   ======================================== */
-
-/* Smooth entrance animation */
-@keyframes slideIn {
-    from {
-        transform: translateX(-100%);
-    }
-    to {
-        transform: translateX(0);
-    }
-}
-
-/* Initial load animation */
-.navbar__container {
-    animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ========================================
-   UTILITIES
-   ======================================== */
-
-/* Prevent text selection on navbar */
-.navbar {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-/* iOS safe areas */
-@supports (-webkit-touch-callout: none) {
-    .navbar__container {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    .navbar__container {
-        border-right: 2px solid var(--navbar-text);
-    }
-    
-    .navbar__link.active {
-        outline: 2px solid var(--navbar-accent);
-        outline-offset: -2px;
-    }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        display: none !important;
     }
 }

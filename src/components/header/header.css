@@ -167,6 +167,13 @@
         cursor: pointer;
         border-radius: 8px;
         transition: all 0.2s ease;
+        position: relative; /* Добавлено */
+        z-index: 2001; /* Добавлено - выше navbar (2000) */
+    }
+    
+    /* Добавляем состояние когда меню открыто */
+    .header__mobile-toggle.menu-open {
+        background: rgba(204, 102, 51, 0.1);
     }
     
     .header__mobile-toggle:active {
@@ -182,46 +189,5 @@
     
     .header__mobile-toggle:active svg {
         transform: scale(0.9);
-    }
-}
-
-/* Ultra-small screens */
-@media (max-width: 380px) {
-    .header__title {
-        font-size: 16px;
-        gap: 8px;
-    }
-    
-    .header__title span {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-}
-
-/* Tablet (768px - 1024px) */
-@media (max-width: 1024px) {
-    .header__container {
-        padding: 0 20px;
-    }
-    
-    .navbar-collapsed .header__container {
-        padding-left: 16px;
-    }
-    
-    .header__content {
-        gap: 20px;
-    }
-}
-
-/* Focus states */
-.header__mobile-toggle:focus-visible {
-    outline: 2px solid var(--accent-orange);
-    outline-offset: 2px;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        transition-duration: 0.01ms !important;
     }
 }

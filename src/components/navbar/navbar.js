@@ -33,14 +33,15 @@ class UnifiedNavbar {
         this.bindEvents();
         this.detectActivePage();
         
-        // Apply the initial state
-        if (this.isCollapsed) {
-            this.elements.navbar.classList.add('navbar--collapsed');
-            document.body.classList.add('navbar-collapsed');
-        } else {
-            // Make sure it's expanded
-            this.elements.navbar.classList.remove('navbar--collapsed');
-            document.body.classList.remove('navbar-collapsed');
+        // Apply the initial state ТОЛЬКО для десктопа
+        if (!this.isMobile) {
+            if (this.isCollapsed) {
+                this.elements.navbar.classList.add('navbar--collapsed');
+                document.body.classList.add('navbar-collapsed');
+            } else {
+                this.elements.navbar.classList.remove('navbar--collapsed');
+                document.body.classList.remove('navbar-collapsed');
+            }
         }
     }
 
@@ -61,25 +62,23 @@ class UnifiedNavbar {
      * Load saved state from localStorage
      */
     loadState() {
+        // На мобильных НЕ загружаем состояние из localStorage
+        if (this.isMobile) {
+            this.isCollapsed = false; // Navbar всегда развернут на мобильных (но скрыт через CSS)
+            return;
+        }
+        
         try {
             const savedState = localStorage.getItem(this.options.localStorageKey);
             if (savedState) {
                 const state = JSON.parse(savedState);
-                // Use saved state only for desktop
-                if (!this.isMobile) {
-                    this.isCollapsed = state.collapsed || false;
-                } else {
-                    // Mobile always starts collapsed
-                    this.isCollapsed = true;
-                }
+                this.isCollapsed = state.collapsed || false;
             } else {
-                // No saved state
-                this.isCollapsed = this.isMobile; // true for mobile, false for desktop
+                this.isCollapsed = false; // Desktop по умолчанию развернут
             }
         } catch (e) {
             console.warn('Failed to load navbar state:', e);
-            // Default: collapsed on mobile, expanded on desktop
-            this.isCollapsed = this.isMobile;
+            this.isCollapsed = false;
         }
     }
 
@@ -102,9 +101,13 @@ class UnifiedNavbar {
      * Bind all event listeners
      */
     bindEvents() {
-        // Collapse button
+        // Collapse button - только для десктопа
         if (this.elements.collapse) {
-            this.elements.collapse.addEventListener('click', () => this.toggleCollapse());
+            this.elements.collapse.addEventListener('click', () => {
+                if (!this.isMobile) {
+                    this.toggleCollapse();
+                }
+            });
         }
 
         // Navigation links
@@ -117,8 +120,10 @@ class UnifiedNavbar {
             this.elements.userButton.addEventListener('click', () => this.handleUserClick());
         }
 
-        // Navbar click to expand/collapse (по не кликабельной области)
+        // Navbar click to expand/collapse - ТОЛЬКО для десктопа
         this.elements.navbar.addEventListener('click', (e) => {
+            if (this.isMobile) return; // Не обрабатываем на мобильных
+            
             // Если клик по стрелочке — не обрабатываем тут (уже есть отдельный обработчик)
             if (e.target.closest('.navbar__collapse')) return;
             // Если клик по ссылке меню или по кнопке пользователя — не обрабатываем
@@ -139,13 +144,19 @@ class UnifiedNavbar {
             resizeTimer = setTimeout(() => this.handleResize(), 250);
         });
 
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+        // Keyboard navigation - только для десктопа
+        document.addEventListener('keydown', (e) => {
+            if (!this.isMobile) {
+                this.handleKeyboard(e);
+            }
+        });
 
-        // User toggle (Anonymous User) — раскрытие/сворачивание navbar
+        // User toggle - только для десктопа
         const userToggle = document.querySelector('.navbar__user-toggle');
         if (userToggle) {
             userToggle.addEventListener('click', (e) => {
+                if (this.isMobile) return; // Не обрабатываем на мобильных
+                
                 e.stopPropagation();
                 if (this.isCollapsed) {
                     this.expand();
@@ -155,6 +166,8 @@ class UnifiedNavbar {
             });
             // Доступность: по Enter/Space
             userToggle.addEventListener('keydown', (e) => {
+                if (this.isMobile) return; // Не обрабатываем на мобильных
+                
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     if (this.isCollapsed) {
@@ -171,6 +184,9 @@ class UnifiedNavbar {
      * Toggle collapsed state
      */
     toggleCollapse() {
+        // На мобильных не делаем toggle
+        if (this.isMobile) return;
+        
         this.isCollapsed = !this.isCollapsed;
         
         if (this.isCollapsed) {
@@ -253,12 +269,10 @@ class UnifiedNavbar {
 
         // If switched from desktop to mobile
         if (!wasMobile && this.isMobile) {
-            // Save current state before switching to mobile
-            this.saveState();
-            // Always collapse on mobile
-            if (!this.isCollapsed) {
-                this.toggleCollapse();
-            }
+            // Убираем все collapsed классы при переходе на мобильную версию
+            this.elements.navbar.classList.remove('navbar--collapsed');
+            document.body.classList.remove('navbar-collapsed');
+            this.isCollapsed = false;
         }
         
         // If switched from mobile to desktop
@@ -314,22 +328,24 @@ class UnifiedNavbar {
      */
     
     collapse() {
-        if (!this.isCollapsed) {
+        if (!this.isMobile && !this.isCollapsed) {
             this.toggleCollapse();
         }
     }
 
     expand() {
-        if (this.isCollapsed) {
+        if (!this.isMobile && this.isCollapsed) {
             this.toggleCollapse();
         }
     }
 
     toggle() {
-        this.toggleCollapse();
+        if (!this.isMobile) {
+            this.toggleCollapse();
+        }
     }
 
-    getActivePage() { стал
+    getActivePage() {
         return this.activePage;
     }
 
