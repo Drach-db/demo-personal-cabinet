@@ -1060,25 +1060,10 @@ function updateDropdownVisibility() {
     const stageDropdown = document.getElementById('stageDropdown');
     const positionDropdown = document.getElementById('positionDropdown');
     
-    // Получаем контейнер фильтров
-    const filtersContainer = document.getElementById('filtersContainer');
-    const containerRect = filtersContainer.getBoundingClientRect();
-    
-    if (state.showProjectDropdown) {
-        const button = document.getElementById('projectFilterBtn');
-        const buttonRect = button.getBoundingClientRect();
-        
-        // Используем absolute вместо fixed и позиционируем относительно контейнера
-        projectDropdown.style.position = 'absolute';
-        projectDropdown.style.left = `${buttonRect.left - filtersContainer.offsetLeft}px`;
-        projectDropdown.style.width = `${buttonRect.width}px`;
-        projectDropdown.style.top = `${filtersContainer.offsetHeight + 8}px`;
-        projectDropdown.style.display = 'block';
-    } else {
-        projectDropdown.style.display = 'none';
-    }
-    
-    // Аналогично для других дропдаунов...
+    // Просто показываем/скрываем
+    projectDropdown.style.display = state.showProjectDropdown ? 'block' : 'none';
+    stageDropdown.style.display = state.showStageDropdown ? 'block' : 'none';
+    positionDropdown.style.display = state.showPositionDropdown ? 'block' : 'none';
 }
 
 function positionDropdownAbove(dropdown, buttonId) {

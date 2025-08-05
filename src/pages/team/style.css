@@ -183,30 +183,32 @@ body {
 /* ========================================
    SEARCH AND FILTERS
    ======================================== */
-   .filters-container {
+   /* Основной контейнер */
+.filters-container {
     background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 24px;
     position: relative;
-    z-index: 10; /* Уменьшаем с 100 до 10 - ниже header (900) */
+    z-index: 10;
     overflow: visible;
 }
 
+/* Внутренний контейнер */
 .filters-content {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 12px;
+    gap: 12px; /* Одинаковый отступ между ВСЕМИ элементами */
     max-width: 100%;
 }
 
 /* Search Container */
 .search-container {
     position: relative;
-    flex: 0 1 320px;
-    min-width: 240px;
+    flex: 1 1 auto; /* Занимает доступное пространство */
+    max-width: 400px; /* Максимальная ширина */
+    min-width: 200px; /* Минимальная ширина */
 }
 
 .search-icon {
@@ -267,16 +269,15 @@ body {
 .filters-group {
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex: 0 0 auto;
+    gap: 16px; /* Тот же отступ между фильтрами */
+    flex: 2 1 0; /* Не растягивается */
 }
 
 /* Filter Dropdown */
 .filter-dropdown {
     position: relative;
     flex: 0 0 auto;
-    min-width: 140px;
-    width: 208px;
+    min-width: 160px; /* Фиксированная минимальная ширина */
 }
 
 .filter-icon {
@@ -349,7 +350,9 @@ body {
 
 /* Dropdown Menu */
 .dropdown-menu {
-    position: fixed; /* Используем fixed для точного позиционирования */
+    top: 100%; 
+    position: absolute;
+    margin-top: 0.5rem;
     background-color: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(12px);
     border-radius: 12px;
@@ -508,7 +511,6 @@ body {
     min-width: 96px;
     text-align: center;
     white-space: nowrap;
-    margin-left: auto;
 }
 
 /* Mobile Filter Panel */
@@ -1204,7 +1206,8 @@ body {
     }
     
     .search-container {
-        width: 100%;
+        position: relative;
+        flex: 1 1 0;
         order: 1;
     }
     
@@ -1221,7 +1224,7 @@ body {
     }
     
     .filter-dropdown {
-        flex: 0 0 auto;
+        flex: 1 1 0;
         width: auto;
         min-width: 160px;
     }
@@ -1301,9 +1304,10 @@ body {
     }
     
     .filters-content {
-        flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
+        display: flex;
+        align-items: center;
+        gap: 16px; /* Единый отступ для всех элементов */
+    max-width: 100%;
     }
     
     .search-container {
