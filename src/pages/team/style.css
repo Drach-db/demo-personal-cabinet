@@ -142,14 +142,14 @@ body {
 /* ========================================
    SEARCH AND FILTERS
    ======================================== */
-.filters-container {
+   .filters-container {
     background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 24px;
     position: relative;
-    z-index: 100;
+    z-index: 10; /* Уменьшаем с 100 до 10 - ниже header (900) */
     overflow: visible;
 }
 
@@ -314,7 +314,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     border: 1px solid #f3f4f6;
-    z-index: 9999;
+    z-index: 950; /* Выше всего контента, но ниже navbar (1000) */
     max-height: 240px;
     overflow-y: auto;
     margin-top: 8px;

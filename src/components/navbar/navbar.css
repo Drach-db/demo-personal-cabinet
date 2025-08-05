@@ -274,7 +274,7 @@
     border-radius: 0 3px 3px 0;
 }
 
-/* Иконка ссылки */
+/* Иконка ссылки - БЕЗ ДОПОЛНИТЕЛЬНОГО MARGIN */
 .navbar__link-icon {
     width: 20px;
     height: 20px;
@@ -282,7 +282,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 4px;
 }
 
 .navbar__link-icon svg {
@@ -329,11 +328,6 @@
 .navbar--collapsed .navbar__link {
     justify-content: flex-start;
     padding: 0 16px;
-}
-
-/* Иконка остается на месте в свернутом состоянии */
-.navbar--collapsed .navbar__link-icon {
-    margin-left: 4px;
 }
 
 /* Tooltip для свернутого состояния */
@@ -566,19 +560,10 @@
         justify-content: flex-start;
     }
     
-    /* Фиксированная иконка */
-    .navbar__link-icon {
-        margin-left: 4px;
-    }
-    
     /* В свернутом состоянии */
     .navbar--collapsed .navbar__link {
         padding: 0 16px;
         justify-content: flex-start;
-    }
-    
-    .navbar--collapsed .navbar__link-icon {
-        margin-left: 4px;
     }
     
     /* Активная линия слева */
@@ -672,4 +657,3 @@
         transition-duration: 0.01ms !important;
     }
 }
-

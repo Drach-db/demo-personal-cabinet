@@ -1,16 +1,16 @@
 /* ========================================
-   HEADER COMPONENT - Glassmorphism Style
-   ИСПРАВЛЕННАЯ ВЕРСИЯ с адаптивными отступами
+   HEADER COMPONENT - Fixed Version
    ======================================== */
 
    :root {
-    /* Header specific variables - Warm Glassmorphism */
-    --header-bg: rgba(252, 246, 238, 0.75);
-    --header-blur: 12px;
-    --header-saturate: 1.1;
+    /* Header specific variables - НЕПРОЗРАЧНЫЙ ФОН */
+    --header-bg: #fcf6ee; /* Полностью непрозрачный цвет */
     --header-border: rgba(204, 102, 51, 0.15);
     --header-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 
                      0 2px 8px rgba(204, 102, 51, 0.08);
+    
+    /* Z-index иерархия */
+    --header-z-index: 900; /* Выше контента, но ниже navbar */
     
     /* Inherit from brand */
     --primary-cream: #f0eee7;
@@ -21,49 +21,42 @@
 }
 
 .header {
-    /* Warm Glassmorphism - Best variant */
+    /* НЕПРОЗРАЧНЫЙ ФОН */
     background: var(--header-bg);
-    backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
-    -webkit-backdrop-filter: blur(var(--header-blur)) saturate(var(--header-saturate));
+    /* Убираем backdrop-filter для производительности */
     
-    /* Brand-aligned border and enhanced shadow */
+    /* Правильный z-index */
+    z-index: var(--header-z-index);
+    
+    /* Граница и тень для визуального отделения */
     border-bottom: 1px solid var(--header-border);
     box-shadow: var(--header-shadow);
     
-    z-index: 100;
-    position: relative;
+    /* Фиксированное позиционирование */
+    position: sticky;
+    top: 0;
+    
     /* Убираем любые margins */
     margin: 0;
 }
 
+/* Убираем псевдоэлемент с градиентом */
 .header::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: 
-        radial-gradient(
-            ellipse at top left,
-            rgba(204, 102, 51, 0.04) 0%,
-            transparent 40%
-        );
-    pointer-events: none;
-    z-index: 1;
+    display: none;
 }
 
 .header__container {
     height: var(--header-height);
-    /* СТАНДАРТНЫЕ ОТСТУПЫ для админ-панелей */
-    padding: 0 24px 0 24px;
+    padding: 0 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* Добавляем transition для плавной анимации */
     transition: padding-left var(--layout-transition);
     position: relative;
-    z-index: 2;
+    /* z-index убираем, не нужен для контейнера */
 }
 
-/* Когда navbar свернут - стандартный уменьшенный отступ */
+/* Когда navbar свернут */
 .navbar-collapsed .header__container {
     padding-left: 16px;
 }
@@ -74,7 +67,7 @@
     align-items: center;
     gap: 24px;
     flex: 1;
-    min-width: 0; /* Позволяет сжиматься */
+    min-width: 0;
 }
 
 .header__title {
@@ -87,7 +80,6 @@
     align-items: center;
     gap: 12px;
     white-space: nowrap;
-    /* Добавляем transition для плавности */
     transition: transform var(--layout-transition);
 }
 
@@ -132,119 +124,7 @@
     text-overflow: ellipsis;
 }
 
-/* Actions section (правая часть) - ВРЕМЕННО СКРЫТА */
-.header__actions {
-    display: none !important; /* Скрываем до реализации функционала */
-}
-
-.header__action {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.header__action:hover {
-    background: rgba(204, 102, 51, 0.08);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(204, 102, 51, 0.12);
-}
-
-.header__action:active {
-    transform: scale(0.95);
-}
-
-.header__action svg {
-    width: 20px;
-    height: 20px;
-    color: var(--medium-gray);
-    transition: color 0.2s ease;
-}
-
-.header__action:hover svg {
-    color: var(--accent-orange);
-}
-
-/* Notification badge */
-.header__badge {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 4px;
-    background: #ef4444;
-    color: white;
-    font-size: 11px;
-    font-weight: 600;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid rgba(252, 246, 238, 0.9);
-    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-    }
-    70% {
-        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-    }
-}
-
-/* User button */
-.header__user {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    padding: 0;
-    cursor: pointer;
-    overflow: hidden;
-    background: transparent;
-    transition: all 0.2s ease;
-}
-
-.header__user:hover {
-    transform: scale(1.05);
-    border-color: var(--accent-orange);
-}
-
-.header__avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.header__avatar-placeholder {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, var(--medium-gray) 0%, #4b5563 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.header__avatar-placeholder svg {
-    width: 20px;
-    height: 20px;
-    color: white;
-}
-
-/* Mobile toggle - скрыт на desktop */
+/* Mobile toggle */
 .header__mobile-toggle {
     display: none;
 }
@@ -255,17 +135,10 @@
         padding: 0 16px;
     }
     
-    /* На мобильных не меняем padding при collapsed */
     .navbar-collapsed .header__container {
         padding: 0 16px;
     }
     
-    /* Скрываем desktop actions на мобильных */
-    .header__actions {
-        display: none;
-    }
-    
-    /* Скрываем breadcrumbs на мобильных для экономии места */
     .header__breadcrumbs {
         display: none;
     }
@@ -283,7 +156,6 @@
         height: 20px;
     }
     
-    /* Показываем burger menu на мобильных */
     .header__mobile-toggle {
         display: flex;
         width: 40px;
@@ -332,7 +204,6 @@
         padding: 0 20px;
     }
     
-    /* На планшетах тоже применяем адаптивные отступы */
     .navbar-collapsed .header__container {
         padding-left: 16px;
     }
@@ -343,8 +214,6 @@
 }
 
 /* Focus states */
-.header__action:focus-visible,
-.header__user:focus-visible,
 .header__mobile-toggle:focus-visible {
     outline: 2px solid var(--accent-orange);
     outline-offset: 2px;
@@ -352,12 +221,7 @@
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    .header__badge {
-        animation: none;
-    }
-    
     * {
         transition-duration: 0.01ms !important;
     }
 }
-

@@ -11,6 +11,26 @@
     --mobile-breakpoint: 768px;
 }
 
+
+/* Предотвращение overscroll bounce */
+html {
+    background-color: #f0eee7;
+    overscroll-behavior: none;
+}
+
+body {
+    overscroll-behavior: none;
+    background-color: #f0eee7;
+}
+
+/* Для основного контейнера */
+.app-main {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Для Safari/iOS - JavaScript решение */
+
 /* Reset body margins - ВАЖНО! */
 body {
     margin: 0;
