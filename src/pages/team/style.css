@@ -80,28 +80,39 @@ body {
 }
 
 /* ========================================
-   ANALYTICS DASHBOARD
+   ANALYTICS DASHBOARD - Updated Styles
    ======================================== */
+
+/* Stats Section Container */
+.stats-section {
+    margin-bottom: 24px;
+}
+
+/* Stats Grid */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
 }
 
+/* Stat Card */
 .stat-card {
     background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 24px;
+    cursor: default;
 }
 
+/* Stat Content Layout */
 .stat-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
+/* Stat Info (Text Section) */
 .stat-info {
     flex: 1;
 }
@@ -110,6 +121,7 @@ body {
     font-size: 14px;
     font-weight: 500;
     color: #6b7280;
+    margin: 0;
     margin-bottom: 4px;
 }
 
@@ -117,8 +129,11 @@ body {
     font-size: 30px;
     font-weight: 700;
     color: #111827;
+    margin: 0;
+    line-height: 1;
 }
 
+/* Stat Icon Container */
 .stat-icon {
     width: 48px;
     height: 48px;
@@ -126,18 +141,44 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
 }
 
+/* Icon SVG Styles */
+.stat-icon svg,
 .icon {
     width: 24px;
     height: 24px;
+    stroke-width: 2;
 }
 
-.icon-green { color: #22c55e; }
-.icon-orange { color: #cc6633; }
-.icon-red { color: #ef4444; }
-.icon-blue { color: #3b82f6; }
+/* Icon Colors */
+.icon-green { 
+    color: #22c55e;
+    stroke: #22c55e;
+    fill: none;
+}
+.icon-orange { 
+    color: #cc6633;
+    stroke: #cc6633;
+    fill: none;
+}
+.icon-red { 
+    color: #ef4444;
+    stroke: #ef4444;
+    fill: none;
+}
+.icon-blue { 
+    color: #3b82f6;
+    stroke: #3b82f6;
+    fill: none;
+}
+
+/* Ensure proper alignment */
+.stat-content {
+    height: 100%;
+    min-height: 48px;
+}
 
 /* ========================================
    SEARCH AND FILTERS
@@ -308,26 +349,28 @@ body {
 
 /* Dropdown Menu */
 .dropdown-menu {
-    position: fixed;
+    position: fixed; /* Используем fixed для точного позиционирования */
     background-color: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(12px);
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12); /* Тень вверх */
     border: 1px solid #f3f4f6;
-    z-index: 950; /* Выше всего контента, но ниже navbar (1000) */
+    z-index: 10000;
     max-height: 240px;
     overflow-y: auto;
-    margin-top: 8px;
+    /* Убираем margin-top, он не нужен */
 }
 
+/* Внутренний контент дропдауна */
 .dropdown-content {
     padding: 8px;
 }
 
+/* Пункты в дропдауне */
 .dropdown-item {
     display: flex;
     align-items: center;
-    padding: 8px;
+    padding: 10px 12px;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -337,31 +380,37 @@ body {
     background-color: #f9fafb;
 }
 
+/* Чекбокс в дропдауне */
 .dropdown-checkbox {
     width: 16px;
     height: 16px;
-    margin-right: 8px;
+    margin-right: 10px;
     accent-color: #cc6633;
     cursor: pointer;
 }
 
+/* Цветная точка */
 .dropdown-color {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    margin-right: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    margin-right: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Текст пункта */
 .dropdown-label {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: #4b5563;
+    flex: 1;
 }
 
 .dropdown-item:hover .dropdown-label {
     color: #111827;
 }
+
+
 
 /* Mobile Filter Controls */
 .mobile-filter-controls {

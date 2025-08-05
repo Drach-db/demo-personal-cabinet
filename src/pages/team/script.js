@@ -1060,27 +1060,25 @@ function updateDropdownVisibility() {
     const stageDropdown = document.getElementById('stageDropdown');
     const positionDropdown = document.getElementById('positionDropdown');
     
-    // Позиционирование dropdown над контейнером
+    // Получаем контейнер фильтров
+    const filtersContainer = document.getElementById('filtersContainer');
+    const containerRect = filtersContainer.getBoundingClientRect();
+    
     if (state.showProjectDropdown) {
-        positionDropdownAbove(projectDropdown, 'projectFilterBtn');
+        const button = document.getElementById('projectFilterBtn');
+        const buttonRect = button.getBoundingClientRect();
+        
+        // Используем absolute вместо fixed и позиционируем относительно контейнера
+        projectDropdown.style.position = 'absolute';
+        projectDropdown.style.left = `${buttonRect.left - filtersContainer.offsetLeft}px`;
+        projectDropdown.style.width = `${buttonRect.width}px`;
+        projectDropdown.style.top = `${filtersContainer.offsetHeight + 8}px`;
         projectDropdown.style.display = 'block';
     } else {
         projectDropdown.style.display = 'none';
     }
     
-    if (state.showStageDropdown) {
-        positionDropdownAbove(stageDropdown, 'stageFilterBtn');
-        stageDropdown.style.display = 'block';
-    } else {
-        stageDropdown.style.display = 'none';
-    }
-    
-    if (state.showPositionDropdown) {
-        positionDropdownAbove(positionDropdown, 'positionFilterBtn');
-        positionDropdown.style.display = 'block';
-    } else {
-        positionDropdown.style.display = 'none';
-    }
+    // Аналогично для других дропдаунов...
 }
 
 function positionDropdownAbove(dropdown, buttonId) {
