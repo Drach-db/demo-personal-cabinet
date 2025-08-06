@@ -355,9 +355,9 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
 
     return `
         <div class="employee-card ${isSelected ? 'selected' : ''}" 
-     style="--stage-color: ${getStageColor(employee.stage)}"
-     onclick="toggleEmployee(${employee.id})"
-     ${!state.isMobile ? `onmouseenter="handleCardHover(this, true)" onmouseleave="handleCardHover(this, false)"` : ''}>
+             style="--stage-color: ${getStageColor(employee.stage)}"
+             onclick="toggleEmployee(${employee.id})"
+             ${!state.isMobile ? `onmouseenter="handleCardHover(this, true)" onmouseleave="handleCardHover(this, false)"` : ''}>
             
             <!-- Employee Header -->
             <div class="employee-header">
@@ -370,37 +370,39 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                     </div>
                     <div class="status-indicator" style="background-color: ${getStageColor(employee.stage)}"></div>
                 </div>
+                
                 <div class="employee-info">
-    <h3 class="employee-name">${employee.full_name}</h3>
-    <div class="employee-position-line">
-        <p class="employee-position">${employee.position}</p>
-        <span class="tag tag-stage" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
-            ${employee.stage}
-        </span>
-        <span class="tag tag-project">
-            ${employee.project}
-        </span>
-        ${employee.staffing_type === 'Backup' ? 
-            '<span class="tag tag-backup">Backup</span>' : ''}
-    </div>
-</div>
-                    ${employee.staffing_type === 'Backup' ? 
-                        '<span class="tag" style="background-color: #f1f5f9; color: #475569">Backup</span>' : ''}
+                    <h3 class="employee-name">${employee.full_name}</h3>
+                    
+                    <!-- ВСЕ ЭЛЕМЕНТЫ ТЕПЕРЬ В ОДНОЙ ЛИНИИ -->
+                    <div class="employee-position-line">
+                        <!-- Левая группа: должность + бейджи -->
+                        <p class="employee-position">${employee.position}</p>
+                        <span class="tag tag-stage" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
+                            ${employee.stage}
+                        </span>
+                        <span class="tag tag-project">
+                            ${employee.project}
+                        </span>
+                        ${employee.staffing_type === 'Backup' ? 
+                            '<span class="tag tag-backup">Backup</span>' : ''}
+                        
+                        <!-- Кнопка по центру карточки но на той же линии -->
+                        <button class="view-button ${isSelected ? 'selected' : ''}" 
+                                onclick="event.stopPropagation(); toggleEmployee(${employee.id})"
+                                onmouseenter="this.style.color='#cc6633'"
+                                onmouseleave="this.style.color='${isSelected ? '#cc6633' : '#6b7280'}'">
+                            <span>${isSelected ? 'Hide Details' : 'View Details'}</span>
+                            ${isSelected ? 
+                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>' :
+                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>'}
+                        </button>
+                    </div>
                 </div>
-
-                <button class="view-button ${isSelected ? 'selected' : ''}" 
-                        onclick="event.stopPropagation(); toggleEmployee(${employee.id})"
-                        onmouseenter="this.style.transform='translate(-50%, -50%) scale(1.05)'; this.style.color='#cc6633'"
-                        onmouseleave="this.style.transform='translate(-50%, -50%) scale(1)'; this.style.color='${isSelected ? '#cc6633' : '#6b7280'}'">
-                    <span>${isSelected ? 'Hide Employee Details' : 'View Employee Details'}</span>
-                    ${isSelected ? 
-                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>' :
-                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>'}
-                </button>
             </div>
 
             ${isSelected ? `
-                <!-- Employee Details -->
+                <!-- Employee Details (без изменений) -->
                 <div class="employee-details">
                     <div class="details-grid">
                         
@@ -503,9 +505,7 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                         <span class="assessment-label">Assessment Results:</span>
                         <div class="assessment-actions">
                             <button class="action-button primary" 
-                                    onclick="event.stopPropagation(); window.open('${employee.english_proficiency_test}', '_blank')"
-                                    onmouseenter="handleButtonHover(this, true, 'view')"
-                                    onmouseleave="handleButtonHover(this, false, 'view')">
+                                    onclick="event.stopPropagation(); window.open('${employee.english_proficiency_test}', '_blank')">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
@@ -515,9 +515,7 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                             <a href="${employee.english_proficiency_test}" 
                                download="${employee.full_name.replace(/\s+/g, '-').toLowerCase()}-test-results.pdf"
                                class="action-button secondary"
-                               onclick="event.stopPropagation()"
-                               onmouseenter="handleButtonHover(this, true, 'download')"
-                               onmouseleave="handleButtonHover(this, false, 'download')">
+                               onclick="event.stopPropagation()">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                     <polyline points="7 10 12 15 17 10"></polyline>
