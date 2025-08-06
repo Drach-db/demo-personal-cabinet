@@ -438,6 +438,7 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                                     <span class="detail-value" style="color: #4f46e5">${employee.bpo_experience}y (${getExperienceLevel(employee.bpo_experience)})</span>
                                 </div>
                             </div>
+                            <i class="bottom-corners"></i>
                         </div>
 
                         <!-- Personal Info -->
@@ -465,6 +466,7 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                                     <span class="detail-value" style="text-transform: capitalize">${employee.gender}</span>
                                 </div>
                             </div>
+                            <i class="bottom-corners"></i>
                         </div>
 
                         <!-- Timeline -->
@@ -497,6 +499,7 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                                     `).join('')}
                                 </div>
                             </div>
+                            <i class="bottom-corners"></i>
                         </div>
                     </div>
 
