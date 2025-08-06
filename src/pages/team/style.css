@@ -424,9 +424,8 @@ body {
     position: relative;
     z-index: 1;
     overflow: visible;
-    min-height: 80px;
-    display: flex;
-    align-items: center;
+    min-height: auto;
+    display: block;
 }
 
 .employee-card:hover {
@@ -437,7 +436,7 @@ body {
 
 .employee-card.selected {
     border: 2px solid #cc6633;
-    padding: 13px 19px;
+    padding: 14px 20px;
 }
 
 .employee-header {
@@ -553,13 +552,11 @@ body {
 .tag-project {
     background-color: rgba(59, 130, 246, 0.15);
     color: #2563eb;
-    /* border убран для консистентности */
 }
 
 .tag-backup {
     background-color: rgba(156, 163, 175, 0.15);
     color: #4b5563;
-    /* border убран для консистентности */
 }
 
 .view-button {
@@ -601,11 +598,9 @@ body {
     content: '';
     position: absolute;
     right: 7px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 14px;
     width: 4px;
-    height: calc(100% - 20px);
-    max-height: 50px;
+    height: 52px;
     background-color: var(--stage-color, #6b7280);
     border-radius: 4px;
     transition: all 0.3s ease;
@@ -621,28 +616,141 @@ body {
 }
 
 /* ========================================
-   EMPLOYEE DETAILS
+   EMPLOYEE DETAILS - ФИНАЛЬНАЯ ВЕРСИЯ С ЗАКРУГЛЕННЫМИ УГОЛКАМИ
    ======================================== */
-.employee-details {
-    padding-top: 16px;
-    margin-top: 12px;
-    border-top: 1px solid #e5e7eb;
+   .employee-details {
+    padding-top: 10px;
+    margin-top: 8px;
+    animation: slideDown 0.3s ease-out;
 }
 
 .details-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: minmax(200px, 1fr) minmax(180px, 0.9fr) minmax(300px, 1.8fr);
     gap: 24px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    background: transparent;
+    padding: 16px 0; /* Увеличен padding для правильного позиционирования уголков */
+    position: relative;
 }
 
+/* Базовые стили для секций */
+.detail-section {
+    padding: 0 16px;
+    position: relative;
+    min-height: 80px; /* Минимальная высота для правильного позиционирования нижних уголков */
+}
+
+/* Вертикальные линии для всех секций */
+.detail-section {
+    border-left: 1px solid #d1d5db;
+    border-right: 1px solid #d1d5db;
+}
+
+/* ВЕРХНИЕ ЗАКРУГЛЕННЫЕ УГОЛКИ */
+/* Левый верхний уголок */
+.detail-section::before {
+    content: '';
+    position: absolute;
+    top: -6px; /* Поднято выше */
+    left: -1px;
+    width: 10px;
+    height: 10px;
+    border-left: 1px solid #d1d5db;
+    border-top: 1px solid #d1d5db;
+    border-top-left-radius: 6px;
+    background: transparent;
+}
+
+/* Правый верхний уголок */
+.detail-section::after {
+    content: '';
+    position: absolute;
+    top: -6px; /* Поднято выше */
+    right: -1px;
+    width: 10px;
+    height: 10px;
+    border-right: 1px solid #d1d5db;
+    border-top: 1px solid #d1d5db;
+    border-top-right-radius: 6px;
+    background: transparent;
+}
+
+/* НИЖНИЕ ЗАКРУГЛЕННЫЕ УГОЛКИ - используем дополнительный wrapper */
+.detail-section > *:last-child {
+    position: relative;
+}
+
+/* Левый нижний уголок */
+.detail-section > *:last-child::before {
+    content: '';
+    position: absolute;
+    bottom: -22px; /* Правильное позиционирование */
+    left: -16px;
+    width: 10px;
+    height: 10px;
+    border-left: 1px solid #d1d5db;
+    border-bottom: 1px solid #d1d5db;
+    border-bottom-left-radius: 6px;
+    background: transparent;
+    pointer-events: none;
+}
+
+/* Правый нижний уголок */
+.detail-section > *:last-child::after {
+    content: '';
+    position: absolute;
+    bottom: -22px; /* Правильное позиционирование */
+    right: -16px;
+    width: 10px;
+    height: 10px;
+    border-right: 1px solid #d1d5db;
+    border-bottom: 1px solid #d1d5db;
+    border-bottom-right-radius: 6px;
+    background: transparent;
+    pointer-events: none;
+}
+
+/* Альтернативный подход через дополнительные элементы для Timeline */
+.timeline-wrapper {
+    position: relative;
+}
+
+.timeline-wrapper::before {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: -16px;
+    width: 10px;
+    height: 10px;
+    border-left: 1px solid #d1d5db;
+    border-bottom: 1px solid #d1d5db;
+    border-bottom-left-radius: 6px;
+    background: transparent;
+}
+
+.timeline-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    right: -16px;
+    width: 10px;
+    height: 10px;
+    border-right: 1px solid #d1d5db;
+    border-bottom: 1px solid #d1d5db;
+    border-bottom-right-radius: 6px;
+    background: transparent;
+}
+
+/* Заголовки секций */
 .detail-section h4 {
     font-weight: 600;
     color: #111827;
-    font-size: 14px;
-    margin-bottom: 12px;
+    font-size: 13px;
+    margin: 0 0 12px 0;
     display: flex;
     align-items: center;
+    letter-spacing: 0.025em;
 }
 
 .detail-section h4 svg {
@@ -650,62 +758,81 @@ body {
     height: 16px;
     margin-right: 8px;
     color: #cc6633;
+    flex-shrink: 0;
 }
 
+/* Атрибуты внутри секций */
 .detail-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
+    min-height: 20px;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
 }
 
 .detail-label {
     color: #6b7280;
-    font-size: 12px;
-}
-
-.detail-value {
-    font-weight: 500;
-    font-size: 12px;
-}
-
-.progress-container {
-    display: flex;
-    align-items: center;
-}
-
-.progress-bar {
-    width: 48px;
-    height: 6px;
-    background-color: #e5e7eb;
-    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 400;
     margin-right: 8px;
 }
 
-.progress-fill {
-    height: 6px;
-    border-radius: 9999px;
-    transition: width 0.3s ease;
+.detail-value {
+    font-weight: 600;
+    font-size: 13px;
+    color: #111827;
+    text-align: right;
 }
 
+/* Progress bars */
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.progress-bar {
+    width: 60px;
+    height: 4px;
+    background-color: rgba(229, 231, 235, 0.5);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Timeline */
 .timeline {
     position: relative;
+    padding: 0;
+    margin-top: 8px;
 }
 
 .timeline-line {
     position: absolute;
-    top: 32px;
-    left: 8px;
-    right: 8px;
-    height: 2px;
-    background-color: #e5e7eb;
+    top: 28px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e5e7eb;
+    z-index: 1;
 }
 
 .timeline-events {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
     position: relative;
+    z-index: 2;
 }
 
 .timeline-event {
@@ -716,94 +843,47 @@ body {
 }
 
 .event-label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
-    color: #111827;
-    margin-bottom: 4px;
+    color: #6b7280;
+    margin-bottom: 8px;
     text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.event-info {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: rgba(204, 102, 51, 0.1);
-    color: #cc6633;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 8px;
-    font-weight: 700;
-    margin-left: 4px;
-    cursor: help;
-    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .event-dot {
-    width: 12px;
-    height: 12px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     border: 2px solid white;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
     position: relative;
-    z-index: 10;
+    z-index: 3;
 }
 
 .event-date {
-    font-size: 12px;
+    font-size: 11px;
     color: #6b7280;
-    margin-top: 4px;
+    margin-top: 8px;
     text-align: center;
 }
 
-.tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: 8px;
-    padding: 8px 12px;
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(204, 102, 51, 0.3);
-    border-radius: 8px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    white-space: nowrap;
-    font-size: 12px;
-    font-weight: 600;
-    color: #cc6633;
-    z-index: 99999;
-}
-
-.tooltip-arrow {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 4px solid rgba(255, 255, 255, 0.95);
-}
-
+/* Assessment section */
 .assessment-section {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 12px 16px 8px 16px;
+    background: transparent;
     margin-top: 12px;
-    padding-top: 8px;
     border-top: 1px solid #e5e7eb;
+    padding-top: 12px;
 }
 
 .assessment-label {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: #4b5563;
-    margin-top: 4px;
 }
 
 .assessment-actions {
@@ -814,44 +894,45 @@ body {
 .action-button {
     display: inline-flex;
     align-items: center;
-    padding: 8px 12px;
+    padding: 6px 12px;
     font-size: 12px;
     font-weight: 500;
     color: white;
     border-radius: 6px;
-    border: 1px solid;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    transition: all 0.2s ease;
     cursor: pointer;
     text-decoration: none;
+    gap: 6px;
 }
 
 .action-button svg {
-    width: 12px;
-    height: 12px;
-    margin-right: 4px;
+    width: 14px;
+    height: 14px;
 }
 
 .action-button.primary {
-    background-color: #b85c2e;
-    border-color: #b85c2e;
+    background: linear-gradient(135deg, #cc6633 0%, #b85c2e 100%);
+    box-shadow: 0 2px 4px rgba(204, 102, 51, 0.2);
 }
 
 .action-button.primary:hover {
-    background-color: #cc6633;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(204, 102, 51, 0.3);
 }
 
 .action-button.secondary {
-    background-color: #9ca3af;
-    border-color: #6b7280;
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+    box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
 }
 
 .action-button.secondary:hover {
-    background-color: #6b7280;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+}
+
+.employee-card.selected {
+    padding-bottom: 12px;
 }
 
 .empty-state {
@@ -1041,8 +1122,18 @@ body {
     
     .details-grid {
         grid-template-columns: 1fr;
-        gap: 0;
-        margin-bottom: 0;
+        gap: 20px;
+        padding: 12px;
+    }
+    
+    .detail-section {
+        padding: 0;
+        border-left: 3px solid #cc6633;
+        padding-left: 12px;
+    }
+    
+    .detail-section:not(:last-child)::after {
+        display: none;
     }
     
     .timeline {
@@ -1051,6 +1142,21 @@ body {
     
     .mobile-timeline {
         display: block;
+    }
+    
+    .assessment-section {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .assessment-actions {
+        width: 100%;
+    }
+    
+    .action-button {
+        flex: 1;
+        justify-content: center;
     }
 }
 
