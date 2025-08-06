@@ -199,16 +199,18 @@ body {
 .filters-content {
     display: flex;
     align-items: center;
-    gap: 12px; /* Одинаковый отступ между ВСЕМИ элементами */
-    max-width: 100%;
+    gap: 16px; /* Увеличиваем для визуального баланса */
+    width: 100%;
+    padding: 0; /* Убираем внутренние отступы */
+
 }
 
 /* Search Container */
 .search-container {
     position: relative;
-    flex: 1 1 auto; /* Занимает доступное пространство */
-    max-width: 400px; /* Максимальная ширина */
-    min-width: 200px; /* Минимальная ширина */
+    flex: 1 1 auto; /* Растягивается по доступному месту */
+    min-width: 200px; /* Уменьшаем минимум */
+    max-width: 450px; /* Добавляем максимум */
 }
 
 .search-icon {
@@ -269,15 +271,15 @@ body {
 .filters-group {
     display: flex;
     align-items: center;
-    gap: 16px; /* Тот же отступ между фильтрами */
-    flex: 2 1 0; /* Не растягивается */
+    gap: 16px; /* Отступы между фильтрами */
+    flex: 1 1 auto; /* НЕ растягивается */
 }
 
 /* Filter Dropdown */
 .filter-dropdown {
     position: relative;
-    flex: 0 0 auto;
-    min-width: 160px; /* Фиксированная минимальная ширина */
+    flex: 1 1 0; 
+    min-width: 150px;
 }
 
 .filter-icon {
@@ -352,6 +354,10 @@ body {
 .dropdown-menu {
     top: 100%; 
     position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%; 
+    margin-top: 8px;
     margin-top: 0.5rem;
     background-color: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(12px);
@@ -501,16 +507,17 @@ body {
 }
 
 .results-count {
-    padding: 10px 16px;
+    padding: 10px 20px;
     border-radius: 8px;
     background-color: rgba(204, 102, 51, 0.1);
     color: #cc6633;
     font-size: 14px;
     font-weight: 600;
     flex: 0 0 auto;
-    min-width: 96px;
+    min-width: 110px;
     text-align: center;
     white-space: nowrap;
+    margin-left: auto;
 }
 
 /* Mobile Filter Panel */
@@ -754,10 +761,11 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-bottom: 4px;
 }
 
 .employee-position {
-    color: #6b7280;
+    color: #7d6d8f;
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
@@ -782,6 +790,11 @@ body {
     border-radius: 8px;
     font-size: 12px;
     font-weight: 500;
+}
+
+.tag-project {
+    background-color: #dbeafe; /* Светло-синий фон */
+    color: #1e40af; /* Темно-синий текст */
 }
 
 .view-button {
@@ -851,6 +864,7 @@ body {
     margin-bottom: 12px;
     display: flex;
     align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .detail-section h4 svg {
@@ -875,6 +889,7 @@ body {
 .detail-value {
     font-weight: 500;
     font-size: 12px;
+    
 }
 
 /* Progress bars */
@@ -1207,8 +1222,8 @@ body {
     
     .search-container {
         position: relative;
-        flex: 1 1 0;
-        order: 1;
+        flex: 1 1 40%; /* ~35% ширины */
+        min-width: 280px;
     }
     
     .filters-group {
@@ -1307,7 +1322,7 @@ body {
         display: flex;
         align-items: center;
         gap: 16px; /* Единый отступ для всех элементов */
-    max-width: 100%;
+        width: 100%;
     }
     
     .search-container {

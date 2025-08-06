@@ -381,9 +381,9 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                     <span class="tag" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
                         ${employee.stage}
                     </span>
-                    <span class="tag" style="background-color: ${getProjectColor(employee.project)}20; color: ${getProjectColor(employee.project)}">
+                   <span class="tag tag-project">
                         ${employee.project}
-                    </span>
+                </span>
                     ${employee.staffing_type === 'Backup' ? 
                         '<span class="tag" style="background-color: #f1f5f9; color: #475569">Backup</span>' : ''}
                 </div>
@@ -1084,31 +1084,46 @@ function handleResize() {
     const previousDeviceType = state.deviceType || getDeviceType();
     const currentDeviceType = getDeviceType();
     
-    // Сохраняем тип устройства
     state.deviceType = currentDeviceType;
     
-    // Обновляем isMobile для обратной совместимости
     const wasMobile = state.isMobile;
     state.isMobile = ['ultra-mobile', 'small-mobile', 'mobile'].includes(currentDeviceType);
     
-    // Применяем адаптации
     adjustStatsGrid();
     optimizeTextForSmallScreens();
     adaptFiltersForScreenSize();
     
-    // Переинициализация только при изменении основного типа (mobile/desktop)
+    // ВАЖНО: Переинициализация при смене типа устройства
     if (wasMobile !== state.isMobile) {
-        // Remove all event listeners
-        const oldSearchInput = document.getElementById('searchInput');
-        const newSearchInput = oldSearchInput.cloneNode(true);
-        oldSearchInput.parentNode.replaceChild(newSearchInput, oldSearchInput);
+        // Сбрасываем состояние дропдаунов
+        state.showProjectDropdown = false;
+        state.showStageDropdown = false;
+        state.showPositionDropdown = false;
+        state.showMobileFilters = false;
         
-        // Re-initialize
-        initializeEventListeners();
-        updateUI();
+        // Удаляем ВСЕ старые обработчики
+        const elements = [
+            'searchInput', 'clearSearch',
+            'projectFilterBtn', 'stageFilterBtn', 'positionFilterBtn',
+            'clearProjectFilter', 'clearStageFilter', 'clearPositionFilter',
+            'mobileFilterToggle', 'clearAllFiltersMobile'
+        ];
+        
+        elements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                const newEl = el.cloneNode(true);
+                el.parentNode.replaceChild(newEl, el);
+            }
+        });
+        
+        // Переинициализируем ВСЕ обработчики
+        setTimeout(() => {
+            initializeEventListeners();
+            updateUI();
+        }, 100);
     }
     
-    // Логирование для отладки
     if (previousDeviceType !== currentDeviceType) {
         console.log(`Device type changed: ${previousDeviceType} → ${currentDeviceType}`);
     }
