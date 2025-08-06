@@ -764,37 +764,65 @@ body {
     margin-bottom: 4px;
 }
 
+
+
+/* НОВЫЕ СТИЛИ ДЛЯ INLINE BADGES */
+/* Контейнер для линии с должностью и badges */
+.employee-position-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Обновленный стиль должности когда она в линии */
 .employee-position {
     color: #7d6d8f;
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin: 0;
+    flex-shrink: 0;
 }
 
-/* Tags and Actions */
+/* Обновленные стили для tags когда они inline */
+.employee-position-line .tag {
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    height: 18px;
+}
+
+/* Tags and Actions - СКРЫВАЕМ СТАРЫЙ КОНТЕЙНЕР */
 .tags-container {
-    position: relative;
-    margin-bottom: 10px;
-    min-height: 32px;
+    display: none;
 }
 
-.tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
+/* Базовые стили для tags */
 .tag {
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 500;
 }
 
 .tag-project {
-    background-color: #dbeafe; /* Светло-синий фон */
-    color: #1e40af; /* Темно-синий текст */
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.tag-stage {
+    /* Цвет задается inline через style */
+}
+
+.tag-backup {
+    background-color: #f1f5f9;
+    color: #475569;
 }
 
 .view-button {
@@ -828,6 +856,30 @@ body {
 .view-button svg {
     width: 14px;
     height: 14px;
+}
+
+/* Цветовая линия-индикатор справа от карточки */
+.employee-card::after {
+    content: '';
+    position: absolute;
+    right: 7px;  /* Отступ справа */
+    top: 6px;     /* Отступ сверху */
+    bottom: 6px;  /* Отступ снизу */
+    width: 4px;
+    background-color: var(--stage-color, #6b7280);
+    border-radius: 4px; /* Полное скругление */
+    transition: all 0.3s ease;
+}
+
+/* Для выбранной карточки - линия толще */
+.employee-card.selected::after {
+    width: 5px;
+}
+
+/* При hover - линия становится ярче */
+.employee-card:hover::after {
+    filter: brightness(1.1);
+    width: 5px;
 }
 
 /* Mobile Expand Indicator */

@@ -355,8 +355,9 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
 
     return `
         <div class="employee-card ${isSelected ? 'selected' : ''}" 
-             onclick="toggleEmployee(${employee.id})"
-             ${!state.isMobile ? `onmouseenter="handleCardHover(this, true)" onmouseleave="handleCardHover(this, false)"` : ''}>
+     style="--stage-color: ${getStageColor(employee.stage)}"
+     onclick="toggleEmployee(${employee.id})"
+     ${!state.isMobile ? `onmouseenter="handleCardHover(this, true)" onmouseleave="handleCardHover(this, false)"` : ''}>
             
             <!-- Employee Header -->
             <div class="employee-header">
@@ -370,20 +371,19 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                     <div class="status-indicator" style="background-color: ${getStageColor(employee.stage)}"></div>
                 </div>
                 <div class="employee-info">
-                    <h3 class="employee-name">${employee.full_name}</h3>
-                    <p class="employee-position">${employee.position}</p>
-                </div>
-            </div>
-
-            <!-- Tags and View Button -->
-            <div class="tags-container">
-                <div class="tags">
-                    <span class="tag" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
-                        ${employee.stage}
-                    </span>
-                   <span class="tag tag-project">
-                        ${employee.project}
-                </span>
+    <h3 class="employee-name">${employee.full_name}</h3>
+    <div class="employee-position-line">
+        <p class="employee-position">${employee.position}</p>
+        <span class="tag tag-stage" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
+            ${employee.stage}
+        </span>
+        <span class="tag tag-project">
+            ${employee.project}
+        </span>
+        ${employee.staffing_type === 'Backup' ? 
+            '<span class="tag tag-backup">Backup</span>' : ''}
+    </div>
+</div>
                     ${employee.staffing_type === 'Backup' ? 
                         '<span class="tag" style="background-color: #f1f5f9; color: #475569">Backup</span>' : ''}
                 </div>
