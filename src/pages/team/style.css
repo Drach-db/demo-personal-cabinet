@@ -15,6 +15,18 @@ body {
 }
 
 /* ========================================
+   CSS ПЕРЕМЕННЫЕ ДЛЯ КОНСИСТЕНТНОСТИ
+   ======================================== */
+   :root {
+    --detail-label-size: 13px;
+    --detail-value-size: 13px;
+    --detail-label-color: #6b7280;
+    --detail-value-color: #292f3c;
+    --detail-label-weight: 400;
+    --detail-value-weight: 500;
+}
+
+/* ========================================
    LOADING SCREEN
    ======================================== */
 .loading-screen {
@@ -294,8 +306,7 @@ body {
 .filter-clear {
     position: absolute;
     right: 28px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: calc(50% - 8px);  /* Опустить на 1px ниже: было -9px, стало -8px */
     padding: 2px;
     border-radius: 50%;
     background: transparent;
@@ -303,6 +314,11 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 16px;  /* Уменьшить до 16px */
+    width: 16px;   /* Уменьшить до 16px */
 }
 
 .filter-clear:hover {
@@ -318,8 +334,7 @@ body {
 .dropdown-arrow {
     position: absolute;
     right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: calc(50% - 7px);  /* Оставить как есть */
     width: 14px;
     height: 14px;
     color: #9ca3af;
@@ -550,13 +565,14 @@ body {
 }
 
 .tag-project {
-    background-color: rgba(59, 130, 246, 0.15);
-    color: #2563eb;
+    background-color: rgba(59, 130, 246, 0.15);  
+    color: rgba(37, 99, 235, 0.8);  /* Уменьшена непрозрачность текста до 80% */
 }
 
 .tag-backup {
-    background-color: rgba(156, 163, 175, 0.15);
-    color: #4b5563;
+    background-color: rgba(100, 116, 139, 0.12);  /* Слегка голубоватый серый */
+    color: rgba(71, 85, 105, 0.85);  /* Консистентная непрозрачность с другими */
+    font-weight: 600;
 }
 
 .view-button {
@@ -570,7 +586,7 @@ body {
     padding: 2px 6px;
     background: none;
     border: none;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: #6b7280;
     cursor: pointer;
@@ -597,7 +613,7 @@ body {
 .employee-card::after {
     content: '';
     position: absolute;
-    right: 7px;
+    right: 20px;
     top: 14px;
     width: 4px;
     height: 52px;
@@ -724,8 +740,8 @@ body {
 .detail-section h4 {
     font-weight: 600;
     color: #111827;
-    font-size: 13px;
-    margin: 0 0 12px 0;
+    font-size: 14px;
+    margin: 0 0 14px 0;
     display: flex;
     align-items: center;
     letter-spacing: 0.025em;
@@ -744,8 +760,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
-    min-height: 20px;
+    margin-bottom: 10px;
+    min-height: 22px;
 }
 
 .detail-item:last-child {
@@ -753,38 +769,49 @@ body {
 }
 
 .detail-label {
-    color: #6b7280;
-    font-size: 13px;
-    font-weight: 400;
+    color: var(--detail-label-color);
+    font-size: var(--detail-label-size);
+    font-weight: var(--detail-label-weight);
     margin-right: 8px;
 }
 
 .detail-value {
-    font-weight: 600;
-    font-size: 13px;
-    color: #111827;
+    font-weight: var(--detail-value-weight);
+    font-size: var(--detail-value-size);
+    color: var(--detail-value-color);
     text-align: right;
+}
+
+/* Специальные значения с цветами */
+.detail-value.skill-value {
+    color: #7c3aed;
+    font-weight: 700;
+}
+
+.detail-value.experience-value {
+    color: #4f46e5;
+    font-weight: 600;
 }
 
 /* Progress bars */
 .progress-container {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     justify-content: flex-end;
 }
 
 .progress-bar {
-    width: 60px;
-    height: 4px;
+    width: 70px;
+    height: 5px;
     background-color: rgba(229, 231, 235, 0.5);
-    border-radius: 2px;
+    border-radius: 3px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    border-radius: 2px;
+    border-radius: 3px;
     transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -792,12 +819,12 @@ body {
 .timeline {
     position: relative;
     padding: 0;
-    margin-top: 8px;
+    margin-top: 16px;
 }
 
 .timeline-line {
     position: absolute;
-    top: 28px;
+    top: 32px;
     left: 0;
     right: 0;
     height: 1px;
@@ -821,29 +848,37 @@ body {
 }
 
 .event-label {
-    font-size: 11px;
+    position: relative;  /* Важно для позиционирования tooltip */
+    font-size: var(--detail-label-size);
     font-weight: 500;
-    color: #6b7280;
-    margin-bottom: 8px;
+    color: var(--detail-label-color);
+    margin-bottom: 10px;
     text-align: center;
     white-space: nowrap;
-    position: relative;
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
+    height: 20px;
+}
+
+.event-info:hover + .tooltip,
+.event-label:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
 .event-info {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     background: rgba(204, 102, 51, 0.1);
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 8px;
+    font-size: 9px;
     color: #cc6633;
     cursor: help;
+    font-weight: 600;
 }
 
 .event-dot {
@@ -854,16 +889,24 @@ body {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
     position: relative;
     z-index: 3;
+    margin-top: -1px;
 }
 
 .event-date {
-    font-size: 11px;
-    color: #6b7280;
-    margin-top: 8px;
+    font-size: var(--detail-label-size);
+    font-weight: var(--detail-value-weight);
+    color: var(--detail-value-color);
+    margin-top: 10px;
     text-align: center;
 }
 
-/* Tooltip для timeline */
+/* Для пустых дат */
+.event-date.empty {
+    color: #d1d5db;
+    font-weight: 400;
+}
+
+/* Tooltip для timeline - ВОССТАНОВЛЕННАЯ ВЕРСИЯ */
 .tooltip {
     position: absolute;
     bottom: 100%;
@@ -878,6 +921,9 @@ body {
     white-space: nowrap;
     z-index: 1000;
     pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .tooltip-arrow {
@@ -905,7 +951,7 @@ body {
 }
 
 .assessment-label {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: #4b5563;
 }

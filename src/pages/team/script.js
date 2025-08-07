@@ -455,7 +455,7 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                             <div>
                                 <div class="detail-item">
                                     <span class="detail-label">Age:</span>
-                                    <span class="detail-value" style="color: #4b5563">${calculateAge(employee.date_of_birth)} years</span>
+                                    <span class="detail-value">${calculateAge(employee.date_of_birth)} years</span>
                                 </div>
                                 <div class="detail-item">
                                     <span class="detail-label">Date of Birth:</span>

@@ -73,7 +73,7 @@ body.navbar-collapsed .app-layout {
 
 .app-main {
     grid-area: main;
-    padding: 24px 24px 24px 24px;
+    padding: 24px 100px 24px 100px;
     background-color: #f0eee7;
     overflow-y: auto;
     /* Важно: убираем любые margins */
@@ -85,7 +85,7 @@ body.navbar-collapsed .app-layout {
 /* Уменьшаем левый padding когда navbar свернут */
 body.navbar-collapsed .app-main,
 .app-layout.navbar-collapsed .app-main {
-    padding-left: 16px;
+    padding: 24px 100px 24px 100px;
 }
 
 /* Mobile Layout */
