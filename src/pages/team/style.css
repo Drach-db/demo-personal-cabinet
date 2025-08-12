@@ -1551,10 +1551,61 @@ body {
     }
 }
 
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+@media (max-width: 480px) {
+    /* Ultra small mobile adjustments */
+    .stat-card {
+        min-height: 90px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+    }
+    
+    .mobile-filter-button {
+        width: 90px;
+        font-size: 13px;
+        padding: 8px 12px;
+        width: 100px;
+        min-width: 100px;
+    }
+    
+    .mobile-employee-name {
+        font-size: 15px;
+    }
+    
+    .mobile-employee-position {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 380px) {
+    /* Ultra mobile */
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-input {
+        font-size: 13px;
+    }
+    
+    .mobile-tag {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+}
+
 /* ========================================
    BOTTOM SHEET - MOBILE ONLY
    ======================================== */
-.bottom-sheet-backdrop {
+   .bottom-sheet-backdrop {
     display: none;
     position: fixed;
     top: 0;
@@ -1749,55 +1800,8 @@ body {
     background-color: #fef2f2;
 }
 
-/* ========================================
-   RESPONSIVE ADJUSTMENTS
-   ======================================== */
-@media (max-width: 480px) {
-    /* Ultra small mobile adjustments */
-    .stat-card {
-        min-height: 90px;
-    }
-    
-    .stat-value {
-        font-size: 20px;
-    }
-    
-    .stat-label {
-        font-size: 12px;
-    }
-    
-    .mobile-filter-button {
-        width: 90px;
-        font-size: 13px;
-        padding: 8px 12px;
-        width: 100px;
-        min-width: 100px;
-    }
-    
-    .mobile-employee-name {
-        font-size: 15px;
-    }
-    
-    .mobile-employee-position {
-        font-size: 13px;
-    }
-}
 
-@media (max-width: 380px) {
-    /* Ultra mobile */
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .search-input {
-        font-size: 13px;
-    }
-    
-    .mobile-tag {
-        font-size: 11px;
-        padding: 3px 8px;
-    }
-}
+
 
 /* ========================================
    TRANSITIONS AND ANIMATIONS
