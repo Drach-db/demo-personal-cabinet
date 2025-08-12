@@ -5,7 +5,7 @@ import '../../components/header/header.js';
 import api from './api.js';
 
 // ========================================
-// STATE MANAGEMENT
+// STATE MANAGEMENT - ТОЛЬКО ОДИН РАЗ!
 // ========================================
 const state = {
     batches: [],
@@ -16,12 +16,27 @@ const state = {
         onboarding: 0,
         terminated: 0,
         backup: 0
-    }
+    },
+    // Мобильное состояние
+    isMobile: window.innerWidth < 768,
+    deviceType: getDeviceType()
 };
+
+// Глобальная переменная для таймера
+let resizeTimer;
 
 // ========================================
 // UTILITY FUNCTIONS
 // ========================================
+
+function getDeviceType() {
+    const width = window.innerWidth;
+    if (width < 380) return 'ultra-mobile';
+    if (width < 480) return 'small-mobile';
+    if (width < 768) return 'mobile';
+    if (width < 1024) return 'tablet';
+    return 'desktop';
+}
 
 function getAvatarColor(name) {
     const colors = [
@@ -95,7 +110,17 @@ function calculateAvgEnglish(employees) {
     return Math.round(sum / employees.length);
 }
 
+// Функция для цвета прогресс-бара
 function getProgressColor(progress) {
+    if (progress >= 90) return '#22c55e';
+    if (progress >= 70) return '#65a30d';
+    if (progress >= 50) return '#ca8a04';
+    if (progress >= 30) return '#ea580c';
+    return '#6b7280';
+}
+
+// ДОБАВЛЯЕМ недостающую функцию!
+function getProgressTextColor(progress) {
     if (progress >= 90) return '#22c55e';
     if (progress >= 70) return '#65a30d';
     if (progress >= 50) return '#ca8a04';
@@ -134,7 +159,6 @@ function updateStatsUI() {
     document.getElementById('statTerminated').textContent = state.stats.terminated;
     document.getElementById('statBackup').textContent = state.stats.backup;
 }
-
 // ========================================
 // RENDER FUNCTIONS
 // ========================================
@@ -333,7 +357,31 @@ function renderBatches() {
     } else {
         batchesList.style.display = 'grid';
         emptyState.style.display = 'none';
-        batchesList.innerHTML = state.batches.map(batch => renderBatchCard(batch)).join('');
+        
+        // Условный рендеринг в зависимости от устройства
+        if (state.isMobile) {
+            batchesList.innerHTML = state.batches.map(batch => 
+                renderMobileBatchCard(batch)
+            ).join('');
+        } else {
+            batchesList.innerHTML = state.batches.map(batch => 
+                renderBatchCard(batch)
+            ).join('');
+        }
+    }
+}
+
+// ========================================
+// RESPONSIVE HANDLERS
+// ========================================
+
+function handleResize() {
+    const wasMobile = state.isMobile;
+    state.isMobile = window.innerWidth < 768;
+    state.deviceType = getDeviceType();
+    
+    if (wasMobile !== state.isMobile) {
+        renderBatches();
     }
 }
 
@@ -341,6 +389,11 @@ function renderBatches() {
 // EVENT HANDLERS
 // ========================================
 
+// Event listener для resize
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => handleResize(), 250);
+});
 function toggleCard(batchId) {
     state.selectedCard = state.selectedCard === batchId ? null : batchId;
     renderBatches();
@@ -412,6 +465,213 @@ async function initialize() {
             </div>
         `;
     }
+}
+
+// ========================================
+// МОБИЛЬНЫЕ ФУНКЦИИ РЕНДЕРИНГА
+// ========================================
+
+function renderMobileBatchCard(batch) {
+    const isSelected = state.selectedCard === batch.id;
+    const progress = calculateProgress(batch.fact_fte, batch.planned_fte);
+    
+    return `
+        <div class="batch-card mobile-batch-card ${isSelected ? 'selected' : ''}" 
+             data-batch-id="${batch.id}"
+             onclick="toggleCard(${batch.id})">
+            
+            <!-- Mobile Header -->
+            <div class="mobile-batch-header">
+                <div class="mobile-batch-top">
+                    <div class="mobile-batch-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <circle cx="18" cy="18" r="3" fill="none"></circle>
+                        </svg>
+                    </div>
+                    <div class="mobile-batch-info">
+                        <h3 class="mobile-batch-title">BATCH #${batch.batch_id}</h3>
+                        <p class="mobile-batch-subtitle">${batch.name_batch}</p>
+                        <p class="mobile-batch-project">${batch.project}</p>
+                    </div>
+                    <div class="mobile-batch-badges">
+                        <span class="badge badge-stage" 
+                              style="background-color: ${getStageColor(batch.stage)}20; 
+                                     color: ${getStageColor(batch.stage)}">
+                            ${batch.stage}
+                        </span>
+                        <span class="badge badge-quality" 
+                              style="background-color: ${getQualityColor(batch.quality)}20; 
+                                     color: ${getQualityColor(batch.quality)}">
+                            ${batch.quality || '—'}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Mobile Data Grid 2x2 -->
+                <div class="mobile-data-grid">
+                    <div class="mobile-data-block">
+                        <p class="mobile-data-label">Planned</p>
+                        <p class="mobile-data-value">${batch.planned_date}</p>
+                        <p class="mobile-data-sub">${batch.planned_fte} employees</p>
+                    </div>
+                    <div class="mobile-data-block">
+                        <p class="mobile-data-label">Actual</p>
+                        <p class="mobile-data-value">${batch.fact_date || "—"}</p>
+                        <p class="mobile-data-sub">${batch.fact_fte || "—"} employees</p>
+                    </div>
+                </div>
+
+                <!-- Mobile Progress -->
+                <div class="mobile-progress-section">
+                    <div class="mobile-progress-header">
+                        <span class="mobile-progress-label">Progress</span>
+                        <span class="mobile-progress-value" 
+                              style="color: ${getProgressTextColor(progress)}">
+                            ${progress}%
+                        </span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" 
+                             style="width: ${progress}%; 
+                                    background-color: ${getProgressColor(progress)}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Team Info -->
+                <div class="mobile-team-footer">
+                    <div class="mobile-team-stats">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                        <span>
+                            ${calculateCoreCount(batch.employees)}C + 
+                            ${calculateBackupCount(batch.employees)}B | 
+                            Eng: ${calculateAvgEnglish(batch.employees)}%
+                        </span>
+                    </div>
+                    
+                    <button class="mobile-view-button ${isSelected ? 'active' : ''}"
+                            onclick="event.stopPropagation(); toggleCard(${batch.id})">
+                        <span>${isSelected ? 'Hide' : 'View'}</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            ${isSelected ? 
+                                '<polyline points="18 15 12 9 6 15"></polyline>' :
+                                '<polyline points="6 9 12 15 18 9"></polyline>'}
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            ${isSelected ? renderMobileEmployees(batch) : ''}
+        </div>
+    `;
+}
+
+function renderMobileEmployees(batch) {
+    if (!batch.employees || batch.employees.length === 0) {
+        return `
+            <div class="mobile-employees-section">
+                <h4 class="mobile-employees-title">Team Members (0)</h4>
+                <div class="mobile-empty-employees">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                    </svg>
+                    <p>No team members assigned</p>
+                </div>
+            </div>
+        `;
+    }
+
+    const employeesHTML = batch.employees.map(emp => {
+        const avatarColor = getAvatarColor(emp.full_name);
+        return `
+            <div class="mobile-employee-card">
+                <div class="mobile-employee-header">
+                    <div class="mobile-employee-avatar-wrapper">
+                        ${emp.avatar ? 
+                            `<img src="${emp.avatar}" alt="${emp.full_name}" 
+                                  class="mobile-employee-avatar">` :
+                            `<div class="mobile-employee-avatar" 
+                                  style="background: ${avatarColor.bg}">
+                                <span style="color: ${avatarColor.text}">
+                                    ${emp.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                </span>
+                            </div>`
+                        }
+                        <div class="mobile-status-dot" 
+                             style="background-color: ${getEmployeeStatusColor(emp.stage)}">
+                        </div>
+                    </div>
+                    
+                    <div class="mobile-employee-info">
+                        <h5 class="mobile-employee-name">${emp.full_name}</h5>
+                        <p class="mobile-employee-position">${emp.position}</p>
+                    </div>
+                </div>
+                
+                <div class="mobile-employee-skills">
+                    <div class="mobile-skill-item">
+                        <span class="mobile-skill-label">English:</span>
+                        <span class="mobile-skill-value">${emp.english_level}%</span>
+                    </div>
+                    <div class="mobile-skill-item">
+                        <span class="mobile-skill-label">Typing:</span>
+                        <span class="mobile-skill-value">${emp.typing_speed}wpm</span>
+                    </div>
+                    <div class="mobile-skill-item">
+                        <span class="mobile-skill-label">Experience:</span>
+                        <span class="mobile-skill-value">${emp.bpo_experience}y</span>
+                    </div>
+                    <div class="mobile-skill-badges">
+                        <span class="badge" 
+                              style="background-color: ${getEmployeeStatusColor(emp.stage)}20; 
+                                     color: ${getEmployeeStatusColor(emp.stage)}">
+                            ${emp.stage}
+                        </span>
+                        ${emp.staffing_type === 'Backup' ? 
+                            '<span class="badge badge-backup">Backup</span>' : ''}
+                    </div>
+                </div>
+                
+                <div class="mobile-employee-actions">
+                    <button onclick="event.stopPropagation(); 
+                                     window.open('${emp.english_proficiency_test}', '_blank')" 
+                            class="mobile-btn-view">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        View
+                    </button>
+                    <button onclick="event.stopPropagation(); 
+                                     downloadReport('${emp.english_proficiency_test}', 
+                                                   '${emp.full_name}')" 
+                            class="mobile-btn-download">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="mobile-employees-section">
+            <h4 class="mobile-employees-title">Team Members (${batch.employees.length})</h4>
+            <div class="mobile-employees-list">
+                ${employeesHTML}
+            </div>
+        </div>
+    `;
 }
 
 // Запуск при загрузке страницы

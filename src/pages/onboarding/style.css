@@ -14,6 +14,11 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
+.app-main {
+    overflow-x: hidden; /* Предотвращаем горизонтальный скролл */
+}
+
+
 /* ========================================
    LOADING SCREEN
    ======================================== */
@@ -61,6 +66,7 @@ body {
     max-width: 1440px;
     margin: 0 auto;
     padding: 0;
+    overflow-x: hidden;
 }
 
 /* ========================================
@@ -162,6 +168,7 @@ body {
 }
 
 .batches-list {
+    padding: 0 16px;
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
@@ -602,74 +609,375 @@ body {
     }
 }
 
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+/* ========================================
+   MOBILE SPECIFIC STYLES
+   ======================================== */
+
+   @media (max-width: 768px) {
+    /* Mobile Batch Card */
+    .mobile-batch-card {
+        padding: 0;
+        overflow: hidden;
+        width: calc(100% - 32px);
+        margin: 0 auto 16px;
+        box-sizing: border-box;
+    }
+    
+    .mobile-batch-header {
+        padding: 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .mobile-batch-top {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        margin-bottom: 12px;
+        width: 100%;
+        overflow: hidden;
+    }
+    
+    .mobile-batch-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-right: 12px;
+    }
+    
+    .mobile-batch-icon svg {
+        width: 24px;
+        height: 24px;
+        color: white;
+    }
+    
+    .mobile-batch-info {
+        flex: 1;
+        min-width: 0; /* Важно для text-overflow */
+        margin-right: 8px;
+    }
+    
+    .mobile-batch-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 2px 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .mobile-batch-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0 0 4px 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .mobile-batch-project {
+        font-size: 14px;
+        font-weight: 500;
+        color: #3b82f6;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .mobile-batch-badges {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-end;
+        flex-shrink: 0;
+        max-width: 100px; /* Ограничиваем ширину */
+    }
+    
+    /* Mobile Data Grid */
+    .mobile-data-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .mobile-data-block {
+        background: rgba(249, 250, 251, 0.5);
+        border-radius: 8px;
+        padding: 12px;
+    }
+    
+    .mobile-data-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0 0 4px 0;
+    }
+    
+    .mobile-data-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 2px 0;
+    }
+    
+    .mobile-data-sub {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+    }
+    
+    /* Mobile Progress */
+    .mobile-progress-section {
+        margin-bottom: 12px;
+    }
+    
+    .mobile-progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .mobile-progress-label {
+        font-size: 12px;
+        color: #6b7280;
+    }
+    
+    .mobile-progress-value {
+        font-size: 12px;
+        font-weight: 700;
+    }
+    
+    /* Mobile Team Footer */
+    .mobile-team-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .mobile-team-stats {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: #3b82f6;
+        font-weight: 500;
+    }
+    
+    .mobile-team-stats svg {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .mobile-view-button {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 8px;
+        margin: -8px;
+        background: none;
+        border: none;
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b7280;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .mobile-view-button.active,
+    .mobile-view-button:hover {
+        color: #cc6633;
+    }
+    
+    .mobile-view-button svg {
+        width: 12px;
+        height: 12px;
+    }
+    
+    /* Mobile Employees Section */
+    .mobile-employees-section {
+        padding: 16px;
+        background: rgba(248, 247, 244, 0.3);
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .mobile-employees-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 12px 0;
+    }
+    
+    .mobile-employees-list {
+        display: flex;
+        flex-direction: column;
         gap: 12px;
     }
     
-    .stat-card {
-        padding: 16px;
+    /* Mobile Employee Card */
+    .mobile-employee-card {
+        background: rgba(248, 247, 244, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 12px;
+        padding: 12px;
     }
     
-    .stat-label {
+    .mobile-employee-header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+    
+    .mobile-employee-avatar-wrapper {
+        position: relative;
+        margin-right: 12px;
+    }
+    
+    .mobile-employee-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        object-fit: cover;
+    }
+    
+    .mobile-status-dot {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+    
+    .mobile-employee-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .mobile-employee-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 2px 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .mobile-employee-position {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Mobile Employee Skills */
+    .mobile-employee-skills {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .mobile-skill-item {
         font-size: 12px;
     }
     
-    .stat-value {
-        font-size: 24px;
+    .mobile-skill-label {
+        color: #6b7280;
     }
     
-    .batch-card {
-        padding: 16px;
+    .mobile-skill-value {
+        font-weight: 500;
+        color: #7c3aed;
     }
     
-    .batch-title {
-        font-size: 14px;
+    .mobile-skill-badges {
+        grid-column: span 2;
+        display: flex;
+        gap: 4px;
     }
     
-    .data-grid {
-        grid-template-columns: repeat(2, 1fr);
-        text-align: left;
-    }
-    
-    .batch-footer {
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-    
-    .view-button {
-        position: static;
-        transform: none;
-    }
-    
-    .employee-item {
-        flex-direction: column;
-    }
-    
-    .employee-actions {
-        flex-direction: column;
+    /* Mobile Employee Actions */
+    .mobile-employee-actions {
+        display: flex;
         gap: 8px;
-        align-items: flex-start;
     }
     
-    .action-buttons {
-        width: 100%;
-    }
-    
-    .btn-view,
-    .btn-download {
+    .mobile-btn-view,
+    .mobile-btn-download {
         flex: 1;
+        display: flex;
+        align-items: center;
         justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
+        gap: 4px;
+        padding: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
     }
     
-    .content-wrapper {
-        padding: 0;
+    .mobile-btn-view {
+        background: linear-gradient(135deg, #cc6633 0%, #b85c2e 100%);
+        color: white;
+    }
+    
+    .mobile-btn-download {
+        background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+        color: white;
+    }
+    
+    .mobile-btn-view:active,
+    .mobile-btn-download:active {
+        transform: scale(0.95);
+    }
+    
+    .mobile-btn-view svg,
+    .mobile-btn-download svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    /* Mobile Empty State */
+    .mobile-empty-employees {
+        text-align: center;
+        padding: 32px 24px;
+        background: rgba(248, 247, 244, 0.5);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    .mobile-empty-employees svg {
+        width: 32px;
+        height: 32px;
+        color: #9ca3af;
+        margin: 0 auto 8px;
+    }
+    
+    .mobile-empty-employees p {
+        font-size: 14px;
+        font-weight: 500;
+        color: #6b7280;
+        margin: 0;
     }
 }
