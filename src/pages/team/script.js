@@ -4,7 +4,9 @@ import '../../components/navbar/navbar.js';
 import '../../components/header/header.js';
 import api from './api.js';
 
-// State management
+// ========================================
+// STATE MANAGEMENT
+// ========================================
 const state = {
     employees: [],
     filteredEmployees: [],
@@ -21,11 +23,26 @@ const state = {
     isMobile: window.innerWidth < 768,
     showMobileFilters: false,
     activeMobileFilterTab: 'project',
+    isBottomSheetAnimating: false,
     // Device type для более точного определения
-    deviceType: null
+    deviceType: getDeviceType()
 };
 
-// Utility functions
+// Глобальная переменная для таймера
+let resizeTimer;
+
+// ========================================
+// UTILITY FUNCTIONS
+// ========================================
+function getDeviceType() {
+    const width = window.innerWidth;
+    if (width < 380) return 'ultra-mobile';
+    if (width < 480) return 'small-mobile';
+    if (width < 768) return 'mobile';
+    if (width < 1024) return 'tablet';
+    return 'desktop';
+}
+
 function getAvatarColor(name) {
     const colors = [
         { bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#ffffff' },
@@ -47,8 +64,7 @@ function getStageColor(stage) {
 }
 
 function getProjectColor(project) {
-    const colors = { Sber: '#22c55e', Tbank: '#3b82f6', Alfabank: '#ef4444', VTB: '#8b5cf6' };
-    return colors[project] || '#6b7280';
+    return '#3b82f6'; // All projects use blue color now
 }
 
 function calculateAge(dateOfBirth) {
@@ -63,24 +79,15 @@ function calculateAge(dateOfBirth) {
 }
 
 function getExperienceLevel(years) {
-    if (years === 0) return 'Entry Level';
+    if (years === 0) return 'Entry';
     if (years <= 2) return 'Junior';
     if (years <= 5) return 'Middle';
     return 'Senior';
 }
 
-// Расширенная проверка размеров экрана
-function getDeviceType() {
-    const width = window.innerWidth;
-    
-    if (width < 380) return 'ultra-mobile';
-    if (width < 480) return 'small-mobile';
-    if (width < 768) return 'mobile';
-    if (width < 1024) return 'tablet';
-    return 'desktop';
-}
-
-// Filter and search logic
+// ========================================
+// FILTER AND SEARCH LOGIC
+// ========================================
 function filterEmployees() {
     state.filteredEmployees = state.employees.filter(employee => {
         const matchesSearch = employee.full_name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
@@ -125,7 +132,9 @@ function getFilterOptions() {
     };
 }
 
-// UI Update Functions
+// ========================================
+// UI UPDATE FUNCTIONS
+// ========================================
 function updateStats() {
     const stats = {
         active: state.employees.filter(emp => emp.stage === 'Active').length,
@@ -138,15 +147,6 @@ function updateStats() {
     document.getElementById('statOnboarding').textContent = stats.onboarding;
     document.getElementById('statTerminated').textContent = stats.terminated;
     document.getElementById('statBackup').textContent = stats.backup;
-    
-    // Отправляем статистику в header (опционально)
-    document.dispatchEvent(new CustomEvent('stats:updated', {
-        detail: { 
-            total: state.employees.length,
-            active: stats.active,
-            stats: stats
-        }
-    }));
 }
 
 function updateResultsCount() {
@@ -189,39 +189,61 @@ function updateMobileFilterButtons() {
     const totalFilters = state.filterProject.length + state.filterStage.length + state.filterPosition.length;
     const hasFilters = totalFilters > 0;
     
-    // Update filter toggle button
-    const filterToggle = document.getElementById('mobileFilterToggle');
+    // Update filter button
+    const filterButton = document.getElementById('mobileFilterButton');
     const filterCount = document.getElementById('mobileFilterCount');
-    const clearAllMobile = document.getElementById('clearAllFiltersMobile');
+    const clearAllButton = document.getElementById('mobileClearAllFilters');
     
-    if (hasFilters) {
-        filterToggle.style.color = '#cc6633';
-        filterCount.style.display = 'inline-block';
-        filterCount.textContent = totalFilters;
-        clearAllMobile.style.display = 'flex';
-    } else {
-        filterToggle.style.color = '#6b7280';
-        filterCount.style.display = 'none';
-        clearAllMobile.style.display = 'none';
+    if (filterButton) {
+        filterButton.style.backgroundColor = hasFilters ? 'rgba(204, 102, 51, 0.1)' : 'rgba(255, 255, 255, 0.95)';
+        filterButton.style.borderColor = hasFilters ? '#cc6633' : 'rgba(204, 102, 51, 0.25)';
+        filterButton.style.color = hasFilters ? '#cc6633' : '#6b7280';
     }
     
-    // Update tab counts
-    document.getElementById('projectTabCount').style.display = state.filterProject.length > 0 ? 'inline-block' : 'none';
-    document.getElementById('projectTabCount').textContent = state.filterProject.length;
+    if (filterCount) {
+        filterCount.style.display = hasFilters ? 'inline-flex' : 'none';
+        filterCount.textContent = totalFilters;
+    }
     
-    document.getElementById('stageTabCount').style.display = state.filterStage.length > 0 ? 'inline-block' : 'none';
-    document.getElementById('stageTabCount').textContent = state.filterStage.length;
+    if (clearAllButton) {
+        clearAllButton.style.display = hasFilters ? 'flex' : 'none';
+    }
     
-    document.getElementById('positionTabCount').style.display = state.filterPosition.length > 0 ? 'inline-block' : 'none';
-    document.getElementById('positionTabCount').textContent = state.filterPosition.length;
+    // Update tab counts in bottom sheet
+    updateBottomSheetTabCounts();
+}
+
+function updateBottomSheetTabCounts() {
+    // Project tab
+    const projectTabCount = document.getElementById('projectTabCount');
+    if (projectTabCount) {
+        projectTabCount.style.display = state.filterProject.length > 0 ? 'inline-block' : 'none';
+        projectTabCount.textContent = state.filterProject.length;
+    }
     
-    // Update footer
-    const filterPanelFooter = document.getElementById('filterPanelFooter');
-    if (hasFilters) {
-        filterPanelFooter.style.display = 'block';
-        document.getElementById('totalFilterCount').textContent = totalFilters;
-    } else {
-        filterPanelFooter.style.display = 'none';
+    // Stage tab
+    const stageTabCount = document.getElementById('stageTabCount');
+    if (stageTabCount) {
+        stageTabCount.style.display = state.filterStage.length > 0 ? 'inline-block' : 'none';
+        stageTabCount.textContent = state.filterStage.length;
+    }
+    
+    // Position tab
+    const positionTabCount = document.getElementById('positionTabCount');
+    if (positionTabCount) {
+        positionTabCount.style.display = state.filterPosition.length > 0 ? 'inline-block' : 'none';
+        positionTabCount.textContent = state.filterPosition.length;
+    }
+    
+    // Footer
+    const filterPanelFooter = document.getElementById('bottomSheetFooter');
+    const hasFilters = state.filterProject.length + state.filterStage.length + state.filterPosition.length > 0;
+    if (filterPanelFooter) {
+        filterPanelFooter.style.display = hasFilters ? 'block' : 'none';
+        const totalCount = document.getElementById('bottomSheetTotalCount');
+        if (totalCount) {
+            totalCount.textContent = state.filterProject.length + state.filterStage.length + state.filterPosition.length;
+        }
     }
 }
 
@@ -238,45 +260,51 @@ function renderDesktopDropdowns() {
 
     // Render project dropdown
     const projectDropdown = document.getElementById('projectDropdown');
-    projectDropdown.innerHTML = '<div class="dropdown-content">' +
-        options.projects.map(project => `
-            <label class="dropdown-item">
-                <input type="checkbox" class="dropdown-checkbox" value="${project}" 
-                    ${state.filterProject.includes(project) ? 'checked' : ''}
-                    onchange="toggleFilter('project', '${project}')">
-                <span class="dropdown-color" style="background-color: ${getProjectColor(project)}"></span>
-                <span class="dropdown-label">${project}</span>
-            </label>
-        `).join('') +
-        '</div>';
+    if (projectDropdown) {
+        projectDropdown.innerHTML = '<div class="dropdown-content">' +
+            options.projects.map(project => `
+                <label class="dropdown-item">
+                    <input type="checkbox" class="dropdown-checkbox" value="${project}" 
+                        ${state.filterProject.includes(project) ? 'checked' : ''}
+                        onchange="toggleFilter('project', '${project}')">
+                    <span class="dropdown-color" style="background-color: ${getProjectColor(project)}"></span>
+                    <span class="dropdown-label">${project}</span>
+                </label>
+            `).join('') +
+            '</div>';
+    }
 
     // Render stage dropdown
     const stageDropdown = document.getElementById('stageDropdown');
-    stageDropdown.innerHTML = '<div class="dropdown-content">' +
-        options.stages.map(stage => `
-            <label class="dropdown-item">
-                <input type="checkbox" class="dropdown-checkbox" value="${stage}" 
-                    ${state.filterStage.includes(stage) ? 'checked' : ''}
-                    onchange="toggleFilter('stage', '${stage}')">
-                <span class="dropdown-color" style="background-color: ${getStageColor(stage)}"></span>
-                <span class="dropdown-label">${stage}</span>
-            </label>
-        `).join('') +
-        '</div>';
+    if (stageDropdown) {
+        stageDropdown.innerHTML = '<div class="dropdown-content">' +
+            options.stages.map(stage => `
+                <label class="dropdown-item">
+                    <input type="checkbox" class="dropdown-checkbox" value="${stage}" 
+                        ${state.filterStage.includes(stage) ? 'checked' : ''}
+                        onchange="toggleFilter('stage', '${stage}')">
+                    <span class="dropdown-color" style="background-color: ${getStageColor(stage)}"></span>
+                    <span class="dropdown-label">${stage}</span>
+                </label>
+            `).join('') +
+            '</div>';
+    }
 
     // Render position dropdown
     const positionDropdown = document.getElementById('positionDropdown');
-    positionDropdown.innerHTML = '<div class="dropdown-content">' +
-        options.positions.map(position => `
-            <label class="dropdown-item">
-                <input type="checkbox" class="dropdown-checkbox" value="${position}" 
-                    ${state.filterPosition.includes(position) ? 'checked' : ''}
-                    onchange="toggleFilter('position', '${position}')">
-                <span class="dropdown-color" style="background-color: #8b5cf6"></span>
-                <span class="dropdown-label">${position}</span>
-            </label>
-        `).join('') +
-        '</div>';
+    if (positionDropdown) {
+        positionDropdown.innerHTML = '<div class="dropdown-content">' +
+            options.positions.map(position => `
+                <label class="dropdown-item">
+                    <input type="checkbox" class="dropdown-checkbox" value="${position}" 
+                        ${state.filterPosition.includes(position) ? 'checked' : ''}
+                        onchange="toggleFilter('position', '${position}')">
+                    <span class="dropdown-color" style="background-color: #c4b5fd"></span>
+                    <span class="dropdown-label">${position}</span>
+                </label>
+            `).join('') +
+            '</div>';
+    }
 }
 
 function renderMobileFilterTabs() {
@@ -284,56 +312,84 @@ function renderMobileFilterTabs() {
     
     // Render project tab content
     const projectTabContent = document.getElementById('projectTabContent');
-    projectTabContent.innerHTML = options.projects.map(project => `
-        <label class="filter-option">
-            <input type="checkbox" class="filter-option-checkbox" value="${project}"
-                ${state.filterProject.includes(project) ? 'checked' : ''}
-                onchange="toggleFilter('project', '${project}')">
-            <span class="filter-option-color" style="background-color: ${getProjectColor(project)}"></span>
-            <span class="filter-option-label">${project}</span>
-            <span class="filter-option-count">${state.employees.filter(e => e.project === project).length}</span>
-        </label>
-    `).join('');
+    if (projectTabContent) {
+        projectTabContent.innerHTML = options.projects.map(project => {
+            const count = state.employees.filter(emp => {
+                const matchesProject = emp.project === project;
+                const matchesStage = state.filterStage.length === 0 || state.filterStage.includes(emp.stage);
+                const matchesPosition = state.filterPosition.length === 0 || state.filterPosition.includes(emp.position);
+                return matchesProject && matchesStage && matchesPosition;
+            }).length;
+            
+            return `
+                <label class="mobile-filter-option">
+                    <input type="checkbox" class="mobile-filter-checkbox" value="${project}"
+                        ${state.filterProject.includes(project) ? 'checked' : ''}
+                        onchange="toggleFilter('project', '${project}')">
+                    <span class="mobile-filter-color" style="background-color: ${getProjectColor(project)}"></span>
+                    <span class="mobile-filter-label">${project}</span>
+                    <span class="mobile-filter-count">${count}</span>
+                </label>
+            `;
+        }).join('');
+    }
     
     // Render stage tab content
     const stageTabContent = document.getElementById('stageTabContent');
-    stageTabContent.innerHTML = options.stages.map(stage => `
-        <label class="filter-option">
-            <input type="checkbox" class="filter-option-checkbox" value="${stage}"
-                ${state.filterStage.includes(stage) ? 'checked' : ''}
-                onchange="toggleFilter('stage', '${stage}')">
-            <span class="filter-option-color" style="background-color: ${getStageColor(stage)}"></span>
-            <span class="filter-option-label">${stage}</span>
-            <span class="filter-option-count">${state.employees.filter(e => e.stage === stage).length}</span>
-        </label>
-    `).join('');
+    if (stageTabContent) {
+        stageTabContent.innerHTML = options.stages.map(stage => {
+            const count = state.employees.filter(emp => {
+                const matchesStage = emp.stage === stage;
+                const matchesProject = state.filterProject.length === 0 || state.filterProject.includes(emp.project);
+                const matchesPosition = state.filterPosition.length === 0 || state.filterPosition.includes(emp.position);
+                return matchesStage && matchesProject && matchesPosition;
+            }).length;
+            
+            return `
+                <label class="mobile-filter-option">
+                    <input type="checkbox" class="mobile-filter-checkbox" value="${stage}"
+                        ${state.filterStage.includes(stage) ? 'checked' : ''}
+                        onchange="toggleFilter('stage', '${stage}')">
+                    <span class="mobile-filter-color" style="background-color: ${getStageColor(stage)}"></span>
+                    <span class="mobile-filter-label">${stage}</span>
+                    <span class="mobile-filter-count">${count}</span>
+                </label>
+            `;
+        }).join('');
+    }
     
     // Render position tab content
     const positionTabContent = document.getElementById('positionTabContent');
-    positionTabContent.innerHTML = options.positions.map(position => `
-        <label class="filter-option">
-            <input type="checkbox" class="filter-option-checkbox" value="${position}"
-                ${state.filterPosition.includes(position) ? 'checked' : ''}
-                onchange="toggleFilter('position', '${position}')">
-            <span class="filter-option-color" style="background-color: #8b5cf6"></span>
-            <span class="filter-option-label">${position}</span>
-            <span class="filter-option-count">${state.employees.filter(e => e.position === position).length}</span>
-        </label>
-    `).join('');
-}
-
-function renderEmployeeCard(employee) {
-    const avatarColor = getAvatarColor(employee.full_name);
-    const isSelected = state.selectedEmployee === employee.id;
-    
-    if (state.isMobile) {
-        return renderMobileEmployeeCard(employee, avatarColor, isSelected);
-    } else {
-        return renderDesktopEmployeeCard(employee, avatarColor, isSelected);
+    if (positionTabContent) {
+        positionTabContent.innerHTML = options.positions.map(position => {
+            const count = state.employees.filter(emp => {
+                const matchesPosition = emp.position === position;
+                const matchesProject = state.filterProject.length === 0 || state.filterProject.includes(emp.project);
+                const matchesStage = state.filterStage.length === 0 || state.filterStage.includes(emp.stage);
+                return matchesPosition && matchesProject && matchesStage;
+            }).length;
+            
+            return `
+                <label class="mobile-filter-option">
+                    <input type="checkbox" class="mobile-filter-checkbox" value="${position}"
+                        ${state.filterPosition.includes(position) ? 'checked' : ''}
+                        onchange="toggleFilter('position', '${position}')">
+                    <span class="mobile-filter-color" style="background-color: #c4b5fd"></span>
+                    <span class="mobile-filter-label">${position}</span>
+                    <span class="mobile-filter-count">${count}</span>
+                </label>
+            `;
+        }).join('');
     }
 }
 
-function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
+// ========================================
+// DESKTOP RENDER FUNCTIONS
+// ========================================
+function renderDesktopEmployeeCard(employee) {
+    const avatarColor = getAvatarColor(employee.full_name);
+    const isSelected = state.selectedEmployee === employee.id;
+    
     const timelineEvents = [
         { date: employee.interview_date || '', type: 'interview', label: 'Interview', short: 'Int.' },
         { date: employee.transfer_planned_date || '', type: 'transfer_planned', label: 'Transfer Plan', short: 'T.Plan' },
@@ -357,7 +413,8 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
         <div class="employee-card ${isSelected ? 'selected' : ''}" 
              style="--stage-color: ${getStageColor(employee.stage)}"
              onclick="toggleEmployee(${employee.id})"
-             ${!state.isMobile ? `onmouseenter="handleCardHover(this, true)" onmouseleave="handleCardHover(this, false)"` : ''}>
+             onmouseenter="handleCardHover(this, true)" 
+             onmouseleave="handleCardHover(this, false)">
             
             <!-- Employee Header -->
             <div class="employee-header">
@@ -374,20 +431,17 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
                 <div class="employee-info">
                     <h3 class="employee-name">${employee.full_name}</h3>
                     
-                    <!-- ВСЕ ЭЛЕМЕНТЫ ТЕПЕРЬ В ОДНОЙ ЛИНИИ -->
                     <div class="employee-position-line">
-                        <!-- Левая группа: должность + бейджи -->
                         <p class="employee-position">${employee.position}</p>
                         <span class="tag tag-stage" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
                             ${employee.stage}
                         </span>
-                        <span class="tag tag-project">
+                        <span class="tag tag-project" style="background-color: ${getProjectColor(employee.project)}20; color: ${getProjectColor(employee.project)}">
                             ${employee.project}
                         </span>
                         ${employee.staffing_type === 'Backup' ? 
                             '<span class="tag tag-backup">Backup</span>' : ''}
                         
-                        <!-- Кнопка по центру карточки но на той же линии -->
                         <button class="view-button ${isSelected ? 'selected' : ''}" 
                                 onclick="event.stopPropagation(); toggleEmployee(${employee.id})"
                                 onmouseenter="this.style.color='#cc6633'"
@@ -402,7 +456,7 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
             </div>
 
             ${isSelected ? `
-                <!-- Employee Details (без изменений) -->
+                <!-- Employee Details -->
                 <div class="employee-details">
                     <div class="details-grid">
                         
@@ -534,7 +588,13 @@ function renderDesktopEmployeeCard(employee, avatarColor, isSelected) {
     `;
 }
 
-function renderMobileEmployeeCard(employee, avatarColor, isSelected) {
+// ========================================
+// MOBILE RENDER FUNCTIONS
+// ========================================
+function renderMobileEmployeeCard(employee) {
+    const avatarColor = getAvatarColor(employee.full_name);
+    const isSelected = state.selectedEmployee === employee.id;
+    
     const timelineEvents = [
         { date: employee.interview_date || '', type: 'interview', label: 'Interview', color: '#8b5cf6' },
         { date: employee.start_date || '', type: 'start', label: 'Start Date', color: '#22c55e' },
@@ -542,120 +602,124 @@ function renderMobileEmployeeCard(employee, avatarColor, isSelected) {
     ];
 
     return `
-        <div class="employee-card ${isSelected ? 'selected' : ''}" 
+        <div class="mobile-employee-card ${isSelected ? 'selected' : ''}" 
              onclick="toggleEmployee(${employee.id})">
             
             <!-- Employee Header -->
-            <div class="employee-header">
-                <div style="display: flex; align-items: center; flex: 1; min-width: 0;">
-                    <div class="avatar-container">
+            <div class="mobile-employee-header">
+                <div class="mobile-employee-left">
+                    <div class="mobile-avatar-container">
                         ${employee.avatar ? 
-                            `<img src="${employee.avatar}" alt="${employee.full_name}" class="avatar-img" 
-                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
-                        <div class="avatar" style="background: ${avatarColor.bg}; ${employee.avatar ? 'display: none;' : ''}">
-                            <span class="avatar-text">${employee.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
-                        </div>
-                        <div class="status-indicator" style="background-color: ${getStageColor(employee.stage)}"></div>
+                            `<img src="${employee.avatar}" alt="${employee.full_name}" class="mobile-avatar-img">` :
+                            `<div class="mobile-avatar" style="background: ${avatarColor.bg}">
+                                <span style="color: ${avatarColor.text}">
+                                    ${employee.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                </span>
+                            </div>`
+                        }
+                        <div class="mobile-status-dot" style="background-color: ${getStageColor(employee.stage)}"></div>
                     </div>
-                    <div class="employee-info">
-                        <h3 class="employee-name">${employee.full_name}</h3>
-                        <p class="employee-position">${employee.position}</p>
+                    <div class="mobile-employee-info">
+                        <h3 class="mobile-employee-name">${employee.full_name}</h3>
+                        <p class="mobile-employee-position">${employee.position}</p>
                     </div>
                 </div>
                 
-                <!-- Mobile Expand Indicator -->
-                <svg class="mobile-expand-indicator ${isSelected ? 'expanded' : ''}" 
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <!-- Expand Icon -->
+                <svg class="mobile-expand-icon ${isSelected ? 'expanded' : ''}" 
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
             </div>
 
             <!-- Tags -->
-            <div class="tags">
-                <span class="tag" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
+            <div class="mobile-tags">
+                <span class="mobile-tag" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
                     ${employee.stage}
                 </span>
-                <span class="tag" style="background-color: ${getProjectColor(employee.project)}20; color: ${getProjectColor(employee.project)}">
+                <span class="mobile-tag" style="background-color: ${getProjectColor(employee.project)}20; color: ${getProjectColor(employee.project)}">
                     ${employee.project}
                 </span>
                 ${employee.staffing_type === 'Backup' ? 
-                    '<span class="tag" style="background-color: #f1f5f9; color: #475569">Backup</span>' : ''}
+                    '<span class="mobile-tag" style="background-color: #f1f5f9; color: #475569">Backup</span>' : ''}
             </div>
 
             ${isSelected ? `
                 <!-- Mobile Employee Details -->
-                <div class="employee-details">
+                <div class="mobile-employee-details">
                     
                     <!-- Personal Info - FIRST -->
-                    <div class="detail-section">
-                        <h4>
+                    <div class="mobile-detail-section">
+                        <h4 class="mobile-detail-title">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                             </svg>
                             Personal Info
                         </h4>
-                        <div>
-                            <div class="detail-item">
-                                <span class="detail-label">Age</span>
-                                <span class="detail-value">${calculateAge(employee.date_of_birth)} years</span>
+                        <div class="mobile-detail-items">
+                            <div class="mobile-detail-item">
+                                <span class="mobile-detail-label">Age</span>
+                                <span class="mobile-detail-value">${calculateAge(employee.date_of_birth)} years</span>
                             </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Gender</span>
-                                <span class="detail-value" style="text-transform: capitalize">${employee.gender}</span>
+                            <div class="mobile-detail-item">
+                                <span class="mobile-detail-label">Gender</span>
+                                <span class="mobile-detail-value">${employee.gender}</span>
                             </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Date of Birth</span>
-                                <span class="detail-value">${employee.date_of_birth}</span>
+                            <div class="mobile-detail-item">
+                                <span class="mobile-detail-label">Date of Birth</span>
+                                <span class="mobile-detail-value">${employee.date_of_birth}</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Skills & Experience - SECOND -->
-                    <div class="detail-section">
-                        <h4>
+                    <div class="mobile-detail-section">
+                        <h4 class="mobile-detail-title">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                             </svg>
                             Skills & Experience
                         </h4>
-                        <div>
-                            <div>
-                                <div class="detail-item">
-                                    <span class="detail-label">English Level</span>
-                                    <span class="detail-value" style="color: #7c3aed; font-weight: 600">${employee.english_level}%</span>
+                        <div class="mobile-detail-items">
+                            <div class="mobile-skill-item">
+                                <div class="mobile-skill-header">
+                                    <span class="mobile-skill-label">English Level</span>
+                                    <span class="mobile-skill-value">${employee.english_level}%</span>
                                 </div>
-                                <div class="progress-container">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${employee.english_level}%; background-color: ${employee.english_level >= 90 ? '#22c55e' : employee.english_level >= 70 ? '#eab308' : '#ef4444'}"></div>
+                                <div class="mobile-progress-bar">
+                                    <div class="mobile-progress-fill" 
+                                         style="width: ${employee.english_level}%; 
+                                                background-color: ${employee.english_level >= 90 ? '#22c55e' : 
+                                                                   employee.english_level >= 70 ? '#eab308' : '#ef4444'}">
                                     </div>
                                 </div>
                             </div>
-                            <div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Typing Speed</span>
-                                    <span class="detail-value" style="color: #7c3aed; font-weight: 600">${employee.typing_speed} WPM</span>
+                            <div class="mobile-skill-item">
+                                <div class="mobile-skill-header">
+                                    <span class="mobile-skill-label">Typing Speed</span>
+                                    <span class="mobile-skill-value">${employee.typing_speed} WPM</span>
                                 </div>
-                                <div class="progress-container">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${Math.min(employee.typing_speed, 100)}%; background-color: ${employee.typing_speed >= 80 ? '#22c55e' : employee.typing_speed >= 60 ? '#eab308' : '#ef4444'}"></div>
+                                <div class="mobile-progress-bar">
+                                    <div class="mobile-progress-fill" 
+                                         style="width: ${Math.min(employee.typing_speed, 100)}%; 
+                                                background-color: ${employee.typing_speed >= 80 ? '#22c55e' : 
+                                                                   employee.typing_speed >= 60 ? '#eab308' : '#ef4444'}">
                                     </div>
                                 </div>
                             </div>
-                            <div class="detail-item" style="margin-top: 12px;">
-                                <span class="detail-label">BPO Experience</span>
-                                <span class="detail-value" style="color: #4f46e5; font-weight: 600">
+                            <div class="mobile-detail-item">
+                                <span class="mobile-detail-label">BPO Experience</span>
+                                <span class="mobile-detail-value" style="color: #4f46e5; font-weight: 600">
                                     ${employee.bpo_experience}y (${getExperienceLevel(employee.bpo_experience)})
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Mobile Timeline - THIRD -->
-                    <div class="detail-section">
-                        <h4>
+                    <!-- Timeline - THIRD -->
+                    <div class="mobile-detail-section">
+                        <h4 class="mobile-detail-title">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                 <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -665,43 +729,42 @@ function renderMobileEmployeeCard(employee, avatarColor, isSelected) {
                             Timeline
                         </h4>
                         <div class="mobile-timeline">
-                            <div class="mobile-timeline-container">
-                                <div class="mobile-timeline-line"></div>
-                                <div class="mobile-timeline-events">
-                                    ${timelineEvents.map((event, index) => {
-                                        const hasDate = !!event.date;
-                                        return `
-                                            <div class="mobile-timeline-event">
-                                                <div class="mobile-event-dot" 
-                                                     style="background-color: ${hasDate ? event.color : '#f3f4f6'}">
-                                                    ${hasDate ? '<div class="mobile-event-dot-inner"></div>' : ''}
-                                                </div>
-                                                <div class="mobile-event-content ${!hasDate ? 'no-date' : ''}">
-                                                    <span class="mobile-event-label ${!hasDate ? 'no-date' : ''}">${event.label}</span>
-                                                    <span class="mobile-event-date ${!hasDate ? 'no-date' : ''}">${event.date || '—'}</span>
-                                                </div>
+                            <div class="mobile-timeline-line"></div>
+                            <div class="mobile-timeline-events">
+                                ${timelineEvents.map((event, index) => {
+                                    const hasDate = !!event.date;
+                                    return `
+                                        <div class="mobile-timeline-event">
+                                            <div class="mobile-timeline-dot" 
+                                                 style="background-color: ${hasDate ? event.color : '#f3f4f6'};
+                                                        border-color: ${hasDate ? 'white' : '#e5e7eb'}">
+                                                ${hasDate ? '<div class="mobile-timeline-dot-inner"></div>' : ''}
                                             </div>
-                                        `;
-                                    }).join('')}
-                                </div>
+                                            <div class="mobile-timeline-content ${!hasDate ? 'no-date' : ''}">
+                                                <span class="mobile-timeline-label ${!hasDate ? 'no-date' : ''}">${event.label}</span>
+                                                <span class="mobile-timeline-date ${!hasDate ? 'no-date' : ''}">${event.date || '—'}</span>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
                     </div>
 
                     <!-- Assessment Actions -->
-                    <div class="assessment-section">
-                        <p class="assessment-label">Assessment Results</p>
-                        <div class="assessment-actions">
-                            <button class="action-button primary" 
-                                    onclick="event.stopPropagation(); window.open('${employee.english_proficiency_test}', '_blank')">
+                    <div class="mobile-assessment-section">
+                        <p class="mobile-assessment-label">Assessment Results</p>
+                        <div class="mobile-assessment-actions">
+                            <button onclick="event.stopPropagation(); window.open('${employee.english_proficiency_test}', '_blank')" 
+                                    class="mobile-action-button primary">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
                                 </svg>
                                 View
                             </button>
-                            <button class="action-button secondary"
-                                    onclick="event.stopPropagation(); downloadReport('${employee.english_proficiency_test}', '${employee.full_name}')">
+                            <button onclick="event.stopPropagation(); downloadReport('${employee.english_proficiency_test}', '${employee.full_name}')" 
+                                    class="mobile-action-button secondary">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                     <polyline points="7 10 12 15 17 10"></polyline>
@@ -717,6 +780,9 @@ function renderMobileEmployeeCard(employee, avatarColor, isSelected) {
     `;
 }
 
+// ========================================
+// MAIN RENDER FUNCTIONS
+// ========================================
 function renderEmployees() {
     const teamGrid = document.getElementById('teamGrid');
     const emptyState = document.getElementById('emptyState');
@@ -725,61 +791,14 @@ function renderEmployees() {
         teamGrid.style.display = 'none';
         emptyState.style.display = 'block';
     } else {
-        teamGrid.style.display = 'grid';
+        teamGrid.style.display = state.isMobile ? 'flex' : 'grid';
         emptyState.style.display = 'none';
-        teamGrid.innerHTML = state.filteredEmployees.map(employee => renderEmployeeCard(employee)).join('');
-    }
-}
-
-// Адаптивная настройка stats grid
-function adjustStatsGrid() {
-    const statsGrid = document.querySelector('.stats-grid');
-    if (!statsGrid) return;
-    
-    const width = window.innerWidth;
-    
-    // Динамически меняем data атрибут для CSS
-    if (width < 380) {
-        statsGrid.setAttribute('data-mobile-layout', '1x4');
-    } else if (width < 450) {
-        statsGrid.setAttribute('data-mobile-layout', 'auto-fit');
-    } else if (width < 768) {
-        statsGrid.setAttribute('data-mobile-layout', '2x2');
-    } else {
-        statsGrid.removeAttribute('data-mobile-layout');
-    }
-}
-
-// Оптимизация текста для малых экранов
-function optimizeTextForSmallScreens() {
-    const width = window.innerWidth;
-    const searchInput = document.getElementById('searchInput');
-    
-    if (searchInput) {
-        if (width < 420) {
-            searchInput.placeholder = width < 380 
-                ? 'Search...' 
-                : 'Search employees...';
+        
+        if (state.isMobile) {
+            teamGrid.innerHTML = state.filteredEmployees.map(employee => renderMobileEmployeeCard(employee)).join('');
         } else {
-            searchInput.placeholder = 'Search employees by name, position, or project...';
+            teamGrid.innerHTML = state.filteredEmployees.map(employee => renderDesktopEmployeeCard(employee)).join('');
         }
-    }
-}
-
-// Динамическая адаптация filters panel
-function adaptFiltersForScreenSize() {
-    const width = window.innerWidth;
-    const filtersContainer = document.querySelector('.filters-container');
-    
-    if (!filtersContainer) return;
-    
-    // Добавляем класс для специфичных размеров
-    filtersContainer.classList.remove('ultra-compact', 'compact');
-    
-    if (width < 380) {
-        filtersContainer.classList.add('ultra-compact');
-    } else if (width < 480) {
-        filtersContainer.classList.add('compact');
     }
 }
 
@@ -789,43 +808,23 @@ function updateUI() {
     updateFilterButtons();
     renderDropdowns();
     renderEmployees();
-    
-    // Дополнительные адаптивные настройки
-    adjustStatsGrid();
-    optimizeTextForSmallScreens();
-    adaptFiltersForScreenSize();
 }
 
-// Event Handlers
+// ========================================
+// EVENT HANDLERS
+// ========================================
 function handleCardHover(element, isHover) {
-    if (state.isMobile) return; // No hover effects on mobile
+    if (state.isMobile) return;
     
     const transform = isHover ? 'translateY(-4px)' : 'translateY(0px)';
     const shadow = isHover ? '0 16px 40px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(204, 102, 51, 0.2)' : '';
     const bg = isHover ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.8)';
     
-    // Avoid transform on mobile to prevent status indicator displacement
     if (window.innerWidth > 768) {
         element.style.transform = transform;
     }
     element.style.boxShadow = shadow;
     element.style.backgroundColor = bg;
-}
-
-function handleButtonHover(element, isHover, type) {
-    if (state.isMobile) return; // No hover effects on mobile
-    
-    const transform = isHover ? 'translateY(-2px)' : 'translateY(0px)';
-    const shadow = isHover ? '0 4px 12px rgba(0, 0, 0, 0.15)' : '0 1px 2px rgba(0, 0, 0, 0.05)';
-    
-    element.style.transform = transform;
-    element.style.boxShadow = shadow;
-    
-    if (type === 'view') {
-        element.style.backgroundColor = isHover ? '#cc6633' : '#b85c2e';
-    } else {
-        element.style.backgroundColor = isHover ? '#6b7280' : '#9ca3af';
-    }
 }
 
 function toggleEmployee(id) {
@@ -861,7 +860,7 @@ function clearAllFilters() {
 }
 
 function showTooltip(element, text) {
-    if (state.isMobile) return; // No tooltips on mobile
+    if (state.isMobile) return;
     
     const tooltip = document.createElement('div');
     tooltip.className = 'tooltip';
@@ -884,74 +883,198 @@ function downloadReport(url, name) {
     link.click();
 }
 
-// Mobile specific handlers
+// ========================================
+// MOBILE BOTTOM SHEET HANDLERS
+// ========================================
+function openBottomSheet() {
+    state.showMobileFilters = true;
+    const backdrop = document.getElementById('bottomSheetBackdrop');
+    const bottomSheet = document.getElementById('bottomSheet');
+    
+    if (backdrop && bottomSheet) {
+        backdrop.style.display = 'block';
+        bottomSheet.style.display = 'block';
+        
+        // Start animation after a small delay
+        setTimeout(() => {
+            state.isBottomSheetAnimating = true;
+            backdrop.style.opacity = '0.5';
+            bottomSheet.style.transform = 'translateY(0)';
+        }, 10);
+    }
+}
+
+function closeBottomSheet() {
+    state.isBottomSheetAnimating = false;
+    const backdrop = document.getElementById('bottomSheetBackdrop');
+    const bottomSheet = document.getElementById('bottomSheet');
+    
+    if (backdrop && bottomSheet) {
+        backdrop.style.opacity = '0';
+        bottomSheet.style.transform = 'translateY(100%)';
+        
+        // Hide after animation completes
+        setTimeout(() => {
+            state.showMobileFilters = false;
+            backdrop.style.display = 'none';
+            bottomSheet.style.display = 'none';
+        }, 300);
+    }
+}
+
+function switchFilterTab(tab) {
+    state.activeMobileFilterTab = tab;
+    
+    // Update tab buttons
+    document.querySelectorAll('.mobile-filter-tab').forEach(tabBtn => {
+        tabBtn.classList.remove('active');
+    });
+    document.querySelector(`.mobile-filter-tab[data-tab="${tab}"]`).classList.add('active');
+    
+    // Show correct content
+    document.querySelectorAll('.mobile-tab-pane').forEach(pane => {
+        pane.style.display = 'none';
+    });
+    document.getElementById(`${tab}TabContent`).style.display = 'block';
+}
+
+// ========================================
+// MOBILE SPECIFIC EVENT LISTENERS
+// ========================================
 function initializeMobileHandlers() {
-    // Mobile filter toggle
-    const mobileFilterToggle = document.getElementById('mobileFilterToggle');
-    if (mobileFilterToggle) {
-        mobileFilterToggle.addEventListener('click', () => {
-            state.showMobileFilters = !state.showMobileFilters;
-            const filterPanel = document.getElementById('mobileFilterPanel');
-            const filterToggle = document.getElementById('mobileFilterToggle');
-            
-            if (state.showMobileFilters) {
-                filterPanel.style.display = 'block';
-                filterToggle.classList.add('active');
-            } else {
-                filterPanel.style.display = 'none';
-                filterToggle.classList.remove('active');
-            }
-        });
+    // Mobile filter button
+    const mobileFilterButton = document.getElementById('mobileFilterButton');
+    if (mobileFilterButton) {
+        mobileFilterButton.addEventListener('click', openBottomSheet);
     }
     
     // Clear all filters mobile
-    const clearAllMobile = document.getElementById('clearAllFiltersMobile');
+    const clearAllMobile = document.getElementById('mobileClearAllFilters');
     if (clearAllMobile) {
         clearAllMobile.addEventListener('click', clearAllFilters);
     }
     
+    // Bottom sheet backdrop
+    const backdrop = document.getElementById('bottomSheetBackdrop');
+    if (backdrop) {
+        backdrop.addEventListener('click', closeBottomSheet);
+    }
+    
     // Filter tabs
-    const filterTabs = document.querySelectorAll('.filter-tab');
+    const filterTabs = document.querySelectorAll('.mobile-filter-tab');
     filterTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            const tabName = tab.dataset.tab;
-            state.activeMobileFilterTab = tabName;
-            
-            // Update active tab
-            filterTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
-            // Show correct content
-            document.querySelectorAll('.tab-pane').forEach(pane => {
-                pane.style.display = 'none';
-            });
-            document.getElementById(`${tabName}TabContent`).style.display = 'block';
+            switchFilterTab(tab.dataset.tab);
         });
     });
     
-    // Clear all button in filter panel
-    const clearAllButton = document.getElementById('clearAllFilters');
+    // Clear all button in bottom sheet
+    const clearAllButton = document.getElementById('bottomSheetClearAll');
     if (clearAllButton) {
         clearAllButton.addEventListener('click', () => {
             clearAllFilters();
-            // Close filter panel after clearing
-            state.showMobileFilters = false;
-            document.getElementById('mobileFilterPanel').style.display = 'none';
-            document.getElementById('mobileFilterToggle').classList.remove('active');
+            closeBottomSheet();
         });
     }
     
-    // Close filter panel on outside click
-    document.addEventListener('click', (e) => {
-        if (state.showMobileFilters && !e.target.closest('.filters-container')) {
-            state.showMobileFilters = false;
-            document.getElementById('mobileFilterPanel').style.display = 'none';
-            document.getElementById('mobileFilterToggle').classList.remove('active');
+    // ESC key to close bottom sheet
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && state.showMobileFilters) {
+            closeBottomSheet();
         }
     });
 }
 
-// Initialize event listeners
+// ========================================
+// DESKTOP SPECIFIC EVENT LISTENERS
+// ========================================
+function initializeDesktopHandlers() {
+    // Desktop filter dropdowns
+    const projectFilterBtn = document.getElementById('projectFilterBtn');
+    const stageFilterBtn = document.getElementById('stageFilterBtn');
+    const positionFilterBtn = document.getElementById('positionFilterBtn');
+    
+    if (projectFilterBtn) {
+        projectFilterBtn.addEventListener('click', () => {
+            state.showProjectDropdown = !state.showProjectDropdown;
+            state.showStageDropdown = false;
+            state.showPositionDropdown = false;
+            updateDropdownVisibility();
+        });
+    }
+
+    if (stageFilterBtn) {
+        stageFilterBtn.addEventListener('click', () => {
+            state.showStageDropdown = !state.showStageDropdown;
+            state.showProjectDropdown = false;
+            state.showPositionDropdown = false;
+            updateDropdownVisibility();
+        });
+    }
+
+    if (positionFilterBtn) {
+        positionFilterBtn.addEventListener('click', () => {
+            state.showPositionDropdown = !state.showPositionDropdown;
+            state.showProjectDropdown = false;
+            state.showStageDropdown = false;
+            updateDropdownVisibility();
+        });
+    }
+
+    // Clear filter buttons
+    const clearProjectFilter = document.getElementById('clearProjectFilter');
+    const clearStageFilter = document.getElementById('clearStageFilter');
+    const clearPositionFilter = document.getElementById('clearPositionFilter');
+    
+    if (clearProjectFilter) {
+        clearProjectFilter.addEventListener('click', (e) => {
+            e.stopPropagation();
+            state.filterProject = [];
+            filterEmployees();
+        });
+    }
+
+    if (clearStageFilter) {
+        clearStageFilter.addEventListener('click', (e) => {
+            e.stopPropagation();
+            state.filterStage = [];
+            filterEmployees();
+        });
+    }
+
+    if (clearPositionFilter) {
+        clearPositionFilter.addEventListener('click', (e) => {
+            e.stopPropagation();
+            state.filterPosition = [];
+            filterEmployees();
+        });
+    }
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', (e) => {
+        const isDropdownClick = e.target.closest('.filter-dropdown');
+        if (!isDropdownClick) {
+            state.showProjectDropdown = false;
+            state.showStageDropdown = false;
+            state.showPositionDropdown = false;
+            updateDropdownVisibility();
+        }
+    });
+}
+
+function updateDropdownVisibility() {
+    const projectDropdown = document.getElementById('projectDropdown');
+    const stageDropdown = document.getElementById('stageDropdown');
+    const positionDropdown = document.getElementById('positionDropdown');
+    
+    if (projectDropdown) projectDropdown.style.display = state.showProjectDropdown ? 'block' : 'none';
+    if (stageDropdown) stageDropdown.style.display = state.showStageDropdown ? 'block' : 'none';
+    if (positionDropdown) positionDropdown.style.display = state.showPositionDropdown ? 'block' : 'none';
+}
+
+// ========================================
+// COMMON EVENT LISTENERS
+// ========================================
 function initializeEventListeners() {
     // Search input
     const searchInput = document.getElementById('searchInput');
@@ -972,142 +1095,46 @@ function initializeEventListeners() {
         });
     }
 
+    // Initialize handlers based on device
     if (state.isMobile) {
         initializeMobileHandlers();
     } else {
-        // Desktop filter dropdowns
-        const projectFilterBtn = document.getElementById('projectFilterBtn');
-        const stageFilterBtn = document.getElementById('stageFilterBtn');
-        const positionFilterBtn = document.getElementById('positionFilterBtn');
-        
-        if (projectFilterBtn) {
-            projectFilterBtn.addEventListener('click', () => {
-                state.showProjectDropdown = !state.showProjectDropdown;
-                state.showStageDropdown = false;
-                state.showPositionDropdown = false;
-                updateDropdownVisibility();
-            });
-        }
-
-        if (stageFilterBtn) {
-            stageFilterBtn.addEventListener('click', () => {
-                state.showStageDropdown = !state.showStageDropdown;
-                state.showProjectDropdown = false;
-                state.showPositionDropdown = false;
-                updateDropdownVisibility();
-            });
-        }
-
-        if (positionFilterBtn) {
-            positionFilterBtn.addEventListener('click', () => {
-                state.showPositionDropdown = !state.showPositionDropdown;
-                state.showProjectDropdown = false;
-                state.showStageDropdown = false;
-                updateDropdownVisibility();
-            });
-        }
-
-        // Clear filter buttons
-        const clearProjectFilter = document.getElementById('clearProjectFilter');
-        const clearStageFilter = document.getElementById('clearStageFilter');
-        const clearPositionFilter = document.getElementById('clearPositionFilter');
-        
-        if (clearProjectFilter) {
-            clearProjectFilter.addEventListener('click', (e) => {
-                e.stopPropagation();
-                state.filterProject = [];
-                filterEmployees();
-            });
-        }
-
-        if (clearStageFilter) {
-            clearStageFilter.addEventListener('click', (e) => {
-                e.stopPropagation();
-                state.filterStage = [];
-                filterEmployees();
-            });
-        }
-
-        if (clearPositionFilter) {
-            clearPositionFilter.addEventListener('click', (e) => {
-                e.stopPropagation();
-                state.filterPosition = [];
-                filterEmployees();
-            });
-        }
-
-        // Close dropdowns on outside click
-        document.addEventListener('click', (e) => {
-            const isDropdownClick = e.target.closest('.filter-dropdown');
-            if (!isDropdownClick) {
-                state.showProjectDropdown = false;
-                state.showStageDropdown = false;
-                state.showPositionDropdown = false;
-                updateDropdownVisibility();
-            }
-        });
+        initializeDesktopHandlers();
     }
     
     // Handle window resize
-    let resizeTimer;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => handleResize(), 250);
     });
 }
 
-function updateDropdownVisibility() {
-    const projectDropdown = document.getElementById('projectDropdown');
-    const stageDropdown = document.getElementById('stageDropdown');
-    const positionDropdown = document.getElementById('positionDropdown');
-    
-    // Просто показываем/скрываем
-    projectDropdown.style.display = state.showProjectDropdown ? 'block' : 'none';
-    stageDropdown.style.display = state.showStageDropdown ? 'block' : 'none';
-    positionDropdown.style.display = state.showPositionDropdown ? 'block' : 'none';
-}
-
-function positionDropdownAbove(dropdown, buttonId) {
-    const button = document.getElementById(buttonId);
-    const buttonRect = button.getBoundingClientRect();
-    const container = document.getElementById('filtersContainer');
-    const containerRect = container.getBoundingClientRect();
-    
-    // Позиционируем dropdown над контейнером
-    dropdown.style.position = 'fixed';
-    dropdown.style.top = `${containerRect.top - 8}px`;
-    dropdown.style.left = `${buttonRect.left}px`;
-    dropdown.style.width = `${buttonRect.width}px`;
-    dropdown.style.zIndex = '10000';
-}
-
+// ========================================
+// RESIZE HANDLER
+// ========================================
 function handleResize() {
-    const previousDeviceType = state.deviceType || getDeviceType();
-    const currentDeviceType = getDeviceType();
-    
-    state.deviceType = currentDeviceType;
-    
     const wasMobile = state.isMobile;
-    state.isMobile = ['ultra-mobile', 'small-mobile', 'mobile'].includes(currentDeviceType);
+    state.isMobile = window.innerWidth < 768;
+    state.deviceType = getDeviceType();
     
-    adjustStatsGrid();
-    optimizeTextForSmallScreens();
-    adaptFiltersForScreenSize();
-    
-    // ВАЖНО: Переинициализация при смене типа устройства
     if (wasMobile !== state.isMobile) {
-        // Сбрасываем состояние дропдаунов
+        // Close any open modals/dropdowns
         state.showProjectDropdown = false;
         state.showStageDropdown = false;
         state.showPositionDropdown = false;
         state.showMobileFilters = false;
         
-        // Удаляем ВСЕ старые обработчики
+        // Close bottom sheet if open
+        if (state.showMobileFilters) {
+            closeBottomSheet();
+        }
+        
+        // Re-initialize event listeners
         const elements = [
             'searchInput', 'clearSearch',
             'projectFilterBtn', 'stageFilterBtn', 'positionFilterBtn',
             'clearProjectFilter', 'clearStageFilter', 'clearPositionFilter',
-            'mobileFilterToggle', 'clearAllFiltersMobile'
+            'mobileFilterButton', 'mobileClearAllFilters'
         ];
         
         elements.forEach(id => {
@@ -1118,72 +1145,74 @@ function handleResize() {
             }
         });
         
-        // Переинициализируем ВСЕ обработчики
+        // Re-initialize
         setTimeout(() => {
             initializeEventListeners();
             updateUI();
         }, 100);
     }
-    
-    if (previousDeviceType !== currentDeviceType) {
-        console.log(`Device type changed: ${previousDeviceType} → ${currentDeviceType}`);
-    }
 }
 
-// Делаем функции доступными глобально для onclick в HTML
+// ========================================
+// GLOBAL FUNCTIONS
+// ========================================
 window.toggleEmployee = toggleEmployee;
 window.toggleFilter = toggleFilter;
 window.handleCardHover = handleCardHover;
-window.handleButtonHover = handleButtonHover;
 window.showTooltip = showTooltip;
 window.hideTooltip = hideTooltip;
 window.downloadReport = downloadReport;
 window.clearAllFilters = clearAllFilters;
+window.openBottomSheet = openBottomSheet;
+window.closeBottomSheet = closeBottomSheet;
+window.switchFilterTab = switchFilterTab;
 
-// Initialize the application with real data from Supabase
+// ========================================
+// INITIALIZATION
+// ========================================
 async function initialize() {
     try {
-        // Показываем реальную загрузку
+        // Show loading
         document.getElementById('loadingScreen').style.display = 'flex';
         document.getElementById('mainContainer').style.display = 'none';
         
-        // Определяем начальный тип устройства
+        // Determine device type
         state.deviceType = getDeviceType();
         state.isMobile = ['ultra-mobile', 'small-mobile', 'mobile'].includes(state.deviceType);
         
-        // Загружаем данные из Supabase
+        // Load data from Supabase
         const employees = await api.getEmployees();
         
-        // Сохраняем в state
+        // Save to state
         state.employees = employees;
         state.filteredEmployees = employees;
         
-        // Скрываем загрузку и показываем контент
+        // Hide loading and show content
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'block';
         
-        // Инициализируем UI
+        // Initialize UI
         updateUI();
         initializeEventListeners();
         
     } catch (error) {
-        // Обработка ошибок
-        console.error('Ошибка при инициализации:', error);
+        console.error('Error initializing:', error);
         
-        // Показываем сообщение об ошибке вместо загрузки
+        // Show error message
         document.getElementById('loadingScreen').innerHTML = `
             <div class="loading-content">
                 <div style="text-align: center;">
-                    <svg class="empty-icon" style="width: 64px; height: 64px; margin: 0 auto 16px; color: #ef4444;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="empty-icon" style="width: 64px; height: 64px; margin: 0 auto 16px; color: #ef4444;" 
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="12" y1="8" x2="12" y2="12"></line>
                         <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
                     <h3 style="font-size: 18px; font-weight: 500; color: #111827; margin-bottom: 8px;">
-                        Ошибка загрузки данных
+                        Error loading data
                     </h3>
                     <p style="color: #6b7280; margin-bottom: 16px;">
-                        ${error.message || 'Не удалось подключиться к базе данных'}
+                        ${error.message || 'Failed to connect to database'}
                     </p>
                     <button onclick="location.reload()" style="
                         padding: 8px 16px;
@@ -1194,7 +1223,7 @@ async function initialize() {
                         font-weight: 500;
                         cursor: pointer;
                     ">
-                        Попробовать снова
+                        Try Again
                     </button>
                 </div>
             </div>
@@ -1203,21 +1232,4 @@ async function initialize() {
 }
 
 // Start the application
-initialize();
-
-// Синхронизация с новой Layout системой
-document.addEventListener('DOMContentLoaded', () => {
-    // Отправляем событие о загрузке страницы для Layout Controller
-    const event = new CustomEvent('page:loaded', {
-        detail: { 
-            page: 'team',
-            title: 'Team Management',
-            breadcrumbs: [
-                { label: 'Home', url: '/' },
-                { label: 'HR', url: '/hr' },
-                { label: 'Team Management', url: '#' }
-            ]
-        }
-    });
-    document.dispatchEvent(event);
-});
+document.addEventListener('DOMContentLoaded', initialize);
