@@ -1663,6 +1663,7 @@ body {
     background-color: rgba(204, 102, 51, 0.15);
     color: #cc6633;
     font-size: 12px;
+    display: inline-block;
 }
 
 /* Bottom Sheet Content */
@@ -1770,6 +1771,7 @@ body {
         font-size: 13px;
         padding: 8px 12px;
         width: 100px;
+        min-width: 100px;
     }
     
     .mobile-employee-name {

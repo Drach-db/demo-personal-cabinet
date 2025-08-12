@@ -889,13 +889,17 @@ function downloadReport(url, name) {
 function openBottomSheet() {
     state.showMobileFilters = true;
     const bottomSheet = document.getElementById('bottomSheet');
+    const backdrop = document.getElementById('bottomSheetBackdrop');
     
-    if (bottomSheet) {
+    if (bottomSheet && backdrop) {
         bottomSheet.style.display = 'block';
-        // Задержка для правильной анимации
+        backdrop.style.display = 'block';
+        
+        // Добавить задержку для анимации как в React
         setTimeout(() => {
             state.isBottomSheetAnimating = true;
             bottomSheet.style.transform = 'translateY(0)';
+            backdrop.style.opacity = '0.5'; // Добавить анимацию backdrop
         }, 10);
     }
 }
