@@ -1,0 +1,675 @@
+/* ========================================
+   ONBOARDING PAGE STYLES
+   ======================================== */
+
+/* Reset для страницы */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Типографика */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* ========================================
+   LOADING SCREEN
+   ======================================== */
+.loading-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0eee7;
+    z-index: 999;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid #e5e7eb;
+    border-bottom-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: #6b7280;
+    font-size: 16px;
+}
+
+/* ========================================
+   CONTENT WRAPPER
+   ======================================== */
+.content-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* ========================================
+   STATS SECTION - ИСПРАВЛЕННАЯ ВЕРСИЯ
+   ======================================== */
+   .stats-section {
+    margin-bottom: 24px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.stat-card {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: default;
+    /* БЕЗ transition и hover эффектов */
+}
+
+.stat-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    min-height: 48px;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    margin: 0;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 1;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* Убрали background-color чтобы иконки были как в team */
+}
+
+.stat-icon svg,
+.icon {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+}
+
+/* Цвета иконок как в team */
+.icon-green { 
+    color: #22c55e;
+    stroke: #22c55e;
+    fill: none;
+}
+.icon-orange { 
+    color: #cc6633;
+    stroke: #cc6633;
+    fill: none;
+}
+.icon-red { 
+    color: #ef4444;
+    stroke: #ef4444;
+    fill: none;
+}
+.icon-blue { 
+    color: #3b82f6;
+    stroke: #3b82f6;
+    fill: none;
+}
+
+/* ========================================
+   BATCHES SECTION
+   ======================================== */
+.batches-section {
+    margin-top: 24px;
+}
+
+.batches-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+/* ========================================
+   BATCH CARD
+   ======================================== */
+.batch-card {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    
+}
+
+.batch-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 
+                0 4px 16px rgba(204, 102, 51, 0.2);
+    background-color: rgba(255, 255, 255, 0.85);
+}
+
+.batch-card.selected {
+    border: 2px solid #cc6633;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Batch Header */
+.batch-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.batch-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: rgba(59, 130, 246, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.batch-icon svg {
+    width: 20px;
+    height: 20px;
+    color: #3b82f6;
+}
+
+.batch-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.batch-project {
+    color: #3b82f6;
+}
+
+/* Batch Data Grid */
+.batch-data {
+    margin-bottom: 16px;
+}
+
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    text-align: center;
+}
+
+.data-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.data-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background-color: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Batch Footer */
+.batch-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.team-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #3b82f6;
+    font-weight: 500;
+    flex: 1;
+}
+
+.team-stats svg {
+    width: 14px;
+    height: 14px;
+}
+
+.view-button {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-button:hover {
+    color: #cc6633;
+    transform: translateX(-50%) scale(1.05);
+}
+
+.view-button.active {
+    color: #cc6633;
+}
+
+.view-button svg {
+    width: 12px;
+    height: 12px;
+}
+
+.progress-text {
+    font-size: 12px;
+    font-weight: 600;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   EMPLOYEES SECTION
+   ======================================== */
+.employees-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.employees-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 16px 0;
+}
+
+.employees-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.employee-item {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background-color: rgba(248, 247, 244, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.employee-item:hover {
+    background-color: rgba(248, 247, 244, 0.8);
+    transform: translateX(4px);
+}
+
+/* Employee Avatar */
+.employee-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.employee-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    object-fit: cover;
+}
+
+.status-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Employee Info */
+.employee-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.employee-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.employee-position {
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.employee-skills {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.employee-skills strong {
+    font-weight: 600;
+}
+
+.separator {
+    color: #d1d5db;
+}
+
+.employee-details {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.employee-badges {
+    display: flex;
+    gap: 6px;
+}
+
+/* Employee Actions */
+.employee-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 8px;
+}
+
+.action-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-view,
+.btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-view {
+    background: linear-gradient(135deg, #cc6633 0%, #b85c2e 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(204, 102, 51, 0.2);
+}
+
+.btn-view:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(204, 102, 51, 0.3);
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+}
+
+.btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+}
+
+.btn-view svg,
+.btn-download svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ========================================
+   BADGES
+   ======================================== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    height: 20px;
+    white-space: nowrap;
+}
+
+/* ========================================
+   EMPTY STATES
+   ======================================== */
+.empty-state,
+.empty-employees {
+    text-align: center;
+    padding: 48px;
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+}
+
+.empty-employees {
+    padding: 24px;
+    background-color: rgba(248, 247, 244, 0.5);
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    color: #9ca3af;
+    margin: 0 auto 16px;
+}
+
+.empty-employees svg {
+    width: 40px;
+    height: 40px;
+    color: #9ca3af;
+    margin: 0 auto 12px;
+}
+
+.empty-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.empty-text,
+.empty-employees p {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .data-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .stat-card {
+        padding: 16px;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+    }
+    
+    .batch-card {
+        padding: 16px;
+    }
+    
+    .batch-title {
+        font-size: 14px;
+    }
+    
+    .data-grid {
+        grid-template-columns: repeat(2, 1fr);
+        text-align: left;
+    }
+    
+    .batch-footer {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .view-button {
+        position: static;
+        transform: none;
+    }
+    
+    .employee-item {
+        flex-direction: column;
+    }
+    
+    .employee-actions {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    .action-buttons {
+        width: 100%;
+    }
+    
+    .btn-view,
+    .btn-download {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .content-wrapper {
+        padding: 0;
+    }
+}
