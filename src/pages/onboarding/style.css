@@ -614,6 +614,9 @@ body {
    ======================================== */
 
    @media (max-width: 768px) {
+    
+
+
     .batches-list {
         padding: 0;
         display: grid;
