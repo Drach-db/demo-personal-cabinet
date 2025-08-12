@@ -1042,7 +1042,7 @@ body {
 /* ========================================
    MOBILE STYLES - NEW VERSION
    ======================================== */
-@media (max-width: 768px) {
+   @media (max-width: 768px) {
     /* Stats Section - 2x2 Grid */
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1051,39 +1051,64 @@ body {
     
     .stat-card {
         padding: 16px;
-        position: relative;
-        min-height: 100px;
+        min-height: 90px;
     }
     
     .stat-content {
-        flex-direction: column;
-        align-items: flex-start;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 100%;
+        position: relative;
     }
     
+    /* Левая колонка - иконка + текст вертикально */
     .stat-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        background-color: rgba(255, 255, 255, 0.4);
-        margin-bottom: 8px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 32px;
+        height: 32px;
+        background: none;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .stat-icon svg {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
     }
     
-    .stat-value {
-        font-size: 24px;
-        position: absolute;
-        top: 50%;
-        right: 16px;
-        transform: translateY(-50%);
+    .stat-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 36px;  /* Отступ для иконки сверху */
     }
     
     .stat-label {
         font-size: 14px;
+        font-weight: 500;
+        color: #6b7280;
+        margin: 0;
+        order: 2;  /* Текст внизу */
     }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        margin: 0;
+    }
+}
     
     /* Search and Filters */
     .filters-container {
