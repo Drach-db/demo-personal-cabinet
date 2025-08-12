@@ -2,6 +2,164 @@
 import { supabase } from '../../utils/supabase.js'
 
 /**
+ * Улучшенный парсер employee_id из разных форматов
+ * @param {string|null|array} employeeIdField - Поле employee_id из БД
+ * @returns {Array} Массив ID для поиска
+ */
+function parseEmployeeIds(employeeIdField) {
+    console.log('📋 Парсинг employee_id:', employeeIdField);
+    
+    // 1. Если null или undefined
+    if (employeeIdField === null || employeeIdField === undefined) {
+        console.log('  → NULL значение, возвращаем пустой массив');
+        return [];
+    }
+    
+    // 2. Если уже массив (маловероятно, но проверим)
+    if (Array.isArray(employeeIdField)) {
+        console.log('  → Уже массив:', employeeIdField);
+        return employeeIdField;
+    }
+    
+    // 3. Преобразуем в строку и очищаем
+    let idString = String(employeeIdField).trim();
+    
+    // 4. Проверяем на пустые скобки []
+    if (idString === '[]' || idString === '[ ]') {
+        console.log('  → Пустые скобки, возвращаем пустой массив');
+        return [];
+    }
+    
+    // 5. Убираем квадратные скобки если есть
+    if (idString.startsWith('[') && idString.endsWith(']')) {
+        idString = idString.slice(1, -1).trim();
+    }
+    
+    // 6. Если после удаления скобок пусто
+    if (!idString) {
+        console.log('  → Пустая строка после удаления скобок');
+        return [];
+    }
+    
+    // 7. Разбиваем по запятой и очищаем каждый элемент
+    const ids = idString.split(',').map(id => {
+        // Убираем пробелы и кавычки
+        let cleanId = id.trim().replace(/["']/g, '');
+        
+        // Проверяем, является ли ID числом (например, 00000001)
+        if (/^\d+$/.test(cleanId)) {
+            // Преобразуем в число, чтобы убрать ведущие нули
+            return parseInt(cleanId, 10);
+        }
+        
+        // Возвращаем как строку (для recXXX формата)
+        return cleanId;
+    }).filter(id => {
+        // Фильтруем пустые значения
+        return id !== '' && id !== null && id !== undefined;
+    });
+    
+    console.log('  → Распаршенные IDs:', ids);
+    return ids;
+}
+
+/**
+ * Получает сотрудников из таблицы contacts по массиву ID
+ * @param {Array} employeeIds - Массив ID сотрудников
+ * @returns {Promise<Array>} Массив данных сотрудников
+ */
+async function getEmployeesByIds(employeeIds) {
+    if (!employeeIds || employeeIds.length === 0) {
+        return [];
+    }
+    
+    // Определяем тип ID
+    const firstId = employeeIds[0];
+    const isNumericIds = typeof firstId === 'number';
+    
+    console.log(`  🔍 Ищем ${employeeIds.length} сотрудников, тип ID: ${isNumericIds ? 'числовой' : 'строковый'}`);
+    
+    try {
+        // Ищем в таблице contacts по полю id
+        const { data: contacts, error: contactsError } = await supabase
+            .from('contacts')
+            .select(`
+                id,
+                bpo_experience,
+                english_proficiency_test,
+                english_level,
+                typing_speed,
+                avatar,
+                gender,
+                date_of_birth
+            `)
+            .in('id', employeeIds);
+        
+        if (contactsError) {
+            console.error('  ❌ Ошибка при поиске в contacts:', contactsError);
+            // Не бросаем ошибку, просто возвращаем пустой массив
+            return [];
+        }
+        
+        if (!contacts || contacts.length === 0) {
+            console.log('  ⚠️ Контакты не найдены для IDs:', employeeIds);
+            return [];
+        }
+        
+        console.log(`  ✅ Найдено контактов: ${contacts.length}`);
+        
+        // Теперь получаем данные из employees для найденных контактов
+        const contactIds = contacts.map(c => c.id);
+        
+        const { data: employees, error: empError } = await supabase
+            .from('employees')
+            .select(`
+                id,
+                employee_id,
+                full_name,
+                stage,
+                project,
+                position,
+                staffing_type,
+                start_date,
+                end_date,
+                interview_date,
+                transfer_planned_date,
+                transfer_fact_date,
+                contacts_id
+            `)
+            .in('contacts_id', contactIds);
+        
+        if (empError) {
+            console.error('  ❌ Ошибка при получении employees:', empError);
+            return [];
+        }
+        
+        // Объединяем данные
+        const mergedData = employees.map(emp => {
+            const contact = contacts.find(c => c.id === emp.contacts_id);
+            return {
+                ...emp,
+                // Добавляем данные из contacts
+                bpo_experience: contact?.bpo_experience || 0,
+                english_proficiency_test: contact?.english_proficiency_test || '',
+                english_level: contact?.english_level || 0,
+                typing_speed: contact?.typing_speed || 0,
+                avatar: contact?.avatar || null,
+                gender: contact?.gender || '',
+                date_of_birth: contact?.date_of_birth || null
+            };
+        });
+        
+        return mergedData;
+        
+    } catch (error) {
+        console.error('  💥 Критическая ошибка при получении сотрудников:', error);
+        return [];
+    }
+}
+
+/**
  * Получает все батчи с сотрудниками
  * @returns {Promise<Array>} Массив батчей с вложенными сотрудниками
  */
@@ -21,121 +179,43 @@ export async function getBatchesWithEmployees() {
         }
 
         console.log('✅ Загружено батчей:', batches.length);
-        console.log('📋 Пример батча:', batches[0]);
-
+        
         // 2. Для каждого батча получаем сотрудников
         const batchesWithEmployees = await Promise.all(
             batches.map(async (batch) => {
-                // Проверяем и нормализуем employee_id
-                let employeeIds = batch.employee_id;
+                console.log(`\n📦 Обрабатываем батч ${batch.batch_id}:`);
                 
-                // Если это строка - преобразуем в массив
-                if (typeof employeeIds === 'string') {
-                    try {
-                        // Пробуем распарсить JSON строку
-                        employeeIds = JSON.parse(employeeIds);
-                    } catch (e) {
-                        // Если не JSON, может быть строка с разделителями
-                        employeeIds = employeeIds.split(',').map(id => id.trim());
-                    }
-                }
+                // Используем улучшенный парсер
+                const employeeIds = parseEmployeeIds(batch.employee_id);
                 
-                // Проверяем что это массив
-                if (!Array.isArray(employeeIds)) {
-                    // Если это одно значение - делаем массив
-                    employeeIds = employeeIds ? [employeeIds] : [];
-                }
-                
-                // Если массив пустой или null
-                if (!employeeIds || employeeIds.length === 0) {
-                    console.log(`⚠️ Батч ${batch.batch_id}: нет сотрудников`);
+                if (employeeIds.length === 0) {
+                    console.log('  ⚠️ Нет сотрудников в батче');
                     return {
                         ...batch,
                         employees: []
                     };
                 }
-
-                console.log(`🔍 Батч ${batch.batch_id}, employee_ids:`, employeeIds);
-
-                // 3. Определяем тип ID (числовые или строковые)
-                const firstId = employeeIds[0];
-                const isNumericIds = typeof firstId === 'number' || !isNaN(Number(firstId));
                 
-                let query;
-                if (isNumericIds) {
-                    // Если ID числовые - ищем по полю id
-                    // Преобразуем в числа если это строки чисел
-                    const numericIds = employeeIds.map(id => 
-                        typeof id === 'number' ? id : parseInt(id, 10)
-                    );
-                    
-                    console.log(`  Используем числовой поиск по полю "id":`, numericIds);
-                    
-                    query = supabase
-                        .from('employees')
-                        .select(`
-                            *,
-                            contacts:contacts_id (
-                                bpo_experience,
-                                english_proficiency_test,
-                                english_level,
-                                typing_speed,
-                                avatar
-                            )
-                        `)
-                        .in('id', numericIds);
-                } else {
-                    // Если ID строковые (recXXX) - ищем по полю employee_id
-                    console.log(`  Используем строковый поиск по полю "employee_id":`, employeeIds);
-                    
-                    query = supabase
-                        .from('employees')
-                        .select(`
-                            *,
-                            contacts:contacts_id (
-                                bpo_experience,
-                                english_proficiency_test,
-                                english_level,
-                                typing_speed,
-                                avatar
-                            )
-                        `)
-                        .in('employee_id', employeeIds);
-                }
-
-                const { data: employees, error: empError } = await query;
-
-                if (empError) {
-                    console.error(`❌ Ошибка загрузки сотрудников для батча ${batch.batch_id}:`, empError);
-                    return {
-                        ...batch,
-                        employees: []
-                    };
-                }
-
-                console.log(`✅ Батч ${batch.batch_id}: найдено сотрудников ${employees?.length || 0}`);
-
-                // 4. Мержим данные сотрудников с контактами
-                const employeesWithContacts = (employees || []).map(emp => ({
-                    ...emp,
-                    // Разворачиваем контакты на верхний уровень
-                    bpo_experience: emp.contacts?.bpo_experience || 0,
-                    english_proficiency_test: emp.contacts?.english_proficiency_test || '',
-                    english_level: emp.contacts?.english_level || 0,
-                    typing_speed: emp.contacts?.typing_speed || 0,
-                    avatar: emp.contacts?.avatar || null,
-                    // Убираем вложенный объект contacts
-                    contacts: undefined
-                }));
-
+                // Получаем сотрудников
+                const employees = await getEmployeesByIds(employeeIds);
+                
+                console.log(`  ✅ Загружено сотрудников: ${employees.length} из ${employeeIds.length}`);
+                
                 return {
                     ...batch,
-                    employees: employeesWithContacts
+                    employees: employees
                 };
             })
         );
 
-        console.log('✅ Все данные загружены успешно!');
+        console.log('\n✅ Все данные загружены успешно!');
+        
+        // Выводим статистику
+        const totalEmployees = batchesWithEmployees.reduce((sum, batch) => 
+            sum + batch.employees.length, 0
+        );
+        console.log(`📊 Статистика: ${batches.length} батчей, ${totalEmployees} сотрудников`);
+        
         return batchesWithEmployees;
 
     } catch (error) {
@@ -145,33 +225,38 @@ export async function getBatchesWithEmployees() {
 }
 
 /**
- * Тестовая функция для проверки подключения
+ * Тестовая функция для проверки парсера
  */
-export async function testConnection() {
-    try {
-        const { data, error } = await supabase
-            .from('hiring_batches_summary')
-            .select('*')
-            .limit(1);
-        
-        if (error) throw error;
-        
-        console.log('✅ Подключение успешно! Первая запись:', data);
-        return data;
-    } catch (error) {
-        console.error('❌ Ошибка подключения:', error);
-        throw error;
-    }
+export function testParser() {
+    const testCases = [
+        "[recQWE1234567890, recQWE1234567891]",
+        "[00000005, 00000006, 00000007]",
+        "[00000001]",
+        "[]",
+        null,
+        "[00000030, 00000031]",
+        "[ ]",
+        ""
+    ];
+    
+    console.log('🧪 Тестирование парсера:');
+    testCases.forEach(test => {
+        console.log(`Input: ${test}`);
+        console.log(`Output:`, parseEmployeeIds(test));
+        console.log('---');
+    });
 }
 
-// Экспортируем для тестирования в консоли
+// Экспортируем для тестирования в консоли браузера
 window.onboardingApi = {
     getBatchesWithEmployees,
-    testConnection
+    testParser,
+    parseEmployeeIds,
+    getEmployeesByIds
 };
 
 // Экспортируем объект со всеми функциями
 export default {
     getBatchesWithEmployees,
-    testConnection
+    testParser
 }
