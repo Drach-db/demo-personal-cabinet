@@ -625,6 +625,12 @@
         flex-direction: column;
         height: 100vh;
         background-color: var(--navbar-bg);
+        box-shadow: none;
+    }
+
+    /* Добавляем тень только когда открыт */
+    .app-navbar.mobile-open .navbar__container {
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
     }
     
     /* Header с логотипом фиксированной высоты */

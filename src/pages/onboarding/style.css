@@ -614,12 +614,20 @@ body {
    ======================================== */
 
    @media (max-width: 768px) {
+    .batches-list {
+        padding: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+
     /* Mobile Batch Card */
     .mobile-batch-card {
+        width: 100%;  /* Полная ширина */
+        margin: 0 0 16px 0;  /* Только отступ снизу */
         padding: 0;
         overflow: hidden;
-        width: calc(100% - 32px);
-        margin: 0 auto 16px;
         box-sizing: border-box;
     }
     
