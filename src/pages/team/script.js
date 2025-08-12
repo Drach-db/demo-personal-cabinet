@@ -888,17 +888,13 @@ function downloadReport(url, name) {
 // ========================================
 function openBottomSheet() {
     state.showMobileFilters = true;
-    const backdrop = document.getElementById('bottomSheetBackdrop');
     const bottomSheet = document.getElementById('bottomSheet');
     
-    if (backdrop && bottomSheet) {
-        backdrop.style.display = 'block';
+    if (bottomSheet) {
         bottomSheet.style.display = 'block';
-        
-        // Start animation after a small delay
+        // Задержка для правильной анимации
         setTimeout(() => {
             state.isBottomSheetAnimating = true;
-            backdrop.style.opacity = '0.5';
             bottomSheet.style.transform = 'translateY(0)';
         }, 10);
     }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Team Management - {{title}}</title>
     
     <!-- Layout System CSS (ПЕРВЫМ!) -->
@@ -216,63 +216,33 @@
                                 </div>
                             </div>
 
-                            <!-- Mobile Filter Controls -->
+                            <!-- Mobile Filter Controls (показываются только на мобильных) -->
                             <div class="mobile-filter-controls" style="display: none;">
-                                <div class="mobile-filter-buttons">
-                                    <button id="clearAllFiltersMobile" class="clear-all-filters-mobile" style="display: none;">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M18 6L6 18M6 6l12 12"></path>
-                                        </svg>
-                                        <span>Clear</span>
-                                    </button>
+                                <div class="mobile-filter-row">
+                                    <div id="mobileResultsCount" class="mobile-results-count">0 of 0</div>
                                     
-                                    <button id="mobileFilterToggle" class="mobile-filter-toggle">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M3 12h18M3 6h18M3 18h18"></path>
-                                        </svg>
-                                        <span>Filters</span>
-                                        <span id="mobileFilterCount" class="filter-count" style="display: none;">0</span>
-                                    </button>
-                                </div>
-                                
-                                <div class="results-count mobile-results">
-                                    <span id="mobileResultsCount">0 of 0</span>
+                                    <div class="mobile-filter-buttons">
+                                        <button id="mobileClearAllFilters" class="mobile-clear-button" style="display: none;">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 6L6 18M6 6l12 12"></path>
+                                            </svg>
+                                            <span>Clear</span>
+                                        </button>
+                                        
+                                        <button id="mobileFilterButton" class="mobile-filter-button">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M3 12h18M3 6h18M3 18h18"></path>
+                                            </svg>
+                                            <span>Filters</span>
+                                            <span id="mobileFilterCount" class="mobile-filter-count" style="display: none;">0</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Desktop Results Count -->
                             <div class="results-count desktop-results">
                                 <span id="resultsCount">0 of 0</span>
-                            </div>
-                        </div>
-
-                        <!-- Mobile Filter Panel (Hidden by default) -->
-                        <div id="mobileFilterPanel" class="mobile-filter-panel" style="display: none;">
-                            <div class="filter-tabs">
-                                <button class="filter-tab active" data-tab="project">
-                                    Projects
-                                    <span class="tab-count" id="projectTabCount" style="display: none;">0</span>
-                                </button>
-                                <button class="filter-tab" data-tab="stage">
-                                    Stages
-                                    <span class="tab-count" id="stageTabCount" style="display: none;">0</span>
-                                </button>
-                                <button class="filter-tab" data-tab="position">
-                                    Positions
-                                    <span class="tab-count" id="positionTabCount" style="display: none;">0</span>
-                                </button>
-                            </div>
-                            
-                            <div class="filter-tab-content">
-                                <div id="projectTabContent" class="tab-pane active"></div>
-                                <div id="stageTabContent" class="tab-pane" style="display: none;"></div>
-                                <div id="positionTabContent" class="tab-pane" style="display: none;"></div>
-                            </div>
-                            
-                            <div class="filter-panel-footer" id="filterPanelFooter" style="display: none;">
-                                <button id="clearAllFilters" class="clear-all-button">
-                                    Clear All Filters (<span id="totalFilterCount">0</span>)
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -304,6 +274,65 @@
         <div class="app-overlay" id="appOverlay"></div>
         
     </div><!-- /app-layout -->
+
+    <!-- Bottom Sheet для мобильных фильтров -->
+    <div id="bottomSheetBackdrop" class="bottom-sheet-backdrop"></div>
+    <div id="bottomSheet" class="bottom-sheet">
+        <!-- Handle -->
+        <div class="bottom-sheet-handle"></div>
+        
+        <!-- Header -->
+        <div class="bottom-sheet-header">
+            <div class="bottom-sheet-title-row">
+                <div class="bottom-sheet-spacer"></div>
+                <h3 class="bottom-sheet-title">Filters</h3>
+                <div class="bottom-sheet-counter">
+                    <span id="bottomSheetCount" class="bottom-sheet-count">0 of 0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="bottom-sheet-tabs">
+            <button class="mobile-filter-tab active" data-tab="project">
+                Projects
+                <span id="projectTabCount" class="mobile-filter-tab-count" style="display: none;">0</span>
+            </button>
+            <button class="mobile-filter-tab" data-tab="stage">
+                Stages
+                <span id="stageTabCount" class="mobile-filter-tab-count" style="display: none;">0</span>
+            </button>
+            <button class="mobile-filter-tab" data-tab="position">
+                Positions
+                <span id="positionTabCount" class="mobile-filter-tab-count" style="display: none;">0</span>
+            </button>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="bottom-sheet-content">
+            <!-- Project Tab Content -->
+            <div id="projectTabContent" class="mobile-tab-pane active">
+                <!-- Будет заполнено через JavaScript -->
+            </div>
+            
+            <!-- Stage Tab Content -->
+            <div id="stageTabContent" class="mobile-tab-pane" style="display: none;">
+                <!-- Будет заполнено через JavaScript -->
+            </div>
+            
+            <!-- Position Tab Content -->
+            <div id="positionTabContent" class="mobile-tab-pane" style="display: none;">
+                <!-- Будет заполнено через JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div id="bottomSheetFooter" class="bottom-sheet-footer" style="display: none;">
+            <button id="bottomSheetClearAll" class="bottom-sheet-clear-button">
+                Clear All Filters (<span id="bottomSheetTotalCount">0</span>)
+            </button>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script type="module" src="script.js"></script>
