@@ -5,12 +5,74 @@ import '../../components/header/header.js';
 import api from './api.js';
 
 // ========================================
+// CONSTANTS
+// ========================================
+const COLORS = {
+    primary: '#cc6633',
+    primaryDark: '#b85c2e',
+    secondary: '#9ca3af',
+    secondaryDark: '#6b7280',
+    white: '#ffffff',
+    background: 'rgba(255, 255, 255, 0.8)',
+    backgroundHover: 'rgba(255, 255, 255, 0.9)',
+    stages: {
+        active: '#22c55e',
+        onboarding: '#eab308',
+        terminated: '#ef4444'
+    },
+    projects: {
+        Sber: '#3b82f6',
+        Tbank: '#3b82f6',
+        Alfabank: '#3b82f6',
+        VTB: '#3b82f6'
+    },
+    timeline: {
+        interview: '#8b5cf6',
+        transfer_planned: '#eab308',
+        transfer_fact: '#3b82f6',
+        start: '#22c55e',
+        end: '#ef4444'
+    },
+    proficiency: {
+        high: '#22c55e',
+        medium: '#eab308',
+        low: '#ef4444'
+    }
+};
+
+const AVATAR_COLORS = [
+    { bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#ffffff' },
+    { bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', text: '#ffffff' },
+    { bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', text: '#ffffff' },
+    { bg: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', text: '#ffffff' },
+    { bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', text: '#ffffff' }
+];
+
+const ICONS = {
+    'users': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+    'eye': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>',
+    'download': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+    'clock': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
+    'user-check': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>',
+    'search': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>',
+    'briefcase': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>',
+    'award': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>',
+    'trending-up': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>',
+    'user-minus': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="23" y1="11" x2="17" y2="11"></line></svg>',
+    'calendar': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>',
+    'chevron-down': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>',
+    'chevron-up': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>',
+    'filter': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>',
+    'x': '<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+};
+
+// ========================================
 // STATE MANAGEMENT
 // ========================================
 const state = {
-    employees: [],
-    filteredEmployees: [],
     selectedEmployee: null,
+    employees: [],
+    loading: true,
     searchTerm: '',
     filterProject: [],
     filterStage: [],
@@ -19,52 +81,28 @@ const state = {
     showProjectDropdown: false,
     showStageDropdown: false,
     showPositionDropdown: false,
-    // Mobile specific state
-    isMobile: window.innerWidth < 768,
     showMobileFilters: false,
-    activeMobileFilterTab: 'project',
-    isBottomSheetAnimating: false,
-    // Device type для более точного определения
-    deviceType: getDeviceType()
+    activeFilterTab: 'project',
+    isMobile: false
 };
-
-// Глобальная переменная для таймера
-let resizeTimer;
 
 // ========================================
 // UTILITY FUNCTIONS
 // ========================================
-function getDeviceType() {
-    const width = window.innerWidth;
-    if (width < 380) return 'ultra-mobile';
-    if (width < 480) return 'small-mobile';
-    if (width < 768) return 'mobile';
-    if (width < 1024) return 'tablet';
-    return 'desktop';
-}
-
 function getAvatarColor(name) {
-    const colors = [
-        { bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#ffffff' },
-        { bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', text: '#ffffff' },
-        { bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', text: '#ffffff' },
-        { bg: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', text: '#ffffff' },
-        { bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', text: '#ffffff' }
-    ];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
         hash = name.charCodeAt(i) + ((hash << 5) - hash);
     }
-    return colors[Math.abs(hash) % colors.length];
+    return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
 function getStageColor(stage) {
-    const colors = { active: '#22c55e', onboarding: '#eab308', terminated: '#ef4444' };
-    return colors[stage.toLowerCase()] || '#6b7280';
+    return COLORS.stages[stage.toLowerCase()] || '#6b7280';
 }
 
 function getProjectColor(project) {
-    return '#3b82f6'; // All projects use blue color now
+    return COLORS.projects[project] || '#6b7280';
 }
 
 function calculateAge(dateOfBirth) {
@@ -79,17 +117,54 @@ function calculateAge(dateOfBirth) {
 }
 
 function getExperienceLevel(years) {
-    if (years === 0) return 'Entry';
+    if (years === 0) return 'Entry Level';
     if (years <= 2) return 'Junior';
     if (years <= 5) return 'Middle';
     return 'Senior';
 }
 
+function getProficiencyColor(level) {
+    if (level >= 90) return COLORS.proficiency.high;
+    if (level >= 70) return COLORS.proficiency.medium;
+    return COLORS.proficiency.low;
+}
+
+function getSpeedColor(speed) {
+    if (speed >= 80) return COLORS.proficiency.high;
+    if (speed >= 60) return COLORS.proficiency.medium;
+    return COLORS.proficiency.low;
+}
+
+function renderIcon(iconName, className = '', style = '') {
+    const icon = ICONS[iconName];
+    if (!icon) return '';
+    
+    // Добавляем класс и стиль к SVG
+    return icon.replace('<svg class="icon"', `<svg class="icon ${className}" style="${style}"`);
+}
+
 // ========================================
-// FILTER AND SEARCH LOGIC
+// FILTER FUNCTIONS
 // ========================================
-function filterEmployees() {
-    state.filteredEmployees = state.employees.filter(employee => {
+function toggleFilter(value, filterType) {
+    const currentFilters = state[filterType];
+    if (currentFilters.includes(value)) {
+        state[filterType] = currentFilters.filter(item => item !== value);
+    } else {
+        state[filterType] = [...currentFilters, value];
+    }
+    render();
+}
+
+function clearAllFilters() {
+    state.filterProject = [];
+    state.filterStage = [];
+    state.filterPosition = [];
+    render();
+}
+
+function getFilteredEmployees() {
+    return state.employees.filter(employee => {
         const matchesSearch = employee.full_name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
                              employee.position.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
                              employee.project.toLowerCase().includes(state.searchTerm.toLowerCase());
@@ -99,26 +174,21 @@ function filterEmployees() {
         
         return matchesSearch && matchesProject && matchesStage && matchesPosition;
     });
-    
-    updateUI();
 }
 
 function getFilterOptions() {
-    // For projects: filter by stages + positions only
     const employeesForProjects = state.employees.filter(employee => {
         const matchesStage = state.filterStage.length === 0 || state.filterStage.includes(employee.stage);
         const matchesPosition = state.filterPosition.length === 0 || state.filterPosition.includes(employee.position);
         return matchesStage && matchesPosition;
     });
 
-    // For stages: filter by projects + positions only
     const employeesForStages = state.employees.filter(employee => {
         const matchesProject = state.filterProject.length === 0 || state.filterProject.includes(employee.project);
         const matchesPosition = state.filterPosition.length === 0 || state.filterPosition.includes(employee.position);
         return matchesProject && matchesPosition;
     });
 
-    // For positions: filter by projects + stages only
     const employeesForPositions = state.employees.filter(employee => {
         const matchesProject = state.filterProject.length === 0 || state.filterProject.includes(employee.project);
         const matchesStage = state.filterStage.length === 0 || state.filterStage.includes(employee.stage);
@@ -132,264 +202,520 @@ function getFilterOptions() {
     };
 }
 
-// ========================================
-// UI UPDATE FUNCTIONS
-// ========================================
-function updateStats() {
-    const stats = {
+function getTeamStats() {
+    return {
         active: state.employees.filter(emp => emp.stage === 'Active').length,
         onboarding: state.employees.filter(emp => emp.stage === 'Onboarding').length,
         terminated: state.employees.filter(emp => emp.stage === 'Terminated').length,
         backup: state.employees.filter(emp => emp.staffing_type === 'Backup').length
     };
-
-    document.getElementById('statActive').textContent = stats.active;
-    document.getElementById('statOnboarding').textContent = stats.onboarding;
-    document.getElementById('statTerminated').textContent = stats.terminated;
-    document.getElementById('statBackup').textContent = stats.backup;
 }
 
-function updateResultsCount() {
-    const resultsText = `${state.filteredEmployees.length} of ${state.employees.length}`;
-    document.getElementById('resultsCount').textContent = resultsText;
-    
-    // Update mobile results count too
-    const mobileResultsCount = document.getElementById('mobileResultsCount');
-    if (mobileResultsCount) {
-        mobileResultsCount.textContent = resultsText;
-    }
+function hasActiveFilters() {
+    return state.filterProject.length > 0 || 
+           state.filterStage.length > 0 || 
+           state.filterPosition.length > 0;
 }
 
-function updateFilterButtons() {
-    if (state.isMobile) {
-        updateMobileFilterButtons();
-    } else {
-        updateDesktopFilterButtons();
-    }
-}
-
-function updateDesktopFilterButtons() {
-    // Project filter
-    const projectText = state.filterProject.length === 0 ? 'All Projects' : `${state.filterProject.length} Selected`;
-    document.getElementById('projectFilterText').textContent = projectText;
-    document.getElementById('clearProjectFilter').style.display = state.filterProject.length > 0 ? 'block' : 'none';
-
-    // Stage filter
-    const stageText = state.filterStage.length === 0 ? 'All Stages' : `${state.filterStage.length} Selected`;
-    document.getElementById('stageFilterText').textContent = stageText;
-    document.getElementById('clearStageFilter').style.display = state.filterStage.length > 0 ? 'block' : 'none';
-
-    // Position filter
-    const positionText = state.filterPosition.length === 0 ? 'All Positions' : `${state.filterPosition.length} Selected`;
-    document.getElementById('positionFilterText').textContent = positionText;
-    document.getElementById('clearPositionFilter').style.display = state.filterPosition.length > 0 ? 'block' : 'none';
-}
-
-function updateMobileFilterButtons() {
-    const totalFilters = state.filterProject.length + state.filterStage.length + state.filterPosition.length;
-    const hasFilters = totalFilters > 0;
-    
-    // Update filter button
-    const filterButton = document.getElementById('mobileFilterButton');
-    const filterCount = document.getElementById('mobileFilterCount');
-    const clearAllButton = document.getElementById('mobileClearAllFilters');
-    
-    if (filterButton) {
-        filterButton.style.backgroundColor = hasFilters ? 'rgba(204, 102, 51, 0.1)' : 'rgba(255, 255, 255, 0.95)';
-        filterButton.style.borderColor = hasFilters ? '#cc6633' : 'rgba(204, 102, 51, 0.25)';
-        filterButton.style.color = hasFilters ? '#cc6633' : '#6b7280';
-    }
-    
-    if (filterCount) {
-        filterCount.style.display = hasFilters ? 'inline-flex' : 'none';
-        filterCount.textContent = totalFilters;
-    }
-    
-    if (clearAllButton) {
-        clearAllButton.style.display = hasFilters ? 'flex' : 'none';
-    }
-    
-    // Update tab counts in bottom sheet
-    updateBottomSheetTabCounts();
-}
-
-function updateBottomSheetTabCounts() {
-    // Project tab
-    const projectTabCount = document.getElementById('projectTabCount');
-    if (projectTabCount) {
-        projectTabCount.style.display = state.filterProject.length > 0 ? 'inline-block' : 'none';
-        projectTabCount.textContent = state.filterProject.length;
-    }
-    
-    // Stage tab
-    const stageTabCount = document.getElementById('stageTabCount');
-    if (stageTabCount) {
-        stageTabCount.style.display = state.filterStage.length > 0 ? 'inline-block' : 'none';
-        stageTabCount.textContent = state.filterStage.length;
-    }
-    
-    // Position tab
-    const positionTabCount = document.getElementById('positionTabCount');
-    if (positionTabCount) {
-        positionTabCount.style.display = state.filterPosition.length > 0 ? 'inline-block' : 'none';
-        positionTabCount.textContent = state.filterPosition.length;
-    }
-    
-    // Footer
-    const filterPanelFooter = document.getElementById('bottomSheetFooter');
-    const hasFilters = state.filterProject.length + state.filterStage.length + state.filterPosition.length > 0;
-    if (filterPanelFooter) {
-        filterPanelFooter.style.display = hasFilters ? 'block' : 'none';
-        const totalCount = document.getElementById('bottomSheetTotalCount');
-        if (totalCount) {
-            totalCount.textContent = state.filterProject.length + state.filterStage.length + state.filterPosition.length;
-        }
-    }
-}
-
-function renderDropdowns() {
-    if (state.isMobile) {
-        renderMobileFilterTabs();
-    } else {
-        renderDesktopDropdowns();
-    }
-}
-
-function renderDesktopDropdowns() {
-    const options = getFilterOptions();
-
-    // Render project dropdown
-    const projectDropdown = document.getElementById('projectDropdown');
-    if (projectDropdown) {
-        projectDropdown.innerHTML = '<div class="dropdown-content">' +
-            options.projects.map(project => `
-                <label class="dropdown-item">
-                    <input type="checkbox" class="dropdown-checkbox" value="${project}" 
-                        ${state.filterProject.includes(project) ? 'checked' : ''}
-                        onchange="toggleFilter('project', '${project}')">
-                    <span class="dropdown-color" style="background-color: ${getProjectColor(project)}"></span>
-                    <span class="dropdown-label">${project}</span>
-                </label>
-            `).join('') +
-            '</div>';
-    }
-
-    // Render stage dropdown
-    const stageDropdown = document.getElementById('stageDropdown');
-    if (stageDropdown) {
-        stageDropdown.innerHTML = '<div class="dropdown-content">' +
-            options.stages.map(stage => `
-                <label class="dropdown-item">
-                    <input type="checkbox" class="dropdown-checkbox" value="${stage}" 
-                        ${state.filterStage.includes(stage) ? 'checked' : ''}
-                        onchange="toggleFilter('stage', '${stage}')">
-                    <span class="dropdown-color" style="background-color: ${getStageColor(stage)}"></span>
-                    <span class="dropdown-label">${stage}</span>
-                </label>
-            `).join('') +
-            '</div>';
-    }
-
-    // Render position dropdown
-    const positionDropdown = document.getElementById('positionDropdown');
-    if (positionDropdown) {
-        positionDropdown.innerHTML = '<div class="dropdown-content">' +
-            options.positions.map(position => `
-                <label class="dropdown-item">
-                    <input type="checkbox" class="dropdown-checkbox" value="${position}" 
-                        ${state.filterPosition.includes(position) ? 'checked' : ''}
-                        onchange="toggleFilter('position', '${position}')">
-                    <span class="dropdown-color" style="background-color: #c4b5fd"></span>
-                    <span class="dropdown-label">${position}</span>
-                </label>
-            `).join('') +
-            '</div>';
-    }
-}
-
-function renderMobileFilterTabs() {
-    const options = getFilterOptions();
-    
-    // Render project tab content
-    const projectTabContent = document.getElementById('projectTabContent');
-    if (projectTabContent) {
-        projectTabContent.innerHTML = options.projects.map(project => {
-            const count = state.employees.filter(emp => {
-                const matchesProject = emp.project === project;
-                const matchesStage = state.filterStage.length === 0 || state.filterStage.includes(emp.stage);
-                const matchesPosition = state.filterPosition.length === 0 || state.filterPosition.includes(emp.position);
-                return matchesProject && matchesStage && matchesPosition;
-            }).length;
-            
-            return `
-                <label class="mobile-filter-option">
-                    <input type="checkbox" class="mobile-filter-checkbox" value="${project}"
-                        ${state.filterProject.includes(project) ? 'checked' : ''}
-                        onchange="toggleFilter('project', '${project}')">
-                    <span class="mobile-filter-color" style="background-color: ${getProjectColor(project)}"></span>
-                    <span class="mobile-filter-label">${project}</span>
-                    <span class="mobile-filter-count">${count}</span>
-                </label>
-            `;
-        }).join('');
-    }
-    
-    // Render stage tab content
-    const stageTabContent = document.getElementById('stageTabContent');
-    if (stageTabContent) {
-        stageTabContent.innerHTML = options.stages.map(stage => {
-            const count = state.employees.filter(emp => {
-                const matchesStage = emp.stage === stage;
-                const matchesProject = state.filterProject.length === 0 || state.filterProject.includes(emp.project);
-                const matchesPosition = state.filterPosition.length === 0 || state.filterPosition.includes(emp.position);
-                return matchesStage && matchesProject && matchesPosition;
-            }).length;
-            
-            return `
-                <label class="mobile-filter-option">
-                    <input type="checkbox" class="mobile-filter-checkbox" value="${stage}"
-                        ${state.filterStage.includes(stage) ? 'checked' : ''}
-                        onchange="toggleFilter('stage', '${stage}')">
-                    <span class="mobile-filter-color" style="background-color: ${getStageColor(stage)}"></span>
-                    <span class="mobile-filter-label">${stage}</span>
-                    <span class="mobile-filter-count">${count}</span>
-                </label>
-            `;
-        }).join('');
-    }
-    
-    // Render position tab content
-    const positionTabContent = document.getElementById('positionTabContent');
-    if (positionTabContent) {
-        positionTabContent.innerHTML = options.positions.map(position => {
-            const count = state.employees.filter(emp => {
-                const matchesPosition = emp.position === position;
-                const matchesProject = state.filterProject.length === 0 || state.filterProject.includes(emp.project);
-                const matchesStage = state.filterStage.length === 0 || state.filterStage.includes(emp.stage);
-                return matchesPosition && matchesProject && matchesStage;
-            }).length;
-            
-            return `
-                <label class="mobile-filter-option">
-                    <input type="checkbox" class="mobile-filter-checkbox" value="${position}"
-                        ${state.filterPosition.includes(position) ? 'checked' : ''}
-                        onchange="toggleFilter('position', '${position}')">
-                    <span class="mobile-filter-color" style="background-color: #c4b5fd"></span>
-                    <span class="mobile-filter-label">${position}</span>
-                    <span class="mobile-filter-count">${count}</span>
-                </label>
-            `;
-        }).join('');
-    }
+function getActiveFiltersCount() {
+    return state.filterProject.length + 
+           state.filterStage.length + 
+           state.filterPosition.length;
 }
 
 // ========================================
-// DESKTOP RENDER FUNCTIONS
+// RENDER FUNCTIONS
 // ========================================
-function renderDesktopEmployeeCard(employee) {
+function renderLoading() {
+    return `
+        <div class="main-content" style="display: flex; align-items: center; justify-content: center;">
+            <div class="text-center">
+                <div class="animate-spin rounded-full" style="height: 48px; width: 48px; border: 2px solid #e5e7eb; border-top-color: #3b82f6; margin: 0 auto 16px;"></div>
+                <p style="color: #6b7280;">Loading team data...</p>
+            </div>
+        </div>
+    `;
+}
+
+function renderAnalytics() {
+    const stats = getTeamStats();
+    return `
+        <div class="analytics-grid">
+            <div class="stat-card">
+                <div class="flex items-center justify-between gap-2">
+                    <div style="flex: 1; min-width: 0;">
+                        <h3 class="stat-label">Active</h3>
+                        <p class="stat-value">${stats.active}</p>
+                    </div>
+                    <div class="icon-container">
+                        ${renderIcon('user-check', '', 'color: #22c55e;')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="flex items-center justify-between gap-2">
+                    <div style="flex: 1; min-width: 0;">
+                        <h3 class="stat-label">Onboarding</h3>
+                        <p class="stat-value">${stats.onboarding}</p>
+                    </div>
+                    <div class="icon-container">
+                        ${renderIcon('clock', '', 'color: ' + COLORS.primary + ';')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="flex items-center justify-between gap-2">
+                    <div style="flex: 1; min-width: 0;">
+                        <h3 class="stat-label">Terminated</h3>
+                        <p class="stat-value">${stats.terminated}</p>
+                    </div>
+                    <div class="icon-container">
+                        ${renderIcon('user-minus', '', 'color: #ef4444;')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="flex items-center justify-between gap-2">
+                    <div style="flex: 1; min-width: 0;">
+                        <h3 class="stat-label">Backup</h3>
+                        <p class="stat-value">${stats.backup}</p>
+                    </div>
+                    <div class="icon-container">
+                        ${renderIcon('users', '', 'color: #3b82f6;')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderDesktopFilters() {
+    const filteredEmployees = getFilteredEmployees();
+    const filterOptions = getFilterOptions();
+
+    return `
+        <div class="search-filters-container search-filters-desktop">
+            <div class="filters-content">
+                <div class="search-container">
+                    ${renderIcon('search', 'search-icon', '')}
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Search employees by name, position, or project..."
+                        value="${state.searchTerm}"
+                        id="searchInput"
+                    />
+                    ${state.searchTerm ? `
+                        <button class="clear-search" id="clearSearchBtn">
+                            ${renderIcon('x', '', 'width: 16px; height: 16px; color: #9ca3af;')}
+                        </button>
+                    ` : ''}
+                </div>
+
+                <div class="filters-group">
+                    <!-- Project Filter -->
+                    <div class="filter-dropdown">
+                        ${renderIcon('briefcase', 'filter-icon', '')}
+                        <button class="filter-button" id="projectFilterBtn">
+                            <span>${state.filterProject.length === 0 ? 'All Projects' : `${state.filterProject.length} Selected`}</span>
+                        </button>
+                        ${state.filterProject.length > 0 ? `
+                            <button class="filter-clear" id="clearProjectFilter">
+                                ${renderIcon('x', '', 'width: 12px; height: 12px; color: #9ca3af;')}
+                            </button>
+                        ` : ''}
+                        <div class="dropdown-arrow">
+                            ${renderIcon('chevron-down', '', 'width: 14px; height: 14px; color: #9ca3af;')}
+                        </div>
+                        ${state.showProjectDropdown ? `
+                            <div class="dropdown-menu">
+                                ${filterOptions.projects.map(project => `
+                                    <label class="dropdown-item">
+                                        <input
+                                            type="checkbox"
+                                            ${state.filterProject.includes(project) ? 'checked' : ''}
+                                            data-filter-type="filterProject"
+                                            data-filter-value="${project}"
+                                        />
+                                        <span class="dropdown-color" style="background-color: ${getProjectColor(project)};"></span>
+                                        <span class="dropdown-label">${project}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Stage Filter -->
+                    <div class="filter-dropdown">
+                        ${renderIcon('user-check', 'filter-icon', '')}
+                        <button class="filter-button" id="stageFilterBtn">
+                            <span>${state.filterStage.length === 0 ? 'All Stages' : `${state.filterStage.length} Selected`}</span>
+                        </button>
+                        ${state.filterStage.length > 0 ? `
+                            <button class="filter-clear" id="clearStageFilter">
+                                ${renderIcon('x', '', 'width: 12px; height: 12px; color: #9ca3af;')}
+                            </button>
+                        ` : ''}
+                        <div class="dropdown-arrow">
+                            ${renderIcon('chevron-down', '', 'width: 14px; height: 14px; color: #9ca3af;')}
+                        </div>
+                        ${state.showStageDropdown ? `
+                            <div class="dropdown-menu">
+                                ${filterOptions.stages.map(stage => `
+                                    <label class="dropdown-item">
+                                        <input
+                                            type="checkbox"
+                                            ${state.filterStage.includes(stage) ? 'checked' : ''}
+                                            data-filter-type="filterStage"
+                                            data-filter-value="${stage}"
+                                        />
+                                        <span class="dropdown-color" style="background-color: ${getStageColor(stage)};"></span>
+                                        <span class="dropdown-label">${stage}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Position Filter -->
+                    <div class="filter-dropdown">
+                        ${renderIcon('award', 'filter-icon', '')}
+                        <button class="filter-button" id="positionFilterBtn">
+                            <span>${state.filterPosition.length === 0 ? 'All Positions' : `${state.filterPosition.length} Selected`}</span>
+                        </button>
+                        ${state.filterPosition.length > 0 ? `
+                            <button class="filter-clear" id="clearPositionFilter">
+                                ${renderIcon('x', '', 'width: 12px; height: 12px; color: #9ca3af;')}
+                            </button>
+                        ` : ''}
+                        <div class="dropdown-arrow">
+                            ${renderIcon('chevron-down', '', 'width: 14px; height: 14px; color: #9ca3af;')}
+                        </div>
+                        ${state.showPositionDropdown ? `
+                            <div class="dropdown-menu" style="min-width: 280px;">
+                                <div style="max-height: 240px; overflow-y: auto;">
+                                    ${filterOptions.positions.map(position => `
+                                        <label class="dropdown-item">
+                                            <input
+                                                type="checkbox"
+                                                ${state.filterPosition.includes(position) ? 'checked' : ''}
+                                                data-filter-type="filterPosition"
+                                                data-filter-value="${position}"
+                                            />
+                                            <span class="dropdown-color" style="background-color: #8b5cf6;"></span>
+                                            <span class="dropdown-label">${position}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div class="results-count">
+                    ${filteredEmployees.length} of ${state.employees.length}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderMobileFilters() {
+    const filteredEmployees = getFilteredEmployees();
+    const hasActiveFilters = hasActiveFilters();
+    const activeFiltersCount = getActiveFiltersCount();
+
+    return `
+        <div class="search-filters-container search-filters-mobile">
+            <div class="mobile-search-row">
+                <div class="search-container">
+                    ${renderIcon('search', 'search-icon', '')}
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Search by name, position, project..."
+                        value="${state.searchTerm}"
+                        id="searchInputMobile"
+                    />
+                    ${state.searchTerm ? `
+                        <button class="clear-search" id="clearSearchBtnMobile">
+                            ${renderIcon('x', '', 'width: 16px; height: 16px; color: #9ca3af;')}
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <div class="mobile-controls">
+                <div class="mobile-results-count">
+                    ${filteredEmployees.length} of ${state.employees.length}
+                </div>
+                
+                <div class="mobile-filter-buttons">
+                    ${hasActiveFilters ? `
+                        <button class="mobile-clear-button" id="mobileClearAll">
+                            ${renderIcon('x', '', 'width: 16px; height: 16px;')}
+                            Clear
+                        </button>
+                    ` : ''}
+                    
+                    <button class="mobile-filter-button ${hasActiveFilters ? 'active' : ''}" id="mobileFilterBtn">
+                        ${renderIcon('filter', '', 'width: 16px; height: 16px;')}
+                        Filters
+                        ${hasActiveFilters ? `
+                            <span class="mobile-filter-count">${activeFiltersCount}</span>
+                        ` : ''}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Bottom Sheet -->
+        <div class="mobile-filters-overlay ${state.showMobileFilters ? 'show' : ''}" id="mobileFiltersOverlay"></div>
+        <div class="mobile-filters-container ${state.showMobileFilters ? 'show' : ''}" id="mobileFiltersContainer">
+            <div class="mobile-filters-header">
+                <div class="mobile-filters-title">
+                    <h3>Filters</h3>
+                    ${hasActiveFilters ? `
+                        <span class="active-filters-badge">${activeFiltersCount} active</span>
+                    ` : ''}
+                </div>
+                <div class="mobile-filters-actions">
+                    ${hasActiveFilters ? `
+                        <button class="clear-all-mobile" id="clearAllMobile">Clear all</button>
+                    ` : ''}
+                    <button class="close-filters" id="closeFilters">
+                        ${renderIcon('x', '', 'width: 20px; height: 20px;')}
+                    </button>
+                </div>
+            </div>
+
+            <div class="filter-tabs">
+                <button class="filter-tab ${state.activeFilterTab === 'project' ? 'active' : ''}" data-tab="project">
+                    Projects
+                </button>
+                <button class="filter-tab ${state.activeFilterTab === 'stage' ? 'active' : ''}" data-tab="stage">
+                    Stages
+                </button>
+                <button class="filter-tab ${state.activeFilterTab === 'position' ? 'active' : ''}" data-tab="position">
+                    Positions
+                </button>
+            </div>
+
+            <div class="filter-content">
+                ${renderMobileFilterContent()}
+            </div>
+        </div>
+    `;
+}
+
+function renderMobileFilterContent() {
+    const filterOptions = getFilterOptions();
+    
+    if (state.activeFilterTab === 'project') {
+        return `
+            <div class="mobile-filter-list">
+                ${filterOptions.projects.map(project => `
+                    <label class="mobile-filter-option">
+                        <input
+                            type="checkbox"
+                            class="mobile-filter-checkbox"
+                            ${state.filterProject.includes(project) ? 'checked' : ''}
+                            data-filter-type="filterProject"
+                            data-filter-value="${project}"
+                        />
+                        <span class="mobile-filter-color" style="background-color: ${getProjectColor(project)};"></span>
+                        <span class="mobile-filter-label">${project}</span>
+                    </label>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    if (state.activeFilterTab === 'stage') {
+        return `
+            <div class="mobile-filter-list">
+                ${filterOptions.stages.map(stage => `
+                    <label class="mobile-filter-option">
+                        <input
+                            type="checkbox"
+                            class="mobile-filter-checkbox"
+                            ${state.filterStage.includes(stage) ? 'checked' : ''}
+                            data-filter-type="filterStage"
+                            data-filter-value="${stage}"
+                        />
+                        <span class="mobile-filter-color" style="background-color: ${getStageColor(stage)};"></span>
+                        <span class="mobile-filter-label">${stage}</span>
+                    </label>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    if (state.activeFilterTab === 'position') {
+        return `
+            <div class="mobile-filter-list">
+                ${filterOptions.positions.map(position => `
+                    <label class="mobile-filter-option">
+                        <input
+                            type="checkbox"
+                            class="mobile-filter-checkbox"
+                            ${state.filterPosition.includes(position) ? 'checked' : ''}
+                            data-filter-type="filterPosition"
+                            data-filter-value="${position}"
+                        />
+                        <span class="mobile-filter-color" style="background-color: #8b5cf6;"></span>
+                        <span class="mobile-filter-label">${position}</span>
+                    </label>
+                `).join('')}
+            </div>
+        `;
+    }
+}
+
+function renderEmployeeCard(employee) {
+    if (state.isMobile) {
+        return renderMobileEmployeeCard(employee);
+    }
+
+    const age = calculateAge(employee.date_of_birth);
+    const experienceLevel = getExperienceLevel(employee.bpo_experience);
     const avatarColor = getAvatarColor(employee.full_name);
+    const stageColor = getStageColor(employee.stage);
+    const projectColor = getProjectColor(employee.project);
+    const englishColor = getProficiencyColor(employee.english_level);
+    const typingColor = getSpeedColor(employee.typing_speed);
     const isSelected = state.selectedEmployee === employee.id;
-    
+
+    return `
+        <div class="employee-card ${isSelected ? 'selected' : ''}" data-employee-id="${employee.id}">
+            <div class="stage-indicator" style="background-color: ${stageColor};"></div>
+            
+            <div class="employee-header">
+                <div class="avatar-container">
+                    <div class="employee-avatar" style="background: ${avatarColor.bg};">
+                        <span class="avatar-text" style="color: ${avatarColor.text};">
+                            ${employee.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        </span>
+                    </div>
+                    <div class="status-indicator" style="background-color: ${stageColor};"></div>
+                </div>
+                
+                <div class="employee-info">
+                    <h3 class="employee-name">${employee.full_name}</h3>
+                    
+                    <div class="employee-position-line">
+                        <p class="employee-position">${employee.position}</p>
+                        <span class="tag" style="background-color: ${stageColor}20; color: ${stageColor};">
+                            ${employee.stage}
+                        </span>
+                        <span class="tag" style="background-color: ${projectColor}20; color: ${projectColor};">
+                            ${employee.project}
+                        </span>
+                        ${employee.staffing_type === 'Backup' ? `
+                            <span class="tag" style="background-color: #6366f120; color: #6366f1;">
+                                Backup
+                            </span>
+                        ` : ''}
+                        
+                        <button class="view-button ${isSelected ? 'selected' : ''}">
+                            <span>${isSelected ? 'Hide Details' : 'View Details'}</span>
+                            ${isSelected ? renderIcon('chevron-up', '', 'width: 12px; height: 12px;') : renderIcon('chevron-down', '', 'width: 12px; height: 12px;')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            ${isSelected ? renderEmployeeDetails(employee, age, experienceLevel, englishColor, typingColor) : ''}
+        </div>
+    `;
+}
+
+function renderEmployeeDetails(employee, age, experienceLevel, englishColor, typingColor) {
+    return `
+        <div class="employee-details">
+            <div class="details-grid">
+                <div class="detail-section">
+                    <h4>
+                        ${renderIcon('trending-up', '', 'width: 16px; height: 16px; margin-right: 8px; color: ' + COLORS.primary + ';')}
+                        Skills & Experience
+                    </h4>
+                    <div class="detail-items">
+                        <div class="detail-item">
+                            <span class="detail-label">English Level:</span>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${employee.english_level}%; background-color: ${englishColor};"></div>
+                                </div>
+                                <span class="detail-value" style="color: #8b5cf6;">${employee.english_level}%</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Typing Speed:</span>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(employee.typing_speed, 100)}%; background-color: ${typingColor};"></div>
+                                </div>
+                                <span class="detail-value" style="color: #8b5cf6;">${employee.typing_speed} WPM</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">BPO Experience:</span>
+                            <span class="detail-value" style="color: #6366f1;">${employee.bpo_experience}y (${experienceLevel})</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>
+                        ${renderIcon('users', '', 'width: 16px; height: 16px; margin-right: 8px; color: ' + COLORS.primary + ';')}
+                        Personal Info
+                    </h4>
+                    <div class="detail-items">
+                        <div class="detail-item">
+                            <span class="detail-label">Age:</span>
+                            <span class="detail-value">${age} years</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Date of Birth:</span>
+                            <span class="detail-value">${employee.date_of_birth}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Gender:</span>
+                            <span class="detail-value" style="text-transform: capitalize;">${employee.gender}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section timeline-section">
+                    <h4>
+                        ${renderIcon('calendar', '', 'width: 16px; height: 16px; margin-right: 8px; color: ' + COLORS.primary + ';')}
+                        Timeline
+                    </h4>
+                    ${renderTimeline(employee)}
+                </div>
+            </div>
+
+            <div class="assessment-section">
+                <span class="assessment-label">Assessment Results:</span>
+                <div class="action-buttons">
+                    <button class="btn-primary view-assessment" data-url="${employee.english_proficiency_test}">
+                        ${renderIcon('eye', '', 'width: 12px; height: 12px;')}
+                        <span>View Assessment</span>
+                    </button>
+                    <a href="${employee.english_proficiency_test}" download="${employee.full_name.replace(/\s+/g, '-').toLowerCase()}-test-results.pdf" class="btn-secondary">
+                        ${renderIcon('download', '', 'width: 12px; height: 12px;')}
+                        <span>Download Report</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderTimeline(employee) {
     const timelineEvents = [
         { date: employee.interview_date || '', type: 'interview', label: 'Interview', short: 'Int.' },
         { date: employee.transfer_planned_date || '', type: 'transfer_planned', label: 'Transfer Plan', short: 'T.Plan' },
@@ -398,838 +724,510 @@ function renderDesktopEmployeeCard(employee) {
         { date: employee.end_date || '', type: 'end', label: 'End', short: 'End' }
     ];
 
-    const getEventColor = (type) => {
-        switch (type) {
-            case 'interview': return '#8b5cf6';
-            case 'transfer_planned': return '#eab308';
-            case 'transfer_fact': return '#3b82f6';
-            case 'start': return '#22c55e';
-            case 'end': return '#ef4444';
-            default: return '#6b7280';
-        }
-    };
-
     return `
-        <div class="employee-card ${isSelected ? 'selected' : ''}" 
-             style="--stage-color: ${getStageColor(employee.stage)}"
-             onclick="toggleEmployee(${employee.id})"
-             onmouseenter="handleCardHover(this, true)" 
-             onmouseleave="handleCardHover(this, false)">
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
             
-            <!-- Employee Header -->
-            <div class="employee-header">
-                <div class="avatar-container">
-                    ${employee.avatar ? 
-                        `<img src="${employee.avatar}" alt="${employee.full_name}" class="avatar-img" 
-                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
-                    <div class="avatar" style="background: ${avatarColor.bg}; ${employee.avatar ? 'display: none;' : ''}">
-                        <span class="avatar-text">${employee.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
-                    </div>
-                    <div class="status-indicator" style="background-color: ${getStageColor(employee.stage)}"></div>
-                </div>
-                
-                <div class="employee-info">
-                    <h3 class="employee-name">${employee.full_name}</h3>
-                    
-                    <div class="employee-position-line">
-                        <p class="employee-position">${employee.position}</p>
-                        <span class="tag tag-stage" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
-                            ${employee.stage}
-                        </span>
-                        <span class="tag tag-project" style="background-color: ${getProjectColor(employee.project)}20; color: ${getProjectColor(employee.project)}">
-                            ${employee.project}
-                        </span>
-                        ${employee.staffing_type === 'Backup' ? 
-                            '<span class="tag tag-backup">Backup</span>' : ''}
+            <div class="timeline-events">
+                ${timelineEvents.map((event, index) => `
+                    <div class="timeline-event">
+                        <div class="event-label ${event.short.includes('.') ? 'has-tooltip' : ''}" data-tooltip="${event.label}">
+                            <span>${event.short}</span>
+                            ${event.short.includes('.') ? `<div class="event-info">i</div>` : ''}
+                        </div>
                         
-                        <button class="view-button ${isSelected ? 'selected' : ''}" 
-                                onclick="event.stopPropagation(); toggleEmployee(${employee.id})"
-                                onmouseenter="this.style.color='#cc6633'"
-                                onmouseleave="this.style.color='${isSelected ? '#cc6633' : '#6b7280'}'">
-                            <span>${isSelected ? 'Hide Details' : 'View Details'}</span>
-                            ${isSelected ? 
-                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>' :
-                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>'}
-                        </button>
+                        <div class="event-dot" style="background-color: ${event.date ? COLORS.timeline[event.type] : '#e5e7eb'}; opacity: ${event.date ? '1' : '0.5'};"></div>
+                        
+                        <div class="event-date ${!event.date ? 'empty' : ''}">
+                            ${event.date || '—'}
+                        </div>
                     </div>
-                </div>
+                `).join('')}
             </div>
-
-            ${isSelected ? `
-                <!-- Employee Details -->
-                <div class="employee-details">
-                    <div class="details-grid">
-                        
-                        <!-- Skills & Experience -->
-                        <div class="detail-section">
-                            <h4>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                                </svg>
-                                Skills & Experience
-                            </h4>
-                            <div>
-                                <div class="detail-item">
-                                    <span class="detail-label">English Level:</span>
-                                    <div class="progress-container">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: ${employee.english_level}%; background-color: ${employee.english_level >= 90 ? '#22c55e' : employee.english_level >= 70 ? '#eab308' : '#ef4444'}"></div>
-                                        </div>
-                                        <span class="detail-value" style="color: #7c3aed">${employee.english_level}%</span>
-                                    </div>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Typing Speed:</span>
-                                    <div class="progress-container">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: ${Math.min(employee.typing_speed, 100)}%; background-color: ${employee.typing_speed >= 80 ? '#22c55e' : employee.typing_speed >= 60 ? '#eab308' : '#ef4444'}"></div>
-                                        </div>
-                                        <span class="detail-value" style="color: #7c3aed">${employee.typing_speed} WPM</span>
-                                    </div>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">BPO Experience:</span>
-                                    <span class="detail-value" style="color: #4f46e5">${employee.bpo_experience}y (${getExperienceLevel(employee.bpo_experience)})</span>
-                                </div>
-                            </div>
-                            <i class="bottom-corners"></i>
-                        </div>
-
-                        <!-- Personal Info -->
-                        <div class="detail-section">
-                            <h4>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="9" cy="7" r="4"></circle>
-                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
-                                Personal Info
-                            </h4>
-                            <div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Age:</span>
-                                    <span class="detail-value">${calculateAge(employee.date_of_birth)} years</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Date of Birth:</span>
-                                    <span class="detail-value">${employee.date_of_birth}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Gender:</span>
-                                    <span class="detail-value" style="text-transform: capitalize">${employee.gender}</span>
-                                </div>
-                            </div>
-                            <i class="bottom-corners"></i>
-                        </div>
-
-                        <!-- Timeline -->
-                        <div class="detail-section">
-                            <h4>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                                </svg>
-                                Timeline
-                            </h4>
-                            <div class="timeline">
-                                <div class="timeline-line"></div>
-                                <div class="timeline-events">
-                                    ${timelineEvents.map((event, index) => `
-                                        <div class="timeline-event">
-                                            <div class="event-label" 
-                                                 ${(event.short.includes('.') || event.short !== event.label) ? 
-                                                   `onmouseenter="showTooltip(this, '${event.label}')" 
-                                                    onmouseleave="hideTooltip()"` : ''}>
-                                                <span>${event.short}</span>
-                                                ${(event.short.includes('.') || event.short !== event.label) ? 
-                                                  '<div class="event-info">i</div>' : ''}
-                                            </div>
-                                            <div class="event-dot" style="background-color: ${event.date ? getEventColor(event.type) : '#e5e7eb'}; opacity: ${event.date ? 1 : 0.5}"></div>
-                                            <div class="event-date">${event.date || '—'}</div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            <i class="bottom-corners"></i>
-                        </div>
-                    </div>
-
-                    <!-- Assessment Actions -->
-                    <div class="assessment-section">
-                        <span class="assessment-label">Assessment Results:</span>
-                        <div class="assessment-actions">
-                            <button class="action-button primary" 
-                                    onclick="event.stopPropagation(); window.open('${employee.english_proficiency_test}', '_blank')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                                View Assessment
-                            </button>
-                            <a href="${employee.english_proficiency_test}" 
-                               download="${employee.full_name.replace(/\s+/g, '-').toLowerCase()}-test-results.pdf"
-                               class="action-button secondary"
-                               onclick="event.stopPropagation()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
-                                Download Report
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            ` : ''}
         </div>
     `;
 }
 
-// ========================================
-// MOBILE RENDER FUNCTIONS
-// ========================================
 function renderMobileEmployeeCard(employee) {
+    const age = calculateAge(employee.date_of_birth);
+    const experienceLevel = getExperienceLevel(employee.bpo_experience);
     const avatarColor = getAvatarColor(employee.full_name);
+    const stageColor = getStageColor(employee.stage);
+    const projectColor = getProjectColor(employee.project);
+    const englishColor = getProficiencyColor(employee.english_level);
+    const typingColor = getSpeedColor(employee.typing_speed);
     const isSelected = state.selectedEmployee === employee.id;
-    
-    const timelineEvents = [
-        { date: employee.interview_date || '', type: 'interview', label: 'Interview', color: '#8b5cf6' },
-        { date: employee.start_date || '', type: 'start', label: 'Start Date', color: '#22c55e' },
-        { date: employee.end_date || '', type: 'end', label: 'End Date', color: '#ef4444' }
-    ];
 
     return `
-        <div class="mobile-employee-card ${isSelected ? 'selected' : ''}" 
-             onclick="toggleEmployee(${employee.id})">
-            
-            <!-- Employee Header -->
+        <div class="employee-card-mobile ${isSelected ? 'expanded' : ''}" data-employee-id="${employee.id}">
             <div class="mobile-employee-header">
                 <div class="mobile-employee-left">
                     <div class="mobile-avatar-container">
-                        ${employee.avatar ? 
-                            `<img src="${employee.avatar}" alt="${employee.full_name}" class="mobile-avatar-img">` :
-                            `<div class="mobile-avatar" style="background: ${avatarColor.bg}">
-                                <span style="color: ${avatarColor.text}">
-                                    ${employee.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                </span>
-                            </div>`
-                        }
-                        <div class="mobile-status-dot" style="background-color: ${getStageColor(employee.stage)}"></div>
+                        <div class="mobile-avatar" style="background: ${avatarColor.bg};">
+                            <span style="color: ${avatarColor.text};">
+                                ${employee.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                            </span>
+                        </div>
+                        <div class="mobile-status-dot" style="background-color: ${stageColor};"></div>
                     </div>
+                    
                     <div class="mobile-employee-info">
                         <h3 class="mobile-employee-name">${employee.full_name}</h3>
                         <p class="mobile-employee-position">${employee.position}</p>
+                        <div class="mobile-tags">
+                            <span class="mobile-tag" style="background-color: ${stageColor}20; color: ${stageColor};">
+                                ${employee.stage}
+                            </span>
+                            <span class="mobile-tag" style="background-color: ${projectColor}20; color: ${projectColor};">
+                                ${employee.project}
+                            </span>
+                            ${employee.staffing_type === 'Backup' ? `
+                                <span class="mobile-tag" style="background-color: #6366f120; color: #6366f1;">
+                                    Backup
+                                </span>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Expand Icon -->
-                <svg class="mobile-expand-icon ${isSelected ? 'expanded' : ''}" 
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-            </div>
-
-            <!-- Tags -->
-            <div class="mobile-tags">
-                <span class="mobile-tag" style="background-color: ${getStageColor(employee.stage)}20; color: ${getStageColor(employee.stage)}">
-                    ${employee.stage}
-                </span>
-                <span class="mobile-tag" style="background-color: ${getProjectColor(employee.project)}20; color: ${getProjectColor(employee.project)}">
-                    ${employee.project}
-                </span>
-                ${employee.staffing_type === 'Backup' ? 
-                    '<span class="mobile-tag" style="background-color: #f1f5f9; color: #475569">Backup</span>' : ''}
-            </div>
-
-            ${isSelected ? `
-                <!-- Mobile Employee Details -->
-                <div class="mobile-employee-details">
-                    
-                    <!-- Personal Info - FIRST -->
-                    <div class="mobile-detail-section">
-                        <h4 class="mobile-detail-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                            </svg>
-                            Personal Info
-                        </h4>
-                        <div class="mobile-detail-items">
-                            <div class="mobile-detail-item">
-                                <span class="mobile-detail-label">Age</span>
-                                <span class="mobile-detail-value">${calculateAge(employee.date_of_birth)} years</span>
-                            </div>
-                            <div class="mobile-detail-item">
-                                <span class="mobile-detail-label">Gender</span>
-                                <span class="mobile-detail-value">${employee.gender}</span>
-                            </div>
-                            <div class="mobile-detail-item">
-                                <span class="mobile-detail-label">Date of Birth</span>
-                                <span class="mobile-detail-value">${employee.date_of_birth}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Skills & Experience - SECOND -->
-                    <div class="mobile-detail-section">
-                        <h4 class="mobile-detail-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                            </svg>
-                            Skills & Experience
-                        </h4>
-                        <div class="mobile-detail-items">
-                            <div class="mobile-skill-item">
-                                <div class="mobile-skill-header">
-                                    <span class="mobile-skill-label">English Level</span>
-                                    <span class="mobile-skill-value">${employee.english_level}%</span>
-                                </div>
-                                <div class="mobile-progress-bar">
-                                    <div class="mobile-progress-fill" 
-                                         style="width: ${employee.english_level}%; 
-                                                background-color: ${employee.english_level >= 90 ? '#22c55e' : 
-                                                                   employee.english_level >= 70 ? '#eab308' : '#ef4444'}">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mobile-skill-item">
-                                <div class="mobile-skill-header">
-                                    <span class="mobile-skill-label">Typing Speed</span>
-                                    <span class="mobile-skill-value">${employee.typing_speed} WPM</span>
-                                </div>
-                                <div class="mobile-progress-bar">
-                                    <div class="mobile-progress-fill" 
-                                         style="width: ${Math.min(employee.typing_speed, 100)}%; 
-                                                background-color: ${employee.typing_speed >= 80 ? '#22c55e' : 
-                                                                   employee.typing_speed >= 60 ? '#eab308' : '#ef4444'}">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mobile-detail-item">
-                                <span class="mobile-detail-label">BPO Experience</span>
-                                <span class="mobile-detail-value" style="color: #4f46e5; font-weight: 600">
-                                    ${employee.bpo_experience}y (${getExperienceLevel(employee.bpo_experience)})
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Timeline - THIRD -->
-                    <div class="mobile-detail-section">
-                        <h4 class="mobile-detail-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                            </svg>
-                            Timeline
-                        </h4>
-                        <div class="mobile-timeline">
-                            <div class="mobile-timeline-line"></div>
-                            <div class="mobile-timeline-events">
-                                ${timelineEvents.map((event, index) => {
-                                    const hasDate = !!event.date;
-                                    return `
-                                        <div class="mobile-timeline-event">
-                                            <div class="mobile-timeline-dot" 
-                                                 style="background-color: ${hasDate ? event.color : '#f3f4f6'};
-                                                        border-color: ${hasDate ? 'white' : '#e5e7eb'}">
-                                                ${hasDate ? '<div class="mobile-timeline-dot-inner"></div>' : ''}
-                                            </div>
-                                            <div class="mobile-timeline-content ${!hasDate ? 'no-date' : ''}">
-                                                <span class="mobile-timeline-label ${!hasDate ? 'no-date' : ''}">${event.label}</span>
-                                                <span class="mobile-timeline-date ${!hasDate ? 'no-date' : ''}">${event.date || '—'}</span>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Assessment Actions -->
-                    <div class="mobile-assessment-section">
-                        <p class="mobile-assessment-label">Assessment Results</p>
-                        <div class="mobile-assessment-actions">
-                            <button onclick="event.stopPropagation(); window.open('${employee.english_proficiency_test}', '_blank')" 
-                                    class="mobile-action-button primary">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                                View
-                            </button>
-                            <button onclick="event.stopPropagation(); downloadReport('${employee.english_proficiency_test}', '${employee.full_name}')" 
-                                    class="mobile-action-button secondary">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
-                                Download
-                            </button>
-                        </div>
-                    </div>
+                <div class="mobile-expand-icon">
+                    ${isSelected ? renderIcon('chevron-up', '', 'width: 20px; height: 20px; color: #9ca3af;') : renderIcon('chevron-down', '', 'width: 20px; height: 20px; color: #9ca3af;')}
                 </div>
-            ` : ''}
+            </div>
+            
+            ${isSelected ? renderMobileEmployeeDetails(employee, age, experienceLevel, englishColor, typingColor) : ''}
         </div>
     `;
 }
 
-// ========================================
-// MAIN RENDER FUNCTIONS
-// ========================================
-function renderEmployees() {
-    const teamGrid = document.getElementById('teamGrid');
-    const emptyState = document.getElementById('emptyState');
+function renderMobileEmployeeDetails(employee, age, experienceLevel, englishColor, typingColor) {
+    return `
+        <div class="mobile-employee-details">
+            <div class="mobile-detail-section">
+                <h4>
+                    ${renderIcon('users', '', 'width: 16px; height: 16px; margin-right: 8px;')}
+                    Personal Info
+                </h4>
+                <div class="mobile-detail-items">
+                    <div class="mobile-detail-item">
+                        <span>Age</span>
+                        <span>${age} years</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Gender</span>
+                        <span style="text-transform: capitalize;">${employee.gender}</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Date of Birth</span>
+                        <span>${employee.date_of_birth}</span>
+                    </div>
+                </div>
+            </div>
 
-    if (state.filteredEmployees.length === 0) {
-        teamGrid.style.display = 'none';
-        emptyState.style.display = 'block';
-    } else {
-        teamGrid.style.display = state.isMobile ? 'flex' : 'grid';
-        emptyState.style.display = 'none';
-        
-        if (state.isMobile) {
-            teamGrid.innerHTML = state.filteredEmployees.map(employee => renderMobileEmployeeCard(employee)).join('');
-        } else {
-            teamGrid.innerHTML = state.filteredEmployees.map(employee => renderDesktopEmployeeCard(employee)).join('');
-        }
-    }
-}
+            <div class="mobile-detail-section">
+                <h4>
+                    ${renderIcon('trending-up', '', 'width: 16px; height: 16px; margin-right: 8px;')}
+                    Skills & Experience
+                </h4>
+                <div class="mobile-skill-items">
+                    <div class="mobile-skill-item">
+                        <div class="mobile-skill-header">
+                            <span>English Level</span>
+                            <span style="color: #8b5cf6; font-weight: 600;">${employee.english_level}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${employee.english_level}%; background-color: ${englishColor};"></div>
+                        </div>
+                    </div>
+                    <div class="mobile-skill-item">
+                        <div class="mobile-skill-header">
+                            <span>Typing Speed</span>
+                            <span style="color: #8b5cf6; font-weight: 600;">${employee.typing_speed} WPM</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${Math.min(employee.typing_speed, 100)}%; background-color: ${typingColor};"></div>
+                        </div>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>BPO Experience</span>
+                        <span style="color: #6366f1; font-weight: 600;">
+                            ${employee.bpo_experience}y (${experienceLevel})
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-function updateUI() {
-    updateStats();
-    updateResultsCount();
-    updateFilterButtons();
-    renderDropdowns();
-    renderEmployees();
-}
+            <div class="mobile-detail-section">
+                <h4>
+                    ${renderIcon('calendar', '', 'width: 16px; height: 16px; margin-right: 8px;')}
+                    Timeline
+                </h4>
+                ${renderMobileTimeline(employee)}
+            </div>
 
-// ========================================
-// EVENT HANDLERS
-// ========================================
-function handleCardHover(element, isHover) {
-    if (state.isMobile) return;
-    
-    const transform = isHover ? 'translateY(-4px)' : 'translateY(0px)';
-    const shadow = isHover ? '0 16px 40px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(204, 102, 51, 0.2)' : '';
-    const bg = isHover ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.8)';
-    
-    if (window.innerWidth > 768) {
-        element.style.transform = transform;
-    }
-    element.style.boxShadow = shadow;
-    element.style.backgroundColor = bg;
-}
-
-function toggleEmployee(id) {
-    state.selectedEmployee = state.selectedEmployee === id ? null : id;
-    renderEmployees();
-}
-
-function toggleFilter(type, value) {
-    let filterArray;
-    if (type === 'project') {
-        filterArray = state.filterProject;
-    } else if (type === 'stage') {
-        filterArray = state.filterStage;
-    } else if (type === 'position') {
-        filterArray = state.filterPosition;
-    }
-
-    const index = filterArray.indexOf(value);
-    if (index > -1) {
-        filterArray.splice(index, 1);
-    } else {
-        filterArray.push(value);
-    }
-
-    filterEmployees();
-}
-
-function clearAllFilters() {
-    state.filterProject = [];
-    state.filterStage = [];
-    state.filterPosition = [];
-    filterEmployees();
-}
-
-function showTooltip(element, text) {
-    if (state.isMobile) return;
-    
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip';
-    tooltip.innerHTML = `
-        ${text}
-        <div class="tooltip-arrow"></div>
+            <div class="mobile-assessment-section">
+                <h4>Assessment Results</h4>
+                <div class="mobile-assessment-actions">
+                    <button class="btn-primary view-assessment" data-url="${employee.english_proficiency_test}">
+                        ${renderIcon('eye', '', 'width: 16px; height: 16px;')}
+                        <span>View</span>
+                    </button>
+                    <a href="${employee.english_proficiency_test}" download class="btn-secondary">
+                        ${renderIcon('download', '', 'width: 16px; height: 16px;')}
+                        <span>Download</span>
+                    </a>
+                </div>
+            </div>
+        </div>
     `;
-    element.appendChild(tooltip);
 }
 
-function hideTooltip() {
-    const tooltips = document.querySelectorAll('.tooltip');
-    tooltips.forEach(tooltip => tooltip.remove());
+function renderMobileTimeline(employee) {
+    const eventConfig = {
+        interview: { label: 'Interview', date: employee.interview_date, color: COLORS.timeline.interview },
+        start: { label: 'Start Date', date: employee.start_date, color: COLORS.timeline.start },
+        end: { label: 'End Date', date: employee.end_date, color: COLORS.timeline.end }
+    };
+
+    const events = ['interview', 'start', 'end'];
+
+    return `
+        <div class="mobile-timeline">
+            <div class="mobile-timeline-line"></div>
+            
+            <div class="mobile-timeline-events">
+                ${events.map(eventType => {
+                    const config = eventConfig[eventType];
+                    const hasDate = !!config.date;
+
+                    return `
+                        <div class="timeline-event">
+                            <div class="mobile-timeline-dot" style="background-color: ${hasDate ? config.color : COLORS.white};">
+                                ${hasDate ? '<div class="timeline-dot-inner"></div>' : ''}
+                            </div>
+                            <div class="mobile-timeline-content">
+                                <span class="mobile-timeline-label ${!hasDate ? 'no-date' : ''}">
+                                    ${config.label}
+                                </span>
+                                <span class="mobile-timeline-date ${!hasDate ? 'no-date' : ''}">
+                                    ${config.date || '—'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
 }
 
-function downloadReport(url, name) {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${name.replace(/\s+/g, '-').toLowerCase()}-test-results.pdf`;
-    link.click();
+function renderEmployeeGrid() {
+    const filteredEmployees = getFilteredEmployees();
+
+    if (filteredEmployees.length === 0) {
+        return `
+            <div class="empty-state">
+                ${renderIcon('users', '', 'width: 64px; height: 64px; color: #9ca3af; margin: 0 auto 16px;')}
+                <h3 class="empty-title">No team members found</h3>
+                <p class="empty-text">Try adjusting your search criteria or filters</p>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="employee-grid">
+            ${filteredEmployees.map(employee => renderEmployeeCard(employee)).join('')}
+        </div>
+    `;
 }
 
-// ========================================
-// MOBILE BOTTOM SHEET HANDLERS
-// ========================================
-function openBottomSheet() {
-    state.showMobileFilters = true;
-    const bottomSheet = document.getElementById('bottomSheet');
-    const backdrop = document.getElementById('bottomSheetBackdrop');
+function render() {
+    const app = document.getElementById('appMain');
+    if (!app) return;
     
-    if (bottomSheet && backdrop) {
-        bottomSheet.style.display = 'block';
-        backdrop.style.display = 'block';
-        
-        // Добавить задержку для анимации как в React
-        setTimeout(() => {
-            state.isBottomSheetAnimating = true;
-            bottomSheet.style.transform = 'translateY(0)';
-            backdrop.style.opacity = '0.5'; // Добавить анимацию backdrop
-        }, 10);
+    if (state.loading) {
+        app.innerHTML = renderLoading();
+        return;
     }
-}
 
-function closeBottomSheet() {
-    state.isBottomSheetAnimating = false;
-    const backdrop = document.getElementById('bottomSheetBackdrop');
-    const bottomSheet = document.getElementById('bottomSheet');
-    
-    if (backdrop && bottomSheet) {
-        backdrop.style.opacity = '0';
-        bottomSheet.style.transform = 'translateY(100%)';
-        
-        // Hide after animation completes
-        setTimeout(() => {
-            state.showMobileFilters = false;
-            backdrop.style.display = 'none';
-            bottomSheet.style.display = 'none';
-        }, 300);
-    }
-}
+    app.innerHTML = `
+        <div id="mainContainer" class="content-wrapper">
+            ${renderAnalytics()}
+            ${state.isMobile ? renderMobileFilters() : renderDesktopFilters()}
+            ${renderEmployeeGrid()}
+        </div>
+    `;
 
-function switchFilterTab(tab) {
-    state.activeMobileFilterTab = tab;
-    
-    // Update tab buttons
-    document.querySelectorAll('.mobile-filter-tab').forEach(tabBtn => {
-        tabBtn.classList.remove('active');
-    });
-    document.querySelector(`.mobile-filter-tab[data-tab="${tab}"]`).classList.add('active');
-    
-    // Show correct content
-    document.querySelectorAll('.mobile-tab-pane').forEach(pane => {
-        pane.style.display = 'none';
-    });
-    document.getElementById(`${tab}TabContent`).style.display = 'block';
-}
-
-// ========================================
-// MOBILE SPECIFIC EVENT LISTENERS
-// ========================================
-function initializeMobileHandlers() {
-    // Mobile filter button
-    const mobileFilterButton = document.getElementById('mobileFilterButton');
-    if (mobileFilterButton) {
-        mobileFilterButton.addEventListener('click', openBottomSheet);
-    }
-    
-    // Clear all filters mobile
-    const clearAllMobile = document.getElementById('mobileClearAllFilters');
-    if (clearAllMobile) {
-        clearAllMobile.addEventListener('click', clearAllFilters);
-    }
-    
-    // Bottom sheet backdrop
-    const backdrop = document.getElementById('bottomSheetBackdrop');
-    if (backdrop) {
-        backdrop.addEventListener('click', closeBottomSheet);
-    }
-    
-    // Filter tabs
-    const filterTabs = document.querySelectorAll('.mobile-filter-tab');
-    filterTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            switchFilterTab(tab.dataset.tab);
-        });
-    });
-    
-    // Clear all button in bottom sheet
-    const clearAllButton = document.getElementById('bottomSheetClearAll');
-    if (clearAllButton) {
-        clearAllButton.addEventListener('click', () => {
-            clearAllFilters();
-            closeBottomSheet();
-        });
-    }
-    
-    // ESC key to close bottom sheet
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && state.showMobileFilters) {
-            closeBottomSheet();
-        }
-    });
+    // Bind event listeners after render
+    bindEventListeners();
 }
 
 // ========================================
-// DESKTOP SPECIFIC EVENT LISTENERS
+// EVENT LISTENERS
 // ========================================
-function initializeDesktopHandlers() {
-    // Desktop filter dropdowns
-    const projectFilterBtn = document.getElementById('projectFilterBtn');
-    const stageFilterBtn = document.getElementById('stageFilterBtn');
-    const positionFilterBtn = document.getElementById('positionFilterBtn');
-    
-    if (projectFilterBtn) {
-        projectFilterBtn.addEventListener('click', () => {
-            state.showProjectDropdown = !state.showProjectDropdown;
-            state.showStageDropdown = false;
-            state.showPositionDropdown = false;
-            updateDropdownVisibility();
-        });
-    }
-
-    if (stageFilterBtn) {
-        stageFilterBtn.addEventListener('click', () => {
-            state.showStageDropdown = !state.showStageDropdown;
-            state.showProjectDropdown = false;
-            state.showPositionDropdown = false;
-            updateDropdownVisibility();
-        });
-    }
-
-    if (positionFilterBtn) {
-        positionFilterBtn.addEventListener('click', () => {
-            state.showPositionDropdown = !state.showPositionDropdown;
-            state.showProjectDropdown = false;
-            state.showStageDropdown = false;
-            updateDropdownVisibility();
-        });
-    }
-
-    // Clear filter buttons
-    const clearProjectFilter = document.getElementById('clearProjectFilter');
-    const clearStageFilter = document.getElementById('clearStageFilter');
-    const clearPositionFilter = document.getElementById('clearPositionFilter');
-    
-    if (clearProjectFilter) {
-        clearProjectFilter.addEventListener('click', (e) => {
-            e.stopPropagation();
-            state.filterProject = [];
-            filterEmployees();
-        });
-    }
-
-    if (clearStageFilter) {
-        clearStageFilter.addEventListener('click', (e) => {
-            e.stopPropagation();
-            state.filterStage = [];
-            filterEmployees();
-        });
-    }
-
-    if (clearPositionFilter) {
-        clearPositionFilter.addEventListener('click', (e) => {
-            e.stopPropagation();
-            state.filterPosition = [];
-            filterEmployees();
-        });
-    }
-
-    // Close dropdowns on outside click
-    document.addEventListener('click', (e) => {
-        const isDropdownClick = e.target.closest('.filter-dropdown');
-        if (!isDropdownClick) {
-            state.showProjectDropdown = false;
-            state.showStageDropdown = false;
-            state.showPositionDropdown = false;
-            updateDropdownVisibility();
-        }
-    });
-}
-
-function updateDropdownVisibility() {
-    const projectDropdown = document.getElementById('projectDropdown');
-    const stageDropdown = document.getElementById('stageDropdown');
-    const positionDropdown = document.getElementById('positionDropdown');
-    
-    if (projectDropdown) projectDropdown.style.display = state.showProjectDropdown ? 'block' : 'none';
-    if (stageDropdown) stageDropdown.style.display = state.showStageDropdown ? 'block' : 'none';
-    if (positionDropdown) positionDropdown.style.display = state.showPositionDropdown ? 'block' : 'none';
-}
-
-// ========================================
-// COMMON EVENT LISTENERS
-// ========================================
-function initializeEventListeners() {
+function bindEventListeners() {
     // Search input
-    const searchInput = document.getElementById('searchInput');
-    const clearSearch = document.getElementById('clearSearch');
-    
-    if (searchInput && clearSearch) {
+    const searchInput = document.getElementById(state.isMobile ? 'searchInputMobile' : 'searchInput');
+    if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             state.searchTerm = e.target.value;
-            clearSearch.style.display = state.searchTerm ? 'block' : 'none';
-            filterEmployees();
+            render();
         });
+    }
 
-        clearSearch.addEventListener('click', () => {
+    // Clear search
+    const clearSearchBtn = document.getElementById(state.isMobile ? 'clearSearchBtnMobile' : 'clearSearchBtn');
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', () => {
             state.searchTerm = '';
-            searchInput.value = '';
-            clearSearch.style.display = 'none';
-            filterEmployees();
+            render();
         });
     }
 
-    // Initialize handlers based on device
-    if (state.isMobile) {
-        initializeMobileHandlers();
-    } else {
-        initializeDesktopHandlers();
-    }
-    
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => handleResize(), 250);
+    // Employee cards
+    document.querySelectorAll('.employee-card, .employee-card-mobile').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.view-assessment') || e.target.closest('.btn-secondary')) return;
+            
+            const employeeId = parseInt(card.dataset.employeeId);
+            state.selectedEmployee = state.selectedEmployee === employeeId ? null : employeeId;
+            render();
+        });
     });
+
+    // View button (desktop)
+    document.querySelectorAll('.view-button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const card = btn.closest('.employee-card');
+            const employeeId = parseInt(card.dataset.employeeId);
+            state.selectedEmployee = state.selectedEmployee === employeeId ? null : employeeId;
+            render();
+        });
+    });
+
+    // View assessment buttons
+    document.querySelectorAll('.view-assessment').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.open(btn.dataset.url, '_blank');
+        });
+    });
+
+    // Filter dropdowns (desktop)
+    if (!state.isMobile) {
+        // Project filter
+        const projectFilterBtn = document.getElementById('projectFilterBtn');
+        if (projectFilterBtn) {
+            projectFilterBtn.addEventListener('click', () => {
+                state.showProjectDropdown = !state.showProjectDropdown;
+                state.showStageDropdown = false;
+                state.showPositionDropdown = false;
+                render();
+            });
+        }
+
+        // Stage filter
+        const stageFilterBtn = document.getElementById('stageFilterBtn');
+        if (stageFilterBtn) {
+            stageFilterBtn.addEventListener('click', () => {
+                state.showStageDropdown = !state.showStageDropdown;
+                state.showProjectDropdown = false;
+                state.showPositionDropdown = false;
+                render();
+            });
+        }
+
+        // Position filter
+        const positionFilterBtn = document.getElementById('positionFilterBtn');
+        if (positionFilterBtn) {
+            positionFilterBtn.addEventListener('click', () => {
+                state.showPositionDropdown = !state.showPositionDropdown;
+                state.showProjectDropdown = false;
+                state.showStageDropdown = false;
+                render();
+            });
+        }
+
+        // Clear filter buttons
+        const clearProjectFilter = document.getElementById('clearProjectFilter');
+        if (clearProjectFilter) {
+            clearProjectFilter.addEventListener('click', (e) => {
+                e.stopPropagation();
+                state.filterProject = [];
+                render();
+            });
+        }
+
+        const clearStageFilter = document.getElementById('clearStageFilter');
+        if (clearStageFilter) {
+            clearStageFilter.addEventListener('click', (e) => {
+                e.stopPropagation();
+                state.filterStage = [];
+                render();
+            });
+        }
+
+        const clearPositionFilter = document.getElementById('clearPositionFilter');
+        if (clearPositionFilter) {
+            clearPositionFilter.addEventListener('click', (e) => {
+                e.stopPropagation();
+                state.filterPosition = [];
+                render();
+            });
+        }
+
+        // Filter checkboxes
+        document.querySelectorAll('.dropdown-item input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const filterType = e.target.dataset.filterType;
+                const filterValue = e.target.dataset.filterValue;
+                toggleFilter(filterValue, filterType);
+            });
+        });
+    }
+
+    // Mobile filters
+    if (state.isMobile) {
+        // Open mobile filters
+        const mobileFilterBtn = document.getElementById('mobileFilterBtn');
+        if (mobileFilterBtn) {
+            mobileFilterBtn.addEventListener('click', () => {
+                state.showMobileFilters = true;
+                render();
+            });
+        }
+
+        // Close mobile filters
+        const closeFilters = document.getElementById('closeFilters');
+        if (closeFilters) {
+            closeFilters.addEventListener('click', () => {
+                state.showMobileFilters = false;
+                render();
+            });
+        }
+
+        // Mobile filters overlay
+        const mobileFiltersOverlay = document.getElementById('mobileFiltersOverlay');
+        if (mobileFiltersOverlay) {
+            mobileFiltersOverlay.addEventListener('click', () => {
+                state.showMobileFilters = false;
+                render();
+            });
+        }
+
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                state.activeFilterTab = tab.dataset.tab;
+                render();
+            });
+        });
+
+        // Mobile filter checkboxes
+        document.querySelectorAll('.mobile-filter-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const filterType = e.target.dataset.filterType;
+                const filterValue = e.target.dataset.filterValue;
+                toggleFilter(filterValue, filterType);
+            });
+        });
+
+        // Clear all mobile
+        const mobileClearAll = document.getElementById('mobileClearAll');
+        if (mobileClearAll) {
+            mobileClearAll.addEventListener('click', clearAllFilters);
+        }
+
+        const clearAllMobile = document.getElementById('clearAllMobile');
+        if (clearAllMobile) {
+            clearAllMobile.addEventListener('click', clearAllFilters);
+        }
+    }
 }
 
-// ========================================
-// RESIZE HANDLER
-// ========================================
-function handleResize() {
+// Close dropdowns on outside click
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.filter-dropdown')) {
+        if (state.showProjectDropdown || state.showStageDropdown || state.showPositionDropdown) {
+            state.showProjectDropdown = false;
+            state.showStageDropdown = false;
+            state.showPositionDropdown = false;
+            render();
+        }
+    }
+});
+
+// Handle window resize
+function checkMobileView() {
     const wasMobile = state.isMobile;
-    state.isMobile = window.innerWidth < 768;
-    state.deviceType = getDeviceType();
+    state.isMobile = window.innerWidth <= 1024;
     
     if (wasMobile !== state.isMobile) {
-        // Close any open modals/dropdowns
+        // Reset mobile-specific states when switching
+        state.showMobileFilters = false;
         state.showProjectDropdown = false;
         state.showStageDropdown = false;
         state.showPositionDropdown = false;
-        state.showMobileFilters = false;
-        
-        // Close bottom sheet if open
-        if (state.showMobileFilters) {
-            closeBottomSheet();
-        }
-        
-        // Re-initialize event listeners
-        const elements = [
-            'searchInput', 'clearSearch',
-            'projectFilterBtn', 'stageFilterBtn', 'positionFilterBtn',
-            'clearProjectFilter', 'clearStageFilter', 'clearPositionFilter',
-            'mobileFilterButton', 'mobileClearAllFilters'
-        ];
-        
-        elements.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                const newEl = el.cloneNode(true);
-                el.parentNode.replaceChild(newEl, el);
-            }
-        });
-        
-        // Re-initialize
-        setTimeout(() => {
-            initializeEventListeners();
-            updateUI();
-        }, 100);
+        render();
     }
 }
 
-// ========================================
-// GLOBAL FUNCTIONS
-// ========================================
-window.toggleEmployee = toggleEmployee;
-window.toggleFilter = toggleFilter;
-window.handleCardHover = handleCardHover;
-window.showTooltip = showTooltip;
-window.hideTooltip = hideTooltip;
-window.downloadReport = downloadReport;
-window.clearAllFilters = clearAllFilters;
-window.openBottomSheet = openBottomSheet;
-window.closeBottomSheet = closeBottomSheet;
-window.switchFilterTab = switchFilterTab;
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(checkMobileView, 250);
+});
 
 // ========================================
 // INITIALIZATION
 // ========================================
-async function initialize() {
+async function loadData() {
     try {
-        // Show loading
-        document.getElementById('loadingScreen').style.display = 'flex';
-        document.getElementById('mainContainer').style.display = 'none';
+        // Показываем загрузку
+        state.loading = true;
+        render();
         
-        // Determine device type
-        state.deviceType = getDeviceType();
-        state.isMobile = ['ultra-mobile', 'small-mobile', 'mobile'].includes(state.deviceType);
-        
-        // Load data from Supabase
+        // Загружаем данные из Supabase
         const employees = await api.getEmployees();
         
-        // Save to state
+        // Сохраняем в state
         state.employees = employees;
-        state.filteredEmployees = employees;
+        state.loading = false;
         
-        // Hide loading and show content
-        document.getElementById('loadingScreen').style.display = 'none';
-        document.getElementById('mainContainer').style.display = 'block';
-        
-        // Initialize UI
-        updateUI();
-        initializeEventListeners();
-        
+        // Рендерим с реальными данными
+        render();
     } catch (error) {
-        console.error('Error initializing:', error);
+        console.error('Error loading team data:', error);
         
-        // Show error message
-        document.getElementById('loadingScreen').innerHTML = `
-            <div class="loading-content">
-                <div style="text-align: center;">
-                    <svg class="empty-icon" style="width: 64px; height: 64px; margin: 0 auto 16px; color: #ef4444;" 
-                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <h3 style="font-size: 18px; font-weight: 500; color: #111827; margin-bottom: 8px;">
-                        Error loading data
-                    </h3>
-                    <p style="color: #6b7280; margin-bottom: 16px;">
-                        ${error.message || 'Failed to connect to database'}
-                    </p>
-                    <button onclick="location.reload()" style="
-                        padding: 8px 16px;
-                        background-color: #cc6633;
-                        color: white;
-                        border: none;
-                        border-radius: 6px;
-                        font-weight: 500;
-                        cursor: pointer;
-                    ">
-                        Try Again
-                    </button>
+        // Показываем ошибку
+        const app = document.getElementById('appMain');
+        if (app) {
+            app.innerHTML = `
+                <div class="error-state">
+                    <div class="error-content">
+                        ${renderIcon('x', '', 'width: 64px; height: 64px; color: #ef4444; margin: 0 auto 16px;')}
+                        <h3 class="error-title">Error loading data</h3>
+                        <p class="error-text">${error.message || 'Failed to connect to database'}</p>
+                        <button class="btn-primary" onclick="location.reload()">
+                            Try Again
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     }
 }
 
-// Start the application
-document.addEventListener('DOMContentLoaded', initialize);
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    checkMobileView();
+    loadData();
+});
+
+// Export functions for global access
+window.teamApp = {
+    toggleFilter,
+    clearAllFilters,
+    state
+};

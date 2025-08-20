@@ -54,216 +54,24 @@
             <div id="mainContainer" class="content-wrapper" style="display: none;">
                 
                 <!-- Analytics Dashboard -->
-                <div class="stats-section">
-                    <div class="stats-grid" data-mobile-layout="2x2">
-                        <!-- Active Employees -->
-                        <div class="stat-card">
-                            <div class="stat-content">
-                                <div class="stat-info">
-                                    <h3 class="stat-label">Active</h3>
-                                    <p class="stat-value" id="statActive">0</p>
-                                </div>
-                                <div class="stat-icon">
-                                    <svg class="icon icon-green" viewBox="0 0 26 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M6 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
-                                        <path d="M4 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
-                                        <path d="M18 10l2 2l4 -4"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Onboarding -->
-                        <div class="stat-card">
-                            <div class="stat-content">
-                                <div class="stat-info">
-                                    <h3 class="stat-label">Onboarding</h3>
-                                    <p class="stat-value" id="statOnboarding">0</p>
-                                </div>
-                                <div class="stat-icon">
-                                    <svg class="icon icon-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <polyline points="12 6 12 12 16 14"></polyline>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Terminated -->
-                        <div class="stat-card">
-                            <div class="stat-content">
-                                <div class="stat-info">
-                                    <h3 class="stat-label">Terminated</h3>
-                                    <p class="stat-value" id="statTerminated">0</p>
-                                </div>
-                                <div class="stat-icon">
-                                    <svg class="icon icon-red" viewBox="0 0 26 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M6 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
-                                        <path d="M4 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
-                                        <line x1="19" y1="11" x2="24" y2="11"></line>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Backup Pool -->
-                        <div class="stat-card">
-                            <div class="stat-content">
-                                <div class="stat-info">
-                                    <h3 class="stat-label">Backup</h3>
-                                    <p class="stat-value" id="statBackup">0</p>
-                                </div>
-                                <div class="stat-icon">
-                                    <svg class="icon icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="analytics-grid" id="analyticsGrid">
+                    <!-- Cards will be rendered by JavaScript -->
                 </div>
 
                 <!-- Search and Filters Section -->
-                <div class="filters-section">
-                    <div class="filters-container" id="filtersContainer">
-                        <div class="filters-content">
-                            
-                            <!-- Search Input -->
-                            <div class="search-container">
-                                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <path d="m21 21-4.35-4.35"></path>
-                                </svg>
-                                <input 
-                                    type="text" 
-                                    id="searchInput"
-                                    class="search-input"
-                                    placeholder="Search employees by name, position, or project..."
-                                    autocomplete="off"
-                                >
-                                <button id="clearSearch" class="clear-search" style="display: none;" aria-label="Clear search">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M18 6L6 18M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <!-- Desktop Filter Dropdowns -->
-                            <div class="filters-group desktop-filters">
-                                <!-- Project Filter -->
-                                <div class="filter-dropdown">
-                                    <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                                        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        <line x1="12" y1="11" x2="12" y2="17"></line>
-                                    </svg>
-                                    <button class="filter-button" id="projectFilterBtn">
-                                        <span id="projectFilterText">All Projects</span>
-                                    </button>
-                                    <button class="filter-clear" id="clearProjectFilter" style="display: none;" aria-label="Clear project filter">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M18 6L6 18M6 6l12 12"></path>
-                                        </svg>
-                                    </button>
-                                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                    </svg>
-                                    <div class="dropdown-menu" id="projectDropdown" style="display: none;"></div>
-                                </div>
-
-                                <!-- Stage Filter -->
-                                <div class="filter-dropdown">
-                                    <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polygon points="3,11 22,2 13,21 11,13 3,11"></polygon>
-                                    </svg>
-                                    <button class="filter-button" id="stageFilterBtn">
-                                        <span id="stageFilterText">All Stages</span>
-                                    </button>
-                                    <button class="filter-clear" id="clearStageFilter" style="display: none;" aria-label="Clear stage filter">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M18 6L6 18M6 6l12 12"></path>
-                                        </svg>
-                                    </button>
-                                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                    </svg>
-                                    <div class="dropdown-menu" id="stageDropdown" style="display: none;"></div>
-                                </div>
-
-                                <!-- Position Filter -->
-                                <div class="filter-dropdown">
-                                    <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-                                    <button class="filter-button" id="positionFilterBtn">
-                                        <span id="positionFilterText">All Positions</span>
-                                    </button>
-                                    <button class="filter-clear" id="clearPositionFilter" style="display: none;" aria-label="Clear position filter">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M18 6L6 18M6 6l12 12"></path>
-                                        </svg>
-                                    </button>
-                                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                    </svg>
-                                    <div class="dropdown-menu" id="positionDropdown" style="display: none;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Mobile Filter Controls (показываются только на мобильных) -->
-                            <div class="mobile-filter-controls" style="display: none;">
-                                <div class="mobile-filter-row">
-                                    <div id="mobileResultsCount" class="mobile-results-count">0 of 0</div>
-                                    
-                                    <div class="mobile-filter-buttons">
-                                        <button id="mobileClearAllFilters" class="mobile-clear-button" style="display: none;">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M18 6L6 18M6 6l12 12"></path>
-                                            </svg>
-                                            <span>Clear</span>
-                                        </button>
-                                        
-                                        <button id="mobileFilterButton" class="mobile-filter-button">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M3 12h18M3 6h18M3 18h18"></path>
-                                            </svg>
-                                            <span>Filters</span>
-                                            <span id="mobileFilterCount" class="mobile-filter-count" style="display: none;">0</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Desktop Results Count -->
-                            <div class="results-count desktop-results">
-                                <span id="resultsCount">0 of 0</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="search-filters-container" id="searchFiltersContainer">
+                    <!-- Desktop filters will be rendered by JavaScript -->
                 </div>
 
                 <!-- Team Members Grid -->
                 <div class="team-section">
-                    <div class="team-grid" id="teamGrid">
-                        <!-- Employee cards будут добавлены через JavaScript -->
+                    <div class="employee-grid" id="employeeGrid">
+                        <!-- Employee cards will be rendered by JavaScript -->
                     </div>
 
                     <!-- Empty State -->
                     <div id="emptyState" class="empty-state" style="display: none;">
-                        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                        <h3 class="empty-title">No team members found</h3>
-                        <p class="empty-text">Try adjusting your search criteria or filters</p>
+                        <!-- Empty state will be rendered by JavaScript -->
                     </div>
                 </div>
                 
@@ -273,66 +81,11 @@
         <!-- Mobile Overlay (для затемнения при открытом mobile menu) -->
         <div class="app-overlay" id="appOverlay"></div>
         
+        <!-- Mobile Filters Bottom Sheet -->
+        <div class="mobile-filters-overlay" id="mobileFiltersOverlay"></div>
+        <div class="mobile-filters-container" id="mobileFiltersContainer"></div>
+        
     </div><!-- /app-layout -->
-
-    <!-- Bottom Sheet для мобильных фильтров -->
-    <div id="bottomSheetBackdrop" class="bottom-sheet-backdrop"></div>
-    <div id="bottomSheet" class="bottom-sheet">
-        <!-- Handle -->
-        <div class="bottom-sheet-handle"></div>
-        
-        <!-- Header -->
-        <div class="bottom-sheet-header">
-            <div class="bottom-sheet-title-row">
-                <div class="bottom-sheet-spacer"></div>
-                <h3 class="bottom-sheet-title">Filters</h3>
-                <div class="bottom-sheet-counter">
-                    <span id="bottomSheetCount" class="bottom-sheet-count">0 of 0</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tabs -->
-        <div class="bottom-sheet-tabs">
-            <button class="mobile-filter-tab active" data-tab="project">
-                Projects
-                <span id="projectTabCount" class="mobile-filter-tab-count" style="display: none;">0</span>
-            </button>
-            <button class="mobile-filter-tab" data-tab="stage">
-                Stages
-                <span id="stageTabCount" class="mobile-filter-tab-count" style="display: none;">0</span>
-            </button>
-            <button class="mobile-filter-tab" data-tab="position">
-                Positions
-                <span id="positionTabCount" class="mobile-filter-tab-count" style="display: none;">0</span>
-            </button>
-        </div>
-        
-        <!-- Content Area -->
-        <div class="bottom-sheet-content">
-            <!-- Project Tab Content -->
-            <div id="projectTabContent" class="mobile-tab-pane active">
-                <!-- Будет заполнено через JavaScript -->
-            </div>
-            
-            <!-- Stage Tab Content -->
-            <div id="stageTabContent" class="mobile-tab-pane" style="display: none;">
-                <!-- Будет заполнено через JavaScript -->
-            </div>
-            
-            <!-- Position Tab Content -->
-            <div id="positionTabContent" class="mobile-tab-pane" style="display: none;">
-                <!-- Будет заполнено через JavaScript -->
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <div id="bottomSheetFooter" class="bottom-sheet-footer" style="display: none;">
-            <button id="bottomSheetClearAll" class="bottom-sheet-clear-button">
-                Clear All Filters (<span id="bottomSheetTotalCount">0</span>)
-            </button>
-        </div>
-    </div>
 
     <!-- Scripts -->
     <script type="module" src="script.js"></script>
