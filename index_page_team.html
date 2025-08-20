@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Team Management - {{title}}</title>
+    
+    <!-- Layout System CSS (ПЕРВЫМ!) -->
+    <link rel="stylesheet" href="../../components/layout/layout.css">
+    
+    <!-- Component CSS -->
+    <link rel="stylesheet" href="../../components/navbar/navbar.css">
+    <link rel="stylesheet" href="../../components/header/header.css">
+    
+    <!-- Page Specific CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- App Layout Grid Container -->
+    <div class="app-layout" id="appLayout">
+        
+        <!-- Navbar Component (Grid Area: navbar) -->
+        <nav class="app-navbar" id="appNavbar">
+            {{> navbar 
+                activePage="team" 
+                userName="Anonymous User" 
+                userRole="Guest Access"
+            }}
+        </nav>
+        
+        <!-- Header Component (Grid Area: header) -->
+        <header class="app-header" id="appHeader">
+            {{> header 
+                pageTitle='Team <span class="accent-text">Management</span>'
+                pageIcon='<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'
+                breadcrumbs=breadcrumbs
+                userName="Anonymous User"
+                userAvatar="/assets/img/default-avatar.png"
+            }}
+        </header>
+        
+        <!-- Main Content Area (Grid Area: main) -->
+        <main class="app-main" id="appMain">
+            
+            <!-- Loading Screen -->
+            <div id="loadingScreen" class="loading-screen">
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">Loading team data...</p>
+                </div>
+            </div>
+
+            <!-- Main Container (показывается после загрузки) -->
+            <div id="mainContainer" class="content-wrapper" style="display: none;">
+                
+                <!-- Analytics Dashboard -->
+                <div class="analytics-grid" id="analyticsGrid">
+                    <!-- Cards will be rendered by JavaScript -->
+                </div>
+
+                <!-- Search and Filters Section -->
+                <div class="search-filters-container" id="searchFiltersContainer">
+                    <!-- Desktop filters will be rendered by JavaScript -->
+                </div>
+
+                <!-- Team Members Grid -->
+                <div class="team-section">
+                    <div class="employee-grid" id="employeeGrid">
+                        <!-- Employee cards will be rendered by JavaScript -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <!-- Empty state will be rendered by JavaScript -->
+                    </div>
+                </div>
+                
+            </div><!-- /mainContainer -->
+        </main>
+        
+        <!-- Mobile Overlay (для затемнения при открытом mobile menu) -->
+        <div class="app-overlay" id="appOverlay"></div>
+        
+        <!-- Mobile Filters Bottom Sheet -->
+        <div class="mobile-filters-overlay" id="mobileFiltersOverlay"></div>
+        <div class="mobile-filters-container" id="mobileFiltersContainer"></div>
+        
+    </div><!-- /app-layout -->
+
+    <!-- Scripts -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
