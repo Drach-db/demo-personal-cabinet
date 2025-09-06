@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Onboarding Management - HR Dashboard</title>
+    <title>Billing Management - Dashboard</title>
 
     <!-- Layout System CSS (ПЕРВЫМ!) -->
     <link rel="stylesheet" href="../../components/layout/layout.css">
@@ -22,7 +22,7 @@
         <!-- Navbar Component -->
         <nav class="app-navbar" id="appNavbar">
             {{> navbar
-                activePage="onboarding"
+                activePage="billing"
                 userName="Anonymous User"
                 userRole="Guest Access"
             }}
@@ -31,23 +31,30 @@
         <!-- Header Component -->
         <header class="app-header" id="appHeader">
             {{> header
-                pageTitle='Onboarding <span class="accent-text">Management</span>'
-                pageIcon='<circle cx="10" cy="7" r="4"></circle><path d="M10.3 15H7a4 4 0 0 0-4 4v2"></path><circle cx="17" cy="17" r="3"></circle><path d="m21 21-1.9-1.9"></path>'
+                pageTitle='Billing <span class="accent-text">Management</span>'
+                pageIcon='<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>'
             }}
         </header>
 
         <!-- Main Content Area -->
         <main class="app-main" id="appMain">
-            <!-- Контент будет загружен через JavaScript -->
-            <div class="loading-container">
-                <div class="loading-spinner"></div>
-                <p class="loading-text">Loading batches data...</p>
+            <!-- Dashboard Section -->
+            <div class="billing-card">
+                <div id="dashboardSection">
+                    <!-- Будет заполнено через JS -->
+                </div>
+            </div>
+
+            <!-- Billing History Table -->
+            <div class="billing-card">
+                <div id="historySection">
+                    <!-- Будет заполнено через JS -->
+                </div>
             </div>
         </main>
 
         <!-- Mobile Overlay -->
         <div class="app-overlay" id="appOverlay"></div>
-
     </div>
 
     <!-- Scripts с type="module" -->

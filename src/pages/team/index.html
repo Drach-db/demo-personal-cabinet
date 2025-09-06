@@ -3,91 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Team Management - {{title}}</title>
-    
+    <title>Team Management - BPO Dashboard</title>
+
     <!-- Layout System CSS (ПЕРВЫМ!) -->
     <link rel="stylesheet" href="../../components/layout/layout.css">
-    
+
     <!-- Component CSS -->
     <link rel="stylesheet" href="../../components/navbar/navbar.css">
     <link rel="stylesheet" href="../../components/header/header.css">
-    
+
     <!-- Page Specific CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- App Layout Grid Container -->
     <div class="app-layout" id="appLayout">
-        
-        <!-- Navbar Component (Grid Area: navbar) -->
+
+        <!-- Navbar Component -->
         <nav class="app-navbar" id="appNavbar">
-            {{> navbar 
-                activePage="team" 
-                userName="Anonymous User" 
-                userRole="Guest Access"
+            {{> navbar
+                activePage="team"
+                userName="Admin User"
+                userRole="System Administrator"
             }}
         </nav>
-        
-        <!-- Header Component (Grid Area: header) -->
+
+        <!-- Header Component -->
         <header class="app-header" id="appHeader">
-            {{> header 
+            {{> header
                 pageTitle='Team <span class="accent-text">Management</span>'
-                pageIcon='<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'
-                breadcrumbs=breadcrumbs
-                userName="Anonymous User"
-                userAvatar="/assets/img/default-avatar.png"
+                pageIcon='<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'
             }}
         </header>
-        
-        <!-- Main Content Area (Grid Area: main) -->
+
+        <!-- Main Content Area -->
         <main class="app-main" id="appMain">
-            
-            <!-- Loading Screen -->
-            <div id="loadingScreen" class="loading-screen">
-                <div class="loading-content">
+            <!-- Content wrapper to control max-width without affecting navbar animation -->
+            <div class="content-container">
+                <!-- Analytics Grid -->
+                <div class="analytics-grid" id="analyticsGrid">
+                    <!-- Will be populated by JS -->
+                </div>
+
+                <!-- Search and Filters Container (Desktop) -->
+                <div class="search-filters-container search-filters-desktop" id="desktopFilters">
+                    <!-- Will be populated by JS -->
+                </div>
+
+                <!-- Search and Filters Container (Mobile) -->
+                <div class="search-filters-container search-filters-mobile" id="mobileFilters">
+                    <!-- Will be populated by JS -->
+                </div>
+
+                <!-- Employee Grid -->
+                <div class="employee-grid" id="employeeGrid">
+                    <!-- Will be populated by JS -->
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-container" id="loadingContainer">
                     <div class="loading-spinner"></div>
                     <p class="loading-text">Loading team data...</p>
                 </div>
+
+                <!-- Error State -->
+                <div class="error-container hidden" id="errorContainer">
+                    <svg class="error-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <h3 class="error-title">Unable to load team data</h3>
+                    <p class="error-message" id="errorMessage">Please try again later or contact support if the problem persists.</p>
+                    <button class="btn-primary" onclick="window.retryDataLoad()">
+                        Retry
+                    </button>
+                </div>
             </div>
-
-            <!-- Main Container (показывается после загрузки) -->
-            <div id="mainContainer" class="content-wrapper" style="display: none;">
-                
-                <!-- Analytics Dashboard -->
-                <div class="analytics-grid" id="analyticsGrid">
-                    <!-- Cards will be rendered by JavaScript -->
-                </div>
-
-                <!-- Search and Filters Section -->
-                <div class="search-filters-container" id="searchFiltersContainer">
-                    <!-- Desktop filters will be rendered by JavaScript -->
-                </div>
-
-                <!-- Team Members Grid -->
-                <div class="team-section">
-                    <div class="employee-grid" id="employeeGrid">
-                        <!-- Employee cards will be rendered by JavaScript -->
-                    </div>
-
-                    <!-- Empty State -->
-                    <div id="emptyState" class="empty-state" style="display: none;">
-                        <!-- Empty state will be rendered by JavaScript -->
-                    </div>
-                </div>
-                
-            </div><!-- /mainContainer -->
         </main>
-        
-        <!-- Mobile Overlay (для затемнения при открытом mobile menu) -->
-        <div class="app-overlay" id="appOverlay"></div>
-        
-        <!-- Mobile Filters Bottom Sheet -->
-        <div class="mobile-filters-overlay" id="mobileFiltersOverlay"></div>
-        <div class="mobile-filters-container" id="mobileFiltersContainer"></div>
-        
-    </div><!-- /app-layout -->
 
-    <!-- Scripts -->
+        <!-- Mobile Overlay -->
+        <div class="app-overlay" id="appOverlay"></div>
+    </div>
+
+    <!-- ⚠️ МОБИЛЬНЫЕ ФИЛЬТРЫ - ВНЕ app-layout! -->
+    <!-- Mobile Filters Bottom Sheet -->
+    <div class="mobile-filters-overlay" id="mobileFiltersOverlay"></div>
+    
+    <div class="mobile-filters-container" id="mobileFiltersContainer">
+        <div class="mobile-filters-header">
+            <div class="mobile-filters-title-wrapper">
+                <h3 class="mobile-filters-title">Filters</h3>
+                <span class="mobile-filters-count" id="activeFiltersCount"></span>
+            </div>
+            <div class="mobile-filters-actions">
+                <button class="mobile-filters-clear" id="clearAllFiltersBtn" onclick="window.clearAllFilters()">
+                    Clear all
+                </button>
+                <button class="mobile-filters-close" onclick="window.closeMobileFilters()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-tab="project" onclick="window.switchFilterTab('project')">
+                Projects
+            </button>
+            <button class="filter-tab" data-tab="stage" onclick="window.switchFilterTab('stage')">
+                Stages
+            </button>
+            <button class="filter-tab" data-tab="position" onclick="window.switchFilterTab('position')">
+                Positions
+            </button>
+        </div>
+
+        <div class="filter-content" id="filterContent">
+            <!-- Will be populated by JS -->
+        </div>
+    </div>
+
+    <!-- Scripts with type="module" -->
     <script type="module" src="script.js"></script>
 </body>
 </html>

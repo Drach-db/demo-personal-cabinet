@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Schedules Management - {{title}}</title>
+
+    <!-- Layout System CSS (ПЕРВЫМ!) -->
+    <link rel="stylesheet" href="../../components/layout/layout.css">
+
+    <!-- Component CSS -->
+    <link rel="stylesheet" href="../../components/navbar/navbar.css">
+    <link rel="stylesheet" href="../../components/header/header.css">
+
+    <!-- Page Specific CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- App Layout Grid Container -->
+    <div class="app-layout" id="appLayout">
+
+        <!-- Navbar Component -->
+        <nav class="app-navbar" id="appNavbar">
+            {{> navbar
+                activePage="schedules"
+                userName="Anonymous User"
+                userRole="Guest Access"
+            }}
+        </nav>
+
+        <!-- Header Component -->
+        <header class="app-header" id="appHeader">
+            {{> header
+                pageTitle='Schedules <span class="accent-text">Management</span>'
+                pageIcon='<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>'
+            }}
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-main" id="appMain">
+            <!-- Loading State -->
+            <div id="loading-container" class="loading-container">
+                <div class="loading-spinner"></div>
+                <p>Loading schedules...</p>
+            </div>
+
+            <!-- Calendar Container (will be populated by JS) -->
+            <div id="calendar-container" class="calendar-container hidden"></div>
+        </main>
+
+        <!-- Mobile Overlay -->
+        <div class="app-overlay" id="appOverlay"></div>
+
+    </div>
+
+    <!-- ⚠️ МОБИЛЬНЫЕ ЭЛЕМЕНТЫ - ВНЕ app-layout! -->
+    <!-- Modals Container -->
+    <div id="modals-container"></div>
+
+    <!-- Bottom Sheet для мобильных фильтров -->
+    <div id="bottom-sheet-overlay" class="bottom-sheet-overlay hidden"></div>
+    <div id="bottom-sheet" class="bottom-sheet hidden">
+        <div class="bottom-sheet-header">
+            <div class="flex items-center gap-2">
+                <h3>Filters</h3>
+                <span id="active-filters-count" class="hidden"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="clear-all-filters" class="hidden">Clear all</button>
+                <button class="modal-close" data-modal="bottom-sheet">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="bottom-sheet-tabs">
+            <button class="bottom-sheet-tab active" data-tab="project">Projects</button>
+            <button class="bottom-sheet-tab" data-tab="stage">Stages</button>
+            <button class="bottom-sheet-tab" data-tab="position">Positions</button>
+        </div>
+        
+        <div class="bottom-sheet-content" id="bottom-sheet-content">
+            <!-- Content will be populated by JS -->
+        </div>
+    </div>
+
+    <!-- Scripts с type="module" -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
