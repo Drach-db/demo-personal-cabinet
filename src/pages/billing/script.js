@@ -490,6 +490,9 @@ function renderDashboard(currentMonthData) {
 }
 
 function renderHistory() {
+    const total = state.billingData.length;
+    const rows = state.billingData.slice(0, state.historyLimit);
+    const showing = rows.length;
     return `
         ${components.sectionHeader({
             icon: createIcon('fileText'),
@@ -497,7 +500,7 @@ function renderHistory() {
             subtitle: 'Invoice and report management',
             badge: `
                 <div class="billing-hide-mobile">
-                    ${components.badge(`${state.billingData.length} Records`, 'primary')}
+                    ${components.badge(`${showing} of ${total} Records`, 'primary')}
                 </div>
             `
         })}
@@ -515,7 +518,7 @@ function renderHistory() {
 
             <!-- Table Rows -->
             <div>
-                ${state.billingData.length === 0 ? `
+                ${total === 0 ? `
                     <div style="padding: 4rem; text-align: center;">
                         <div style="width: 3.5rem; height: 3.5rem; border-radius: 1rem; margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; background-color: rgba(var(--billing-color-gray-rgb), 0.1);">
                             ${createIcon('fileText', 28)}
@@ -527,21 +530,26 @@ function renderHistory() {
                             No invoices found in the database
                         </p>
                     </div>
-                ` : state.billingData.map((item, index) => 
-                    components.tableRow(item, index, index === state.billingData.length - 1)
+                ` : rows.map((item, index) => 
+                    components.tableRow(item, index, index === showing - 1)
                 ).join('')}
             </div>
         </div>
+        ${total > showing ? `
+            <div class="billing-flex billing-justify-center" style="margin-top: 1rem;">
+                <button class="billing-action-button billing-action-button--primary" onclick="showMoreHistory()" style="padding: 0.5rem 0.75rem;">
+                    Load more (${Math.min(total - showing, 25)})
+                </button>
+            </div>
+        ` : ''}
     `;
 }
 
 function renderLoading() {
     return `
-        <div class="billing-loading-container">
-            <div class="billing-text-center">
-                <div class="billing-spinner"></div>
-                <p class="billing-text-gray" style="margin-top: 1rem;">Loading billing data...</p>
-            </div>
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading billing data...</p>
         </div>
     `;
 }
@@ -554,14 +562,23 @@ function render() {
     const historySection = document.getElementById('historySection');
     
     if (state.loading) {
-        if (dashboardSection) {
-            dashboardSection.innerHTML = renderLoading();
-        }
+        // Show top-level loading and hide both cards for clean view
+        const loadingEl = document.getElementById('billingLoadingContainer');
+        if (loadingEl) loadingEl.classList.remove('hidden');
+
+        const dashboardCard = dashboardSection ? dashboardSection.closest('.billing-card') : null;
+        const historyCard = historySection ? historySection.closest('.billing-card') : null;
+        if (dashboardCard) dashboardCard.style.display = 'none';
+        if (historyCard) historyCard.style.display = 'none';
         return;
     }
     
     const currentMonthData = getCurrentMonthData(state.billingData);
     
+    // Hide top-level loading when data ready
+    const loadingEl = document.getElementById('billingLoadingContainer');
+    if (loadingEl) loadingEl.classList.add('hidden');
+
     if (dashboardSection) {
         dashboardSection.innerHTML = renderDashboard(currentMonthData);
     }
@@ -569,6 +586,12 @@ function render() {
     if (historySection) {
         historySection.innerHTML = renderHistory();
     }
+
+    // Show cards (both) when content is ready
+    const dashboardCard = dashboardSection ? dashboardSection.closest('.billing-card') : null;
+    const historyCard = historySection ? historySection.closest('.billing-card') : null;
+    if (dashboardCard) dashboardCard.style.display = '';
+    if (historyCard) historyCard.style.display = '';
     
     // Set up event listeners after render
     if (utils.device.isMobile()) {
@@ -579,12 +602,28 @@ function render() {
 // ========================================
 // DATA LOADING
 // ========================================
+// Simple cache helpers
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const cacheKeyBilling = () => 'billing_records_v1';
+function cacheGet(key, ttlMs = CACHE_TTL_MS) {
+    try {
+        const raw = sessionStorage.getItem(key);
+        if (!raw) return null;
+        const { ts, data } = JSON.parse(raw);
+        if (Date.now() - ts > ttlMs) return null;
+        return data;
+    } catch { return null; }
+}
+function cacheSet(key, data) {
+    try { sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+}
 async function loadBillingData() {
     try {
         console.log('📊 Loading billing data...');
         const data = await api.getBillingRecords();
         state.billingData = data;
         console.log(`✅ Loaded ${data.length} billing records`);
+        cacheSet(cacheKeyBilling(), data);
         return data;
     } catch (error) {
         console.error('❌ Error loading billing data:', error);
@@ -601,14 +640,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('✅ Billing page loaded');
     
     try {
-        // 1. Show loading state
-        state.loading = true;
-        render();
-        
-        // 2. Load data from Supabase
+        // 1) cache-first render
+        const cached = cacheGet(cacheKeyBilling());
+        if (cached) {
+            state.billingData = cached;
+            state.loading = false;
+            render();
+        } else {
+            state.loading = true;
+            render();
+        }
+
+        // 2) refresh in background
         await loadBillingData();
-        
-        // 3. Update state and render
         state.loading = false;
         render();
         
@@ -627,3 +671,10 @@ window.addEventListener('resize', () => {
     state.windowWidth = window.innerWidth;
     render();
 });
+
+// Load more history rows
+window.showMoreHistory = function() {
+    state.historyLimit += 25;
+    const historySection = document.getElementById('historySection');
+    if (historySection) historySection.innerHTML = renderHistory();
+};

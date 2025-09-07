@@ -1,0 +1,110 @@
+/* Dashboard page styles (consistent with app look) */
+
+:root {
+  --dash-bg: rgba(255,255,255,0.7);
+  --dash-border: rgba(255,255,255,0.2);
+  --dash-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  --text-dark: #111827;
+  --text-muted: #6b7280;
+  --primary: #cc6633;
+  --success: #22c55e;
+  --warning: #eab308;
+  --info: #3b82f6;
+}
+
+.dash-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dash-card { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.dash-card__desc { background: var(--dash-bg); border: 1px solid var(--dash-border); border-radius: 0.75rem; box-shadow: var(--dash-shadow); padding: 1rem; }
+.dash-card__desc h3 { font-size: 0.875rem; font-weight: 600; color: var(--text-dark); margin: 0 0 0.25rem 0; }
+.dash-card__desc p { font-size: 0.875rem; color: var(--text-muted); margin: 0; }
+
+/* Embedded locked preview inside card */
+.locked-card { position: relative; background: var(--dash-bg); border: 1px solid var(--dash-border); border-radius: 0.75rem; overflow: hidden; box-shadow: var(--dash-shadow); }
+.locked-card__preview { position: relative; height: 160px; background: #ffffff; }
+.locked-card__preview-inner { position: absolute; inset: 0; padding: 10px; filter: blur(6px) saturate(0.8); transition: transform 0.3s ease, filter 0.3s ease; }
+.mock-header { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 6px 8px; margin-bottom: 10px; }
+.mock-title { font-size: 0.8rem; font-weight: 700; color: #111827; }
+.mock-tags { display: flex; gap: 6px; }
+.chip { background: rgba(204,102,51,0.12); color: #cc6633; border: 1px solid rgba(204,102,51,0.2); padding: 2px 6px; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; }
+.mock-row { height: 10px; background: rgba(0,0,0,0.08); border-radius: 9999px; margin-top: 8px; }
+.locked-card__overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; color: var(--text-dark); font-weight: 600; background: rgba(255,255,255,0.35); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); transition: background 0.3s ease; }
+.locked-card__lock { width: 44px; height: 44px; border-radius: 9999px; background: rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+
+/* Hover interactions */
+.locked-card:hover .locked-card__preview-inner { transform: scale(1.02); filter: blur(5px) saturate(0.9); }
+.locked-card:hover .locked-card__overlay { background: rgba(255,255,255,0.45); }
+.locked-card:hover .locked-card__lock { transform: translateY(-2px) scale(1.05); box-shadow: 0 4px 14px rgba(0,0,0,0.08), 0 0 0 4px rgba(204,102,51,0.12); }
+
+/* Keyboard focus style */
+.locked-card:focus-within .locked-card__lock,
+.locked-card:focus-visible .locked-card__lock { box-shadow: 0 0 0 3px rgba(204,102,51,0.35); }
+
+@media (hover: none) {
+  .locked-card:hover .locked-card__preview-inner { transform: none; }
+  .locked-card:hover .locked-card__overlay { background: rgba(255,255,255,0.35); }
+  .locked-card:hover .locked-card__lock { transform: none; box-shadow: none; }
+}
+
+/* Locked reports */
+.dash-locked { margin-top: 0.5rem; }
+
+/* removed standalone locked grid; previews embedded in dash-cards */
+
+.locked-note {
+  margin-top: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: linear-gradient(180deg, rgba(204,102,51,0.08), rgba(204,102,51,0.04));
+  border: 1px solid rgba(204,102,51,0.25);
+  border-radius: 0.75rem;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.locked-note__icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(204,102,51,0.15); border: 1px solid rgba(204,102,51,0.25); display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0; }
+.locked-note__text { line-height: 1.35; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .dash-cards { grid-template-columns: 1fr; }
+}
+
+/* Mobile carousel for dash-cards */
+@media (max-width: 450px) {
+  .dash-cards {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0.75rem;
+    padding: 0 16px;
+  }
+  .dash-cards::-webkit-scrollbar { display: none; }
+  .dash-card { min-width: 280px; flex: 0 0 280px; scroll-snap-align: start; }
+}
+
+/* Mobile carousel indicators */
+.dash-indicators { display: none; }
+@media (max-width: 450px) {
+  .dash-indicators { display: flex; justify-content: center; gap: 10px; margin: 10px 0 16px; }
+  .dash-indicators .indicator { width: 10px; height: 10px; border-radius: 50%; background: rgba(204,102,51,0.3); border: none; padding: 0; transition: transform 0.2s ease, background 0.2s ease; }
+  .dash-indicators .indicator.active { background: #cc6633; transform: scale(1.2); }
+}
+
+/* Subtle 3D hover on cards (desktop only) */
+@media (hover: hover) and (pointer: fine) {
+  .locked-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+  .locked-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
+}
+
+/* Prevent header rubber-banding visual on this page */
+.dashboard-page .app-header { backface-visibility: hidden; will-change: transform; }
+.dashboard-page .content-container { min-height: calc(100vh - var(--header-height)); }

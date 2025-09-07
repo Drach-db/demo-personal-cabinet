@@ -23,99 +23,9 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Override main padding for team page - matching Onboarding pattern */
-.app-main {
-    padding: 24px 100px;  /* Симметричные отступы как в Onboarding */
-    background-color: #f0eee7;
-    overflow-x: hidden;
-    min-height: 100vh;
-}
+/* Use global .app-main paddings from layout.css; avoid overriding here */
 
-/* Content wrapper - центрирование контента как в Onboarding */
-.content-wrapper {
-    width: 100%;
-    max-width: 1200px; /* Базовая ширина */
-    margin: 0 auto;  /* Ключевой момент - центрирование! */
-    padding: 0;
-    transition: max-width 0.3s ease; /* Плавная анимация при изменении */
-}
-
-/* Когда навбар свернут - немного уменьшаем ширину контента */
-body.navbar-collapsed .content-wrapper {
-    max-width: 1100px; /* Чуть меньше при свернутом навбаре */
-}
-
-/* Adaptive max-width for different screen sizes */
-@media (min-width: 2560px) {
-    .content-wrapper {
-        max-width: 1600px;
-    }
-    
-    body.navbar-collapsed .content-wrapper {
-        max-width: 1500px;
-    }
-}
-
-@media (min-width: 1920px) and (max-width: 2559px) {
-    .content-wrapper {
-        max-width: 1400px;
-    }
-    
-    body.navbar-collapsed .content-wrapper {
-        max-width: 1300px;
-    }
-}
-
-@media (min-width: 1440px) and (max-width: 1919px) {
-    .content-wrapper {
-        max-width: 1200px;
-    }
-    
-    body.navbar-collapsed .content-wrapper {
-        max-width: 1100px;
-    }
-}
-
-/* Responsive adjustments for main padding */
-@media (max-width: 1366px) {
-    .app-main {
-        padding: 24px 50px;
-    }
-    
-    .content-wrapper {
-        max-width: 100%; /* На меньших экранах занимает всю ширину */
-    }
-}
-
-@media (max-width: 1024px) {
-    .app-main {
-        padding: 20px 30px;
-    }
-    
-    .content-wrapper {
-        max-width: 100%;
-    }
-}
-
-@media (max-width: 768px) {
-    .app-main {
-        padding: 16px 20px;
-    }
-    
-    .content-wrapper {
-        max-width: 100%;
-    }
-}
-
-@media (max-width: 450px) {
-    .app-main {
-        padding: 12px 16px;
-    }
-    
-    .content-wrapper {
-        max-width: 100%;
-    }
-}
+/* Переехало в глобальный .content-container (layout.css) */
 
 /* ========================================
    ANALYTICS GRID
@@ -174,6 +84,29 @@ body.navbar-collapsed .content-wrapper {
     flex-shrink: 0;
 }
 
+/* Mobile analytics indicators (dots) */
+.analytics-indicators { display: none; }
+@media (max-width: 450px) {
+    .analytics-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 1.25rem;
+        padding: 12px 0;
+    }
+    .indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: rgba(204, 102, 51, 0.3);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        padding: 0;
+    }
+    .indicator.active { background-color: #cc6633; transform: scale(1.2); }
+}
+
 /* ========================================
    SEARCH & FILTERS
    ======================================== */
@@ -197,14 +130,16 @@ body.navbar-collapsed .content-wrapper {
 }
 
 .filters-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto auto; /* search | filters | counter */
+    column-gap: 1rem; /* равные отступы слева и справа от фильтров */
     align-items: center;
-    gap: 1rem;
 }
 
 .search-container {
     position: relative;
-    width: 320px;
+    width: 100%;
+    min-width: 320px;
 }
 
 .search-icon {
@@ -253,8 +188,6 @@ body.navbar-collapsed .content-wrapper {
     display: flex;
     align-items: center;
     gap: 1rem;
-    flex: 1;
-    justify-content: center;
 }
 
 .results-count {
@@ -274,9 +207,9 @@ body.navbar-collapsed .content-wrapper {
    ======================================== */
 .dropdown-container {
     position: relative;
-    flex: 1 1 0; /* Равномерное распределение с возможностью сжатия */
-    min-width: 140px; /* Минимальная ширина */
-    max-width: 250px; /* Максимальная ширина чтобы не слишком растягивались */
+    flex: 0 0 auto; /* Не растягиваем, ширина по содержимому */
+    min-width: 180px; /* Чуть шире, чтобы уменьшить ширину поиска */
+    max-width: 280px; /* Позволим фильтрам быть шире на десктопе */
 }
 
 .dropdown-trigger {
@@ -755,27 +688,35 @@ body.navbar-collapsed .content-wrapper {
    MOBILE STYLES
    ======================================== */
 @media (max-width: 450px) {
+    /* Mobile carousel behavior to match Onboarding */
     .analytics-grid {
-        grid-template-columns: 1fr !important;
-        gap: 0.75rem !important;
+        display: flex !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+        gap: 0.75rem !important; /* ~12px */
+        margin-bottom: 0.5rem !important;
+        padding: 0 16px; /* одинаковые поля, как на Onboarding */
     }
-    
+    .analytics-grid::-webkit-scrollbar { display: none; }
+
     .analytics-card {
-        padding: 0.875rem !important;
+        min-width: 280px !important; /* как в Onboarding */
+        flex: 0 0 280px !important;
+        scroll-snap-align: start !important;
+        padding: 0.875rem !important; /* высота ~90px */
+        min-height: 90px !important;
     }
     
-    .analytics-card-title {
-        font-size: 0.75rem !important;
-    }
-    
-    .analytics-card-value {
-        font-size: 1.5rem !important;
-    }
-    
-    .analytics-card-icon-container {
-        width: 40px !important;
-        height: 40px !important;
-    }
+    .analytics-card-title { font-size: 0.75rem !important; }
+    .analytics-card-value { font-size: 1.5rem !important; }
+    .analytics-card-icon-container { width: 40px !important; height: 40px !important; }
+}
+
+/* Ensure mobile search filters container uses full width */
+@media (max-width: 1024px) {
+    .search-filters-mobile { width: 100%; }
 }
 
 @media (min-width: 451px) and (max-width: 768px) {
@@ -1129,31 +1070,7 @@ body.navbar-collapsed .content-wrapper {
 /* ========================================
    LOADING & ERROR STATES
    ======================================== */
-.loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-}
-
-.loading-spinner {
-    width: 48px;
-    height: 48px;
-    border: 2px solid #e5e7eb;
-    border-top-color: #3b82f6;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 16px;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.loading-text {
-    color: #6b7280;
-}
+/* Loading styles are unified in layout.css */
 
 .error-container {
     display: flex;

@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+        /* Prevent white flash before CSS loads */
+        html,body{background:#f0eee7}
+        /* Disable transitions on first paint */
+        html.no-anim *{transition:none !important}
+    </style>
+    <script>
+        try {
+            var s = localStorage.getItem('navbar-state');
+            if (s && JSON.parse(s).collapsed) {
+                document.documentElement.classList.add('navbar-pre-collapsed');
+            }
+            document.documentElement.classList.add('no-anim');
+        } catch (e) {}
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Team Management - BPO Dashboard</title>
@@ -63,7 +78,7 @@
                 <!-- Loading State -->
                 <div class="loading-container" id="loadingContainer">
                     <div class="loading-spinner"></div>
-                    <p class="loading-text">Loading team data...</p>
+                    <p class="loading-text">Loading Team...</p>
                 </div>
 
                 <!-- Error State -->
@@ -128,5 +143,10 @@
 
     <!-- Scripts with type="module" -->
     <script type="module" src="script.js"></script>
+    <script>
+        window.addEventListener('load',function(){
+            document.documentElement.classList.remove('no-anim');
+        });
+    </script>
 </body>
 </html>

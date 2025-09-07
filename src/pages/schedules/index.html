@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+        html,body{background:#f0eee7}
+        html.no-anim *{transition:none !important}
+    </style>
+    <script>
+        try {
+            var s = localStorage.getItem('navbar-state');
+            if (s && JSON.parse(s).collapsed) {
+                document.documentElement.classList.add('navbar-pre-collapsed');
+            }
+            document.documentElement.classList.add('no-anim');
+        } catch (e) {}
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Schedules Management - {{title}}</title>
@@ -38,14 +51,16 @@
 
         <!-- Main Content Area -->
         <main class="app-main" id="appMain">
-            <!-- Loading State -->
-            <div id="loading-container" class="loading-container">
-                <div class="loading-spinner"></div>
-                <p>Loading schedules...</p>
-            </div>
+            <div class="content-container">
+                <!-- Loading State -->
+                <div id="loading-container" class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">Loading Schedules...</p>
+                </div>
 
-            <!-- Calendar Container (will be populated by JS) -->
-            <div id="calendar-container" class="calendar-container hidden"></div>
+                <!-- Calendar Container (will be populated by JS) -->
+                <div id="calendar-container" class="calendar-container hidden"></div>
+            </div>
         </main>
 
         <!-- Mobile Overlay -->
@@ -89,5 +104,10 @@
 
     <!-- Scripts с type="module" -->
     <script type="module" src="script.js"></script>
+    <script>
+        window.addEventListener('load',function(){
+            document.documentElement.classList.remove('no-anim');
+        });
+    </script>
 </body>
 </html>

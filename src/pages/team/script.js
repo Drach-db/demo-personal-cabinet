@@ -67,7 +67,8 @@ const state = {
     showPositionDropdown: false,
     showMobileFilters: false,
     activeFilterTab: 'project',
-    isMobile: false
+    isMobile: false,
+    activeIndicator: 0
 };
 
 // ========================================
@@ -230,7 +231,12 @@ function getActiveFiltersCount() {
 function renderAnalytics() {
     const stats = getTeamStats();
     const container = document.getElementById('analyticsGrid');
-    
+    if (!container) return;
+
+    // Clear previous indicators to avoid duplicates
+    const prevIndicators = container.parentElement.querySelector('.analytics-indicators');
+    if (prevIndicators) prevIndicators.remove();
+
     container.innerHTML = `
         <div class="analytics-card">
             <div class="analytics-card-content">
@@ -280,6 +286,16 @@ function renderAnalytics() {
             </div>
         </div>
     `;
+
+    // Mobile indicators similar to Onboarding
+    if (state.isMobile) {
+        const indicators = document.createElement('div');
+        indicators.className = 'analytics-indicators';
+        indicators.innerHTML = [0,1,2,3].map(i => `
+            <button class="indicator ${state.activeIndicator === i ? 'active' : ''}" onclick="window.scrollToAnalyticsCard(${i})"></button>
+        `).join('');
+        container.parentElement.insertBefore(indicators, container.nextSibling);
+    }
 }
 
 function renderDesktopFilters() {
@@ -361,7 +377,7 @@ function renderDropdownFilter(type, label, options, icon) {
                                 onchange="window.toggleFilter('${option}', 'filter${type.charAt(0).toUpperCase() + type.slice(1)}')"
                             />
                             <span class="dropdown-item-dot" style="background-color: ${
-                                type === 'project' ? getProjectColor(option) :
+                                type === 'project' ? '#3b82f6' :
                                 type === 'stage' ? getStageColor(option) : '#8b5cf6'
                             };"></span>
                             <span class="dropdown-item-label">${option}</span>
@@ -445,7 +461,7 @@ function renderMobileFilterContent() {
                     ${state.filterProject.includes(project) ? 'checked' : ''}
                     onclick="event.stopPropagation();"
                 />
-                <span class="filter-dot" style="background-color: ${getProjectColor(project)};"></span>
+                <span class="filter-dot" style="background-color: #3b82f6;"></span>
                 <span class="filter-label">${project}</span>
             </label>
         `).join('');
@@ -610,7 +626,7 @@ function renderEmployeeCard(employee) {
                             <span class="tag" style="background-color: ${stageColor}20; color: ${stageColor};">
                                 ${employee.stage}
                             </span>
-                            <span class="tag" style="background-color: ${projectColor}20; color: ${projectColor};">
+                            <span class="tag" style="background-color: #3b82f620; color: #3b82f6;">
                                 ${employee.project}
                             </span>
                             ${employee.staffing_type === 'Backup' ? `
@@ -769,7 +785,7 @@ function renderMobileEmployeeCard(employee) {
                             <span style="padding: 2px 8px; border-radius: 9999px; font-size: 12px; font-weight: 500; background-color: ${stageColor}20; color: ${stageColor};">
                                 ${employee.stage}
                             </span>
-                            <span style="padding: 2px 8px; border-radius: 9999px; font-size: 12px; font-weight: 500; background-color: ${projectColor}20; color: ${projectColor};">
+                            <span style="padding: 2px 8px; border-radius: 9999px; font-size: 12px; font-weight: 500; background-color: #3b82f620; color: #3b82f6;">
                                 ${employee.project}
                             </span>
                             ${employee.staffing_type === 'Backup' ? `
@@ -904,16 +920,25 @@ function renderEmployeeGrid() {
 }
 
 function showLoading() {
-    document.getElementById('loadingContainer').classList.remove('hidden');
-    document.getElementById('errorContainer').classList.add('hidden');
-    document.getElementById('analyticsGrid').innerHTML = '';
-    document.getElementById('desktopFilters').innerHTML = '';
-    document.getElementById('mobileFilters').innerHTML = '';
-    document.getElementById('employeeGrid').innerHTML = '';
+    const loading = document.getElementById('loadingContainer');
+    const error = document.getElementById('errorContainer');
+    const analytics = document.getElementById('analyticsGrid');
+    const desktopFilters = document.getElementById('desktopFilters');
+    const mobileFilters = document.getElementById('mobileFilters');
+    const grid = document.getElementById('employeeGrid');
+
+    if (loading) loading.classList.remove('hidden');
+    if (error) error.classList.add('hidden');
+
+    if (analytics) { analytics.innerHTML = ''; analytics.classList.add('hidden'); }
+    if (desktopFilters) { desktopFilters.innerHTML = ''; desktopFilters.classList.add('hidden'); }
+    if (mobileFilters) { mobileFilters.innerHTML = ''; mobileFilters.classList.add('hidden'); }
+    if (grid) { grid.innerHTML = ''; grid.classList.add('hidden'); }
 }
 
 function hideLoading() {
-    document.getElementById('loadingContainer').classList.add('hidden');
+    const loading = document.getElementById('loadingContainer');
+    if (loading) loading.classList.add('hidden');
 }
 
 function showError(message) {
@@ -934,11 +959,49 @@ function render() {
     renderMobileFilters();
     renderEmployeeGrid();
 
+    // Unhide sections after render
+    const analytics = document.getElementById('analyticsGrid');
+    const desktopFilters = document.getElementById('desktopFilters');
+    const mobileFilters = document.getElementById('mobileFilters');
+    const grid = document.getElementById('employeeGrid');
+    if (analytics) analytics.classList.remove('hidden');
+    if (desktopFilters) desktopFilters.classList.remove('hidden');
+    if (mobileFilters) mobileFilters.classList.remove('hidden');
+    if (grid) grid.classList.remove('hidden');
+
     // Update mobile filters if open
     if (state.showMobileFilters) {
         updateMobileFiltersUI();
     }
+
+    setupAnalyticsScrollTeam();
 }
+
+function setupAnalyticsScrollTeam() {
+    if (!state.isMobile) return;
+    const grid = document.getElementById('analyticsGrid');
+    if (!grid) return;
+    grid.addEventListener('scroll', () => {
+        const cardWidth = 280;
+        const gap = 12;
+        const idx = Math.round(grid.scrollLeft / (cardWidth + gap));
+        if (idx !== state.activeIndicator) {
+            state.activeIndicator = Math.max(0, Math.min(3, idx));
+            document.querySelectorAll('.analytics-indicators .indicator').forEach((el, i) => {
+                el.classList.toggle('active', i === state.activeIndicator);
+            });
+        }
+    }, { passive: true });
+}
+
+window.scrollToAnalyticsCard = function(index) {
+    const grid = document.getElementById('analyticsGrid');
+    if (!grid) return;
+    const cardWidth = 280;
+    const gap = 12;
+    grid.scrollTo({ left: index * (cardWidth + gap), behavior: 'smooth' });
+    state.activeIndicator = index;
+};
 
 function updateMobileFiltersUI() {
     const overlay = document.getElementById('mobileFiltersOverlay');

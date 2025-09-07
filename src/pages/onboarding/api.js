@@ -166,11 +166,11 @@ async function getEmployeesByIds(employeeIds) {
 export async function getBatchesWithEmployees() {
     try {
         console.log('🔄 Начинаем загрузку батчей...');
-        
-        // 1. Получаем все батчи
+
+        // 1) Получаем батчи (только нужные поля)
         const { data: batches, error: batchError } = await supabase
             .from('hiring_batches_summary')
-            .select('*')
+            .select('batch_id, name_batch, project, planned_date, planned_fte, fact_date, fact_fte, stage, quality, employee_id')
             .order('batch_id', { ascending: false });
 
         if (batchError) {
@@ -179,49 +179,91 @@ export async function getBatchesWithEmployees() {
         }
 
         console.log('✅ Загружено батчей:', batches.length);
-        
-        // 2. Для каждого батча получаем сотрудников
-        const batchesWithEmployees = await Promise.all(
-            batches.map(async (batch) => {
-                console.log(`\n📦 Обрабатываем батч ${batch.batch_id}:`);
-                
-                // Используем улучшенный парсер
-                const employeeIds = parseEmployeeIds(batch.employee_id);
-                
-                if (employeeIds.length === 0) {
-                    console.log('  ⚠️ Нет сотрудников в батче');
-                    return {
-                        ...batch,
-                        employees: []
-                    };
-                }
-                
-                // Получаем сотрудников
-                const employees = await getEmployeesByIds(employeeIds);
-                
-                console.log(`  ✅ Загружено сотрудников: ${employees.length} из ${employeeIds.length}`);
-                
-                return {
-                    ...batch,
-                    employees: employees
-                };
-            })
-        );
 
-        console.log('\n✅ Все данные загружены успешно!');
-        
-        // Выводим статистику
-        const totalEmployees = batchesWithEmployees.reduce((sum, batch) => 
-            sum + batch.employees.length, 0
-        );
+        // 2) Собираем уникальные IDs сотрудников по всем батчам (наши employeeIds = contacts.id)
+        const allIds = new Set();
+        const batchIdsMap = batches.map(b => {
+            const ids = parseEmployeeIds(b.employee_id);
+            ids.forEach(id => allIds.add(id));
+            return { batch: b, ids };
+        });
+
+        const uniqueIds = Array.from(allIds);
+        console.log(`🔗 Уникальных ID контактов: ${uniqueIds.length}`);
+
+        // Если сотрудников нет ни в одном батче – возвращаем сразу
+        if (uniqueIds.length === 0) {
+            return batches.map(b => ({ ...b, employees: [] }));
+        }
+
+        // 3) ОДИН запрос за всеми нужными контактами
+        const { data: contacts, error: contactsError } = await supabase
+            .from('contacts')
+            .select('id, bpo_experience, english_proficiency_test, english_level, typing_speed, avatar, gender, date_of_birth')
+            .in('id', uniqueIds);
+
+        if (contactsError) {
+            console.error('❌ Ошибка при поиске в contacts:', contactsError);
+            // Не прерываем, но вернём пустые employees ниже
+        }
+
+        const foundContactIds = contacts?.map(c => c.id) || [];
+
+        // 4) ОДИН запрос за employees, соответствующих найденным контактам
+        const { data: employees, error: empError } = await supabase
+            .from('employees')
+            .select('id, employee_id, full_name, stage, project, position, staffing_type, start_date, end_date, interview_date, transfer_planned_date, transfer_fact_date, contacts_id')
+            .in('contacts_id', foundContactIds);
+
+        if (empError) {
+            console.error('❌ Ошибка при поиске в employees:', empError);
+        }
+
+        // 5) Собираем мапы по contacts_id
+        const contactById = new Map((contacts || []).map(c => [c.id, c]));
+        const employeeByContactId = new Map((employees || []).map(e => [e.contacts_id, e]));
+
+        // 6) Собираем итог для каждого батча (сохраняем порядок исходных ids)
+        const result = batchIdsMap.map(({ batch, ids }) => {
+            const emps = ids.map(id => {
+                const contact = contactById.get(id);
+                const emp = employeeByContactId.get(id);
+                if (!emp) return null;
+                return {
+                    ...emp,
+                    bpo_experience: contact?.bpo_experience || 0,
+                    english_proficiency_test: contact?.english_proficiency_test || '',
+                    english_level: contact?.english_level || 0,
+                    typing_speed: contact?.typing_speed || 0,
+                    avatar: contact?.avatar || null,
+                    gender: contact?.gender || '',
+                    date_of_birth: contact?.date_of_birth || null
+                };
+            }).filter(Boolean);
+
+            return { ...batch, employees: emps };
+        });
+
+        const totalEmployees = result.reduce((sum, b) => sum + b.employees.length, 0);
         console.log(`📊 Статистика: ${batches.length} батчей, ${totalEmployees} сотрудников`);
-        
-        return batchesWithEmployees;
+        return result;
 
     } catch (error) {
         console.error('💥 Критическая ошибка:', error);
         throw error;
     }
+}
+
+/**
+ * Возвращает только список батчей без сотрудников (для ленивой загрузки)
+ */
+export async function getBatchesSummary() {
+    const { data, error } = await supabase
+        .from('hiring_batches_summary')
+        .select('batch_id, name_batch, project, planned_date, planned_fte, fact_date, fact_fte, stage, quality, employee_id')
+        .order('batch_id', { ascending: false });
+    if (error) throw error;
+    return data || [];
 }
 
 /**
@@ -258,5 +300,8 @@ window.onboardingApi = {
 // Экспортируем объект со всеми функциями
 export default {
     getBatchesWithEmployees,
-    testParser
+    getBatchesSummary,
+    testParser,
+    parseEmployeeIds,
+    getEmployeesByIds
 }

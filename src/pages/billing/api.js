@@ -8,41 +8,31 @@ import { supabase } from '../../utils/supabase.js'
  */
 export async function getBillingRecords() {
   try {
+    // Более толерантная выборка: все поля, без сортировки по потенциально отсутствующим колонкам
     const { data, error } = await supabase
       .from('billing')
-      .select(`
-        id,
-        start_date,
-        end_date,
-        planned_hours,
-        actual_hours,
-        hourly_rate,
-        invoice_url,
-        report_url,
-        payment_status,
-        period_type,
-        created_date
-      `)
-      .order('start_date', { ascending: false })
+      .select('*')
 
     if (error) {
       console.error('Ошибка при получении данных биллинга:', error)
       throw new Error('Не удалось загрузить данные биллинга')
     }
 
-    // Возвращаем данные как есть, обрабатываем NULL значения
+    if (!data) return []
+
+    // Нормализуем значения с безопасными fallback'ами
     const formattedBilling = data.map(record => ({
       id: record.id,
-      start_date: record.start_date || '',
-      end_date: record.end_date || '',
-      planned_hours: record.planned_hours || 0,
-      actual_hours: record.actual_hours || 0,
-      hourly_rate: record.hourly_rate || 0,
-      invoice_url: record.invoice_url || '',
-      report_url: record.report_url || '',
-      payment_status: record.payment_status || 'unpaid',
-      period_type: record.period_type || 'regular',
-      created_date: record.created_date || ''
+      start_date: record.start_date || record.startDate || '',
+      end_date: record.end_date || record.endDate || '',
+      planned_hours: record.planned_hours ?? record.plannedHours ?? 0,
+      actual_hours: record.actual_hours ?? record.actualHours ?? 0,
+      hourly_rate: record.hourly_rate ?? record.hourlyRate ?? 0,
+      invoice_url: record.invoice_url || record.invoiceUrl || '',
+      report_url: record.report_url || record.reportUrl || '',
+      payment_status: record.payment_status || record.paymentStatus || 'unpaid',
+      period_type: record.period_type || record.periodType || 'regular',
+      created_date: record.created_date || record.created_at || record.createdAt || ''
     }))
 
     return formattedBilling

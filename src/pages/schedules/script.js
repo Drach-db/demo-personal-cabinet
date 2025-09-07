@@ -451,8 +451,8 @@ class ShiftCalendar {
         
         if (this.isMobile) {
             return `
-                <div class="mobile-only" style="padding-top: 2rem;">
-                    <div style="margin: 0 1rem 1.5rem;">
+                <div class="mobile-only" style="padding-top: 0;">
+                    <div style="margin: 0 0 1.5rem;">
                         <div class="mobile-carousel" id="analytics-carousel">
                             ${analytics.map((item, index) => `
                                 <div class="carousel-item" data-index="${index}">
@@ -472,7 +472,7 @@ class ShiftCalendar {
             `;
         } else {
             return `
-                <div class="desktop-only" style="padding: 1.5rem 1.5rem 0;">
+                <div class="desktop-only" style="padding: 0; margin-bottom: 1.5rem;">
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
                         ${analytics.map(item => `
                             <div style="flex: 1;">
@@ -536,7 +536,7 @@ class ShiftCalendar {
     renderNavigation() {
         if (this.isMobile) {
             return `
-                <div class="mobile-only" style="padding: 1rem;">
+                <div class="mobile-only" style="padding: 0;">
                     <div class="flex items-center gap-3" style="margin-bottom: 1rem;">
                         <div class="search-container">
                             <span class="search-icon">${ICONS.search}</span>
@@ -557,10 +557,6 @@ class ShiftCalendar {
                             <button class="nav-button" id="next-month-mobile">${ICONS.chevronRight}</button>
                         </div>
                         
-                        <h2 style="font-size: 1.125rem; font-weight: 700;">
-                            ${this.getMonthName(this.state.currentMonth).slice(0, 3)} '${this.state.currentYear.toString().slice(-2)}
-                        </h2>
-                        
                         <div class="view-tabs">
                             ${['Baseline', 'Actual', 'All'].map(mode => `
                                 <button class="view-tab ${this.state.viewMode === mode ? 'active' : ''}"
@@ -570,6 +566,11 @@ class ShiftCalendar {
                             `).join('')}
                         </div>
                     </div>
+                    <div style="text-align: center; margin: 8px 0 0;">
+                        <h2 style="font-size: 1.25rem; font-weight: 700;">
+                            ${this.getMonthName(this.state.currentMonth)} ${this.state.currentYear}
+                        </h2>
+                    </div>
                 </div>
             `;
         } else {
@@ -577,7 +578,7 @@ class ShiftCalendar {
             const filteredEmployees = this.getFilteredEmployees();
             
             return `
-                <div class="desktop-only" style="padding: 1rem 1.5rem; position: relative; z-index: 100;">
+                <div class="desktop-only" style="padding: 0; position: relative; z-index: 100;">
                     <div class="flex items-center gap-4" style="margin-bottom: 1rem;">
                         <div class="search-container" style="width: 20rem;">
                             <span class="search-icon">${ICONS.search}</span>
@@ -711,12 +712,12 @@ class ShiftCalendar {
         });
 
         return `
-            <div style="padding: 0.25rem ${this.isMobile ? '1rem' : '1.5rem'};">
+            <div style="padding: 0.5rem 0; margin-top: 8px;">
                 <div class="flex items-center gap-1" style="color: #374151;">
                     <button id="legend-button" class="flex items-center gap-1" 
                             style="background: none; border: none; cursor: pointer; color: inherit;">
                         <span style="font-size: ${this.isMobile ? '0.75rem' : '0.875rem'}; font-weight: 600;">
-                            Legend
+                        Legend
                         </span>
                         <div style="width: 1rem; height: 1rem; border-radius: 50%; 
                                     border: 1px solid ${COLORS.BRAND}; color: ${COLORS.BRAND};
@@ -760,7 +761,7 @@ class ShiftCalendar {
     renderEmptyState() {
         return `
             <div class="empty-state">
-                <div class="empty-state-content" ${this.isMobile ? 'style="margin: 0 1rem;"' : ''}>
+                <div class="empty-state-content" ${this.isMobile ? 'style="margin: 0;"' : ''}>
                     <div class="empty-state-icon">${ICONS.calendar}</div>
                     <h3 class="empty-state-title">No employees this month</h3>
                     <p class="empty-state-text">
@@ -1069,6 +1070,7 @@ class ShiftCalendar {
         `;
         
         document.getElementById('modals-container').innerHTML = modal;
+        document.body.classList.add('modal-open');
     }
 
     showShiftModal(shift, baselineShift, employee) {
@@ -1091,6 +1093,7 @@ class ShiftCalendar {
         `;
         
         document.getElementById('modals-container').innerHTML = modal;
+        document.body.classList.add('modal-open');
     }
 
     showLegendModal() {
@@ -1113,11 +1116,13 @@ class ShiftCalendar {
         `;
         
         document.getElementById('modals-container').innerHTML = modal;
+        document.body.classList.add('modal-open');
     }
 
     showBottomSheet() {
         const overlay = document.getElementById('bottom-sheet-overlay');
         const sheet = document.getElementById('bottom-sheet');
+        document.body.classList.add('modal-open');
         
         if (overlay) overlay.classList.remove('hidden');
         if (sheet) sheet.classList.remove('hidden');
@@ -1560,6 +1565,7 @@ class ShiftCalendar {
             // Modal overlay click
             if (e.target.classList.contains('modal-overlay')) {
                 document.getElementById('modals-container').innerHTML = '';
+                document.body.classList.remove('modal-open');
             }
 
             // Bottom sheet overlay
@@ -1918,9 +1924,11 @@ class ShiftCalendar {
             const sheet = document.getElementById('bottom-sheet');
             if (overlay) overlay.classList.add('hidden');
             if (sheet) sheet.classList.add('hidden');
+            document.body.classList.remove('modal-open');
         } else {
             const modal = document.getElementById(modalId);
             if (modal) modal.remove();
+            document.body.classList.remove('modal-open');
         }
     }
 

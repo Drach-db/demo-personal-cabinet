@@ -19,7 +19,8 @@ const state = {
     loading: true,
     employeeStatuses: {},
     activeTab: 'all',
-    activeIndicator: 0
+    activeIndicator: 0,
+    loadingBatchEmployees: {}
 };
 
 // ========================================
@@ -257,6 +258,18 @@ const templates = {
     },
 
     expandedSection(batch) {
+        // Loading state for lazy employees
+        if (typeof batch.employees === 'undefined' || state.loadingBatchEmployees[batch.id]) {
+            return `
+                <div class="batch-expanded">
+                    <div class="loading-container" style="height: auto; min-height: 160px;">
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">Loading employees...</p>
+                    </div>
+                </div>
+            `;
+        }
+
         const filteredEmployees = getFilteredEmployees(batch.employees);
         
         if (!batch.employees || batch.employees.length === 0) {
@@ -430,7 +443,7 @@ function renderLoading() {
     return `
         <div class="loading-container">
             <div class="loading-spinner"></div>
-            <p class="loading-text">Loading batches data from Supabase...</p>
+            <p class="loading-text">Loading Onboarding...</p>
         </div>
     `;
 }
@@ -451,11 +464,11 @@ function renderAnalytics() {
                 return `
                     <div class="analytics-card">
                         <div class="analytics-card-content">
-                            <div>
-                                <h3>${card.label}</h3>
-                                <p>${value || 0}</p>
+                            <div class="analytics-card-info">
+                                <h3 class="analytics-card-title">${card.label}</h3>
+                                <p class="analytics-card-value">${value || 0}</p>
                             </div>
-                            <div class="analytics-icon" style="color: ${card.color}">
+                            <div class="analytics-card-icon-container" style="color: ${card.color};">
                                 ${iconMap[card.icon]}
                             </div>
                         </div>
@@ -482,7 +495,7 @@ function renderBatches() {
 }
 
 function renderApp() {
-    const mainElement = document.getElementById('appMain');
+    const mainElement = document.getElementById('onboardingRoot');
     if (!mainElement) return;
 
     if (state.loading) {
@@ -497,6 +510,65 @@ function renderApp() {
 
     // Setup analytics scroll после рендера
     setupAnalyticsScroll();
+}
+
+// ========================================
+// CACHE + LAZY EMPLOYEE LOADING
+// ========================================
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const cacheKeyBatches = () => 'onb_batches_v1';
+const cacheKeyEmployees = (batchId) => `onb_emps_${batchId}`;
+
+function cacheGet(key, ttlMs = CACHE_TTL_MS) {
+    try {
+        const raw = sessionStorage.getItem(key);
+        if (!raw) return null;
+        const { ts, data } = JSON.parse(raw);
+        if (Date.now() - ts > ttlMs) return null;
+        return data;
+    } catch { return null; }
+}
+
+function cacheSet(key, data) {
+    try { sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+}
+
+async function loadEmployeesForBatch(batch) {
+    const batchId = batch.id || batch.batch_id;
+    if (!batchId) return;
+    if (state.loadingBatchEmployees[batchId]) return;
+
+    const cached = cacheGet(cacheKeyEmployees(batchId));
+    if (cached) {
+        batch.employees = cached;
+        refreshExpanded(batchId);
+        return;
+    }
+
+    state.loadingBatchEmployees[batchId] = true;
+    refreshExpanded(batchId);
+    try {
+        const ids = api.parseEmployeeIds(batch.employee_id);
+        const emps = await api.getEmployeesByIds(ids);
+        batch.employees = emps;
+        cacheSet(cacheKeyEmployees(batchId), emps);
+    } catch (e) {
+        console.error('Failed to load employees for batch', batchId, e);
+        batch.employees = [];
+    } finally {
+        delete state.loadingBatchEmployees[batchId];
+        refreshExpanded(batchId);
+    }
+}
+
+function refreshExpanded(batchId) {
+    const container = document.querySelector(`[data-batch-id="${batchId}"] .batch-expanded`);
+    const batch = state.batches.find(b => b.id === batchId);
+    if (container && batch) {
+        container.outerHTML = templates.expandedSection(batch);
+    } else {
+        renderApp();
+    }
 }
 
 // ========================================
@@ -541,18 +613,32 @@ window.handleBatchClick = function(event, batchId) {
         return;
     }
     
-    state.selectedCard = state.selectedCard === batchId ? null : batchId;
+    const next = state.selectedCard === batchId ? null : batchId;
+    state.selectedCard = next;
     state.activeTab = 'all';
     renderApp();
+    if (next) {
+        const batch = state.batches.find(b => b.id === next);
+        if (batch && typeof batch.employees === 'undefined') {
+            loadEmployeesForBatch(batch);
+        }
+    }
 };
 
 window.handleToggleBatch = function(event, batchId) {
     event.preventDefault();
     event.stopPropagation();
     
-    state.selectedCard = state.selectedCard === batchId ? null : batchId;
+    const next = state.selectedCard === batchId ? null : batchId;
+    state.selectedCard = next;
     state.activeTab = 'all';
     renderApp();
+    if (next) {
+        const batch = state.batches.find(b => b.id === next);
+        if (batch && typeof batch.employees === 'undefined') {
+            loadEmployeesForBatch(batch);
+        }
+    }
 };
 
 window.handleEmployeeDecision = function(employeeId, status) {
@@ -632,42 +718,46 @@ function setupAnalyticsScroll() {
 async function loadData() {
     state.loading = true;
     renderApp();
-    
     try {
-        console.log('🔄 Loading batches from Supabase...');
-        
-        // Используем функцию из api.js
-        const data = await api.getBatchesWithEmployees();
-        
-        console.log('✅ Loaded batches:', data.length);
-        
-        // Добавляем id для каждого батча если его нет
-        state.batches = data.map((batch, index) => ({
+        let batches = cacheGet(cacheKeyBatches());
+        if (!batches) {
+            // 1) Try fast summary
+            const summary = await api.getBatchesSummary();
+            // If summary unexpectedly empty, fallback to full fetch to keep page alive
+            if (!summary || summary.length === 0) {
+                console.warn('Onboarding summary empty; falling back to full fetch');
+                batches = await api.getBatchesWithEmployees();
+            } else {
+                batches = summary;
+            }
+            cacheSet(cacheKeyBatches(), batches);
+        } else {
+            console.log('⚡ Using cached batches');
+        }
+
+        // Normalize
+        state.batches = batches.map((batch, index) => ({
             ...batch,
-            id: batch.id || batch.batch_id || index + 1
+            id: batch.id || batch.batch_id || index + 1,
+            // If employees not included (summary path) — lazy load later
+            employees: Array.isArray(batch.employees) ? batch.employees : undefined
         }));
-        
         state.loading = false;
     } catch (error) {
         console.error('❌ Error loading data:', error);
         state.loading = false;
-        
-        // Показываем ошибку
-        const mainElement = document.getElementById('appMain');
+        const mainElement = document.getElementById('onboardingRoot');
         if (mainElement) {
             mainElement.innerHTML = `
                 <div class="empty-state">
                     ${icons.alertCircle}
                     <p class="empty-text">Failed to load data</p>
                     <p class="empty-subtext">${error.message}</p>
-                    <button class="btn btn-view" onclick="location.reload()">
-                        Retry
-                    </button>
+                    <button class="btn btn-view" onclick="location.reload()">Retry</button>
                 </div>
             `;
         }
     }
-    
     renderApp();
 }
 

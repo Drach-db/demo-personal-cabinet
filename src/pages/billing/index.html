@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+        html,body{background:#f0eee7}
+        html.no-anim *{transition:none !important}
+    </style>
+    <script>
+        try {
+            var s = localStorage.getItem('navbar-state');
+            if (s && JSON.parse(s).collapsed) {
+                document.documentElement.classList.add('navbar-pre-collapsed');
+            }
+            document.documentElement.classList.add('no-anim');
+        } catch (e) {}
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Billing Management - Dashboard</title>
@@ -38,17 +51,23 @@
 
         <!-- Main Content Area -->
         <main class="app-main" id="appMain">
-            <!-- Dashboard Section -->
-            <div class="billing-card">
-                <div id="dashboardSection">
-                    <!-- Будет заполнено через JS -->
+            <div class="content-container">
+                <div id="billingLoadingContainer" class="loading-container hidden">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">Loading Billing...</p>
                 </div>
-            </div>
+                <!-- Dashboard Section -->
+                <div class="billing-card">
+                    <div id="dashboardSection">
+                        <!-- Будет заполнено через JS -->
+                    </div>
+                </div>
 
-            <!-- Billing History Table -->
-            <div class="billing-card">
-                <div id="historySection">
-                    <!-- Будет заполнено через JS -->
+                <!-- Billing History Table -->
+                <div class="billing-card">
+                    <div id="historySection">
+                        <!-- Будет заполнено через JS -->
+                    </div>
                 </div>
             </div>
         </main>
@@ -59,5 +78,10 @@
 
     <!-- Scripts с type="module" -->
     <script type="module" src="script.js"></script>
+    <script>
+        window.addEventListener('load',function(){
+            document.documentElement.classList.remove('no-anim');
+        });
+    </script>
 </body>
 </html>

@@ -42,7 +42,8 @@ export default defineConfig({
         main: resolve(__dirname, 'src/index.html'),
         team: resolve(__dirname, 'src/pages/team/index.html'),
         dashboard: resolve(__dirname, 'src/pages/dashboard/index.html'),
-        onboarding: resolve(__dirname, 'src/pages/onboarding/index.html')  // ← ДОБАВИЛИ НОВУЮ СТРАНИЦУ
+        onboarding: resolve(__dirname, 'src/pages/onboarding/index.html'),
+        today: resolve(__dirname, 'src/pages/today/index.html')
       }
     }
   },

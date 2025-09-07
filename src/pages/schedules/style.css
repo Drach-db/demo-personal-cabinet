@@ -34,30 +34,7 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 
-/* ========================================
-   LOADING STATE
-   ======================================== */
-.loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    color: #6b7280;
-}
-
-.loading-spinner {
-    width: 3rem;
-    height: 3rem;
-    border: 3px solid #e5e7eb;
-    border-top-color: #cc6633;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+/* Loading styles are unified in layout.css */
 
 /* ========================================
    MAIN CONTAINER
@@ -289,8 +266,8 @@
     background-color: rgba(255, 255, 255, 0.85);
     border: 1px solid rgba(220, 215, 205, 0.4);
     border-radius: 0.75rem;
-    margin: 0 1.5rem;
-    padding-bottom: 1.5rem;
+    margin: 0;
+    padding: 1.5rem; /* внутренние отступы как у Team контейнеров */
 }
 
 .calendar-scroll {
@@ -556,6 +533,7 @@ td.employee-cell {
     justify-content: center;
     padding: 1rem;
     z-index: 9999;
+    pointer-events: auto;
 }
 
 .modal-content {
@@ -567,6 +545,7 @@ td.employee-cell {
     max-height: 90vh;
     overflow-y: auto;
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+    touch-action: manipulation;
 }
 
 .modal-header {
@@ -723,7 +702,7 @@ td.employee-cell {
     .mobile-only { display: block !important; }
 
     .calendar-wrapper {
-        margin: 0 1rem;
+        margin: 0;
         border-radius: 1rem;
     }
 

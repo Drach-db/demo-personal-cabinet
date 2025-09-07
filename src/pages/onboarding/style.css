@@ -135,94 +135,42 @@
     }
   }
   
-  /* ========================================
-     LOADING
-     ======================================== */
-  .loading-container {
-    min-height: 400px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .loading-spinner {
-    width: 3rem;
-    height: 3rem;
-    border: 2px solid transparent;
-    border-top-color: #3b82f6;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-  }
-  
-  .loading-text {
-    color: var(--color-text-secondary);
-    font-size: var(--font-body);
-    font-weight: var(--font-medium);
-  }
-  
-  @keyframes spin { 
-    to { transform: rotate(360deg); } 
-  }
+  /* Loading styles are unified in layout.css */
   
   /* ========================================
      ANALYTICS DASHBOARD
      ======================================== */
+  /* Desktop analytics – match Team page */
   .analytics-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--gap-base);
+    gap: 1rem;
     margin-bottom: 1.5rem;
-    padding: 0.25rem;
-    overflow: visible;
+    width: 100%;
+    box-sizing: border-box;
   }
-  
+
   .analytics-card {
-    background: var(--color-white);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--border-radius);
-    padding: var(--padding-card);
+    min-width: 0;
+    box-sizing: border-box;
   }
-  
+
   .analytics-card-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 0.5rem;
   }
-  
-  .analytics-card h3 {
-    font-size: 0.875rem;
-    font-weight: var(--font-medium);
-    font-family: var(--font-family);
-    color: var(--color-text-secondary);
-    margin-bottom: 0.25rem;
-  }
-  
-  .analytics-card p {
-    font-size: var(--font-metric);
-    font-weight: var(--font-bold);
-    font-family: var(--font-family);
-    font-feature-settings: var(--font-numeric-settings);
-    color: var(--color-text-primary);
-    line-height: 1;
-    margin: 0;
-    letter-spacing: -0.02em;
-  }
-  
-  .analytics-icon {
-    width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .analytics-icon svg {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
+
+  .analytics-card-info { flex: 1; min-width: 0; }
+  .analytics-card-title { font-size: 0.875rem; font-weight: 500; color: #6b7280; margin: 0 0 0.25rem 0; }
+  .analytics-card-value { font-size: 1.875rem; font-weight: 700; color: #111827; margin: 0; }
+  .analytics-card-icon-container { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   
   /* Мобильная версия аналитики */
   @media (max-width: 784px) and (min-width: 451px) {
@@ -287,7 +235,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--gap-base);
-    padding: 0.25rem;
+    padding: 0; /* визуальное выравнивание с краями контейнера как на Team */
     overflow: visible;
   }
   
@@ -300,7 +248,7 @@
     cursor: pointer;
     transition: var(--transition);
     position: relative;
-    margin: 0 0.125rem;
+    margin: 0; /* без боковых внешних отступов, чтобы карта занимала всю ширину */
   }
   
   .batch-card.selected {
@@ -1142,7 +1090,7 @@
     .batch-mobile-progress { display: none !important; }
     .batch-view-btn[data-mobile="true"] { display: none !important; }
     .batch-data-mobile { display: none !important; }
-    .batches-list { padding: 1rem 0.5rem; }
+    .batches-list { padding: 0; }
   }
   
   @media (max-width: 380px) {

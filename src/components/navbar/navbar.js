@@ -42,6 +42,8 @@ class UnifiedNavbar {
                 this.elements.navbar.classList.remove('navbar--collapsed');
                 document.body.classList.remove('navbar-collapsed');
             }
+            // Remove pre-collapsed class set early in <head>
+            document.documentElement.classList.remove('navbar-pre-collapsed');
         }
     }
 
@@ -265,7 +267,7 @@ class UnifiedNavbar {
      */
     handleResize() {
         const wasMobile = this.isMobile;
-        this.isMobile = window.innerWidth < this.options.mobileBreakpoint;
+            this.isMobile = window.innerWidth < this.options.mobileBreakpoint;
 
         // If switched from desktop to mobile
         if (!wasMobile && this.isMobile) {

@@ -1,1 +1,171 @@
-<!DOCTYPE html><html><body>Dashboard</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <style>
+    html,body{background:#f0eee7}
+    html.no-anim *{transition:none !important}
+  </style>
+  <script>
+    try {
+      var s = localStorage.getItem('navbar-state');
+      if (s && JSON.parse(s).collapsed) {
+        document.documentElement.classList.add('navbar-pre-collapsed');
+      }
+      document.documentElement.classList.add('no-anim');
+    } catch (e) {}
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dashboard – Client Overview</title>
+
+  <!-- Layout System CSS (ПЕРВЫМ!) -->
+  <link rel="stylesheet" href="../../components/layout/layout.css">
+
+  <!-- Component CSS -->
+  <link rel="stylesheet" href="../../components/navbar/navbar.css">
+  <link rel="stylesheet" href="../../components/header/header.css">
+
+  <!-- Page Specific CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page">
+  <div class="app-layout" id="appLayout">
+    <!-- Navbar -->
+    <nav class="app-navbar" id="appNavbar">
+      {{> navbar
+        activePage="dashboard"
+        userName="Anonymous User"
+        userRole="Guest Access"
+      }}
+    </nav>
+
+    <!-- Header -->
+    <header class="app-header" id="appHeader">
+      {{> header
+        pageTitle='Client <span class="accent-text">Dashboard</span>'
+        pageIcon='<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>'
+      }}
+    </header>
+
+    <!-- Main -->
+    <main class="app-main" id="appMain">
+      <div class="content-container">
+
+        <!-- Intro cards (3 in a row) -->
+        <section class="dash-cards">
+          <article class="dash-card">
+            <div class="locked-card">
+              <div class="locked-card__preview">
+                <div class="locked-card__preview-inner">
+                  <div class="mock-header">
+                    <div class="mock-title">KPI – Support Quality</div>
+                    <div class="mock-tags">
+                      <span class="chip">CSAT</span>
+                      <span class="chip">FCR</span>
+                      <span class="chip">SLA</span>
+                    </div>
+                  </div>
+                  <div class="mock-row"></div>
+                  <div class="mock-row"></div>
+                  <div class="mock-row" style="width: 80%;"></div>
+                </div>
+              </div>
+              <div class="locked-card__overlay">
+                <div class="locked-card__lock">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <span>Locked</span>
+              </div>
+            </div>
+            <div class="dash-card__desc">
+              <h3>Service Quality</h3>
+              <p>Track CSAT, FCR and SLA performance for your support team.</p>
+            </div>
+          </article>
+
+          <article class="dash-card">
+            <div class="locked-card">
+              <div class="locked-card__preview">
+                <div class="locked-card__preview-inner">
+                  <div class="mock-header">
+                    <div class="mock-title">Productivity & Adherence</div>
+                    <div class="mock-tags">
+                      <span class="chip">AHT</span>
+                      <span class="chip">Utilization</span>
+                      <span class="chip">Adherence</span>
+                    </div>
+                  </div>
+                  <div class="mock-row"></div>
+                  <div class="mock-row"></div>
+                  <div class="mock-row" style="width: 75%;"></div>
+                </div>
+              </div>
+              <div class="locked-card__overlay">
+                <div class="locked-card__lock">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <span>Locked</span>
+              </div>
+            </div>
+            <div class="dash-card__desc">
+              <h3>Productivity</h3>
+              <p>Agent utilization, handle time and adherence — tailored to your needs.</p>
+            </div>
+          </article>
+
+          <article class="dash-card">
+            <div class="locked-card">
+              <div class="locked-card__preview">
+                <div class="locked-card__preview-inner">
+                  <div class="mock-header">
+                    <div class="mock-title">Financial Overview</div>
+                    <div class="mock-tags">
+                      <span class="chip">Forecast</span>
+                      <span class="chip">Variance</span>
+                      <span class="chip">Cost</span>
+                    </div>
+                  </div>
+                  <div class="mock-row"></div>
+                  <div class="mock-row"></div>
+                  <div class="mock-row" style="width: 60%;"></div>
+                </div>
+              </div>
+              <div class="locked-card__overlay">
+                <div class="locked-card__lock">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <span>Locked</span>
+              </div>
+            </div>
+            <div class="dash-card__desc">
+              <h3>Financial</h3>
+              <p>Cost per hour, forecast, variance — reports that matter for your business.</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="dash-locked">
+          <div class="locked-note">
+            <div class="locked-note__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20l9-5-9-5-9 5 9 5z"/><path d="M12 12l9-5-9-5-9 5 9 5z"/></svg>
+            </div>
+            <div class="locked-note__text">
+              <strong>Custom dashboards on demand.</strong> We can build KPI pages and reports tailored to your business (CSAT, FCR, SLA, adherence, utilization, financials and more).
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <div class="app-overlay" id="appOverlay"></div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+  <script>
+    window.addEventListener('load',function(){
+      document.documentElement.classList.remove('no-anim');
+    });
+  </script>
+</body>
+</html>
