@@ -63,6 +63,7 @@ class ShiftCalendar {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
         this.isMobile = window.innerWidth < 784;
+        this._resizeHandlerBound = null;
         
         // State
         this.state = {
@@ -122,8 +123,8 @@ class ShiftCalendar {
             console.log('📍 Rendering calendar...');
             this.render();
             this.setupResizeListener();
-            
-            // Center on today
+            // Выставляем высоту скролл-контейнера и центрируем сегодня
+            this.fitCalendarScrollHeight();
             setTimeout(() => this.centerTodayInCalendar(), 100);
             console.log('✅ Init completed');
         } catch (error) {
@@ -470,6 +471,8 @@ class ShiftCalendar {
         this.setupEventListeners();
         // Attach listeners for elements created within partial sections
         this.afterPartialUpdateSetup();
+        // После полной перерисовки выставляем высоту скролла
+        this.fitCalendarScrollHeight();
     }
 
     renderAnalytics() {
@@ -828,6 +831,8 @@ class ShiftCalendar {
 
         // Reattach listeners that bind to specific nodes
         this.afterPartialUpdateSetup();
+        // И здесь тоже — высота могла измениться из-за фильтров/шапок
+        this.fitCalendarScrollHeight();
     }
 
     afterPartialUpdateSetup() {
@@ -837,6 +842,8 @@ class ShiftCalendar {
         if (this.isMobile) {
             this.setupCarouselScroll();
         }
+        // Подгон высоты при частичной перерисовке
+        this.fitCalendarScrollHeight();
     }
 
     renderEmptyState() {
@@ -1945,13 +1952,13 @@ class ShiftCalendar {
 
     setupResizeListener() {
         let resizeTimeout;
-        window.addEventListener('resize', () => {
+        const onResize = () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 const wasMobile = this.isMobile;
                 this.isMobile = window.innerWidth < 784;
                 if (wasMobile !== this.isMobile) {
-                    // Reset state when switching between mobile/desktop
+                    // Смена брейкпоинта — полностью перерисуем
                     this.state = {
                         ...this.state,
                         showBottomSheet: false,
@@ -1960,9 +1967,32 @@ class ShiftCalendar {
                         showPositionDropdown: false
                     };
                     this.render();
+                } else {
+                    // Брейкпоинт тот же — просто подгоняем высоту
+                    this.fitCalendarScrollHeight();
                 }
-            }, 250);
-        });
+            }, 150);
+        };
+        window.addEventListener('resize', onResize);
+        this._resizeHandlerBound = onResize;
+    }
+
+    // ========================================
+    // UTILITY FUNCTIONS
+    // ========================================
+    fitCalendarScrollHeight() {
+        // Внутренняя область прокрутки таблицы
+        const scroller = document.getElementById('calendar-scroll');
+        if (!scroller) return;
+        // Высота окна (учитываем адресную строку мобильных браузеров)
+        const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        // Верхняя граница scroller относительно вьюпорта
+        const top = scroller.getBoundingClientRect().top;
+        // Отступ от низа окна — можно чуть оставить воздуха
+        const bottomPadding = 16;
+        const maxH = Math.max(200, vh - top - bottomPadding);
+        scroller.style.maxHeight = `${maxH}px`;
+        scroller.style.overflowY = 'auto';
     }
 
     // ========================================

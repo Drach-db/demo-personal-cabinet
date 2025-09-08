@@ -318,11 +318,14 @@
 }
 
 .calendar-scroll {
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
+    /* Внутренние скроллы по обоим направлениям */
+    overflow: auto; /* x+y */
     position: relative;
     border-radius: 0.75rem;
+    /* Высота задаётся JS-ом, но можно подстраховаться дефолтом */
+    max-height: 70vh;
+    /* Чтобы шапка не «дрожала» при появлении вертикального скролла */
+    scrollbar-gutter: stable both-edges;
 }
 
 .calendar-scroll::-webkit-scrollbar {
@@ -342,6 +345,14 @@
 }
 
 .calendar-table thead tr {
+    background-color: #faf9f6;
+}
+
+/* Делаем всю строку шапки "липкой" по TOP в пределах .calendar-scroll */
+.calendar-scroll .calendar-table thead th {
+    position: sticky !important;
+    top: 0;
+    z-index: 25 !important; /* ниже угловой шапки, выше тела */
     background-color: #faf9f6;
 }
 
@@ -376,20 +387,23 @@
     min-width: 300px;
 }
 
-thead .sticky-cell {
-    z-index: 35;
-    background-color: #faf9f6;
+/* У верхнего левого угла — липкость одновременно по top и left */
+.calendar-scroll .calendar-table thead .sticky-cell {
     position: -webkit-sticky !important;
     position: sticky !important;
+    top: 0;
     left: 0 !important;
     min-width: 300px;
+    background-color: #faf9f6;
+    z-index: 50 !important; /* поверх остальных th шапки */
 }
 
-tbody .sticky-cell {
+.calendar-scroll .calendar-table tbody .sticky-cell {
     position: -webkit-sticky !important;
     position: sticky !important;
     left: 0 !important;
     min-width: 300px;
+    z-index: 20 !important; /* ниже шапки */
 }
 
 @media (max-width: 784px) {
