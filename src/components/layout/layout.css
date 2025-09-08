@@ -148,7 +148,8 @@ html.navbar-pre-collapsed .app-layout { transition: none !important; }
     grid-area: header;
     position: sticky;
     top: 0;
-    z-index: 100;
+    /* Ensure header stays above page content and local overlays */
+    z-index: 1200;
     /* Важно: убираем любые margins */
     margin: 0;
 }

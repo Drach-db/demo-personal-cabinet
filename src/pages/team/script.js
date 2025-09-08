@@ -423,20 +423,19 @@ function renderMobileFilters() {
             
             <div class="flex items-center gap-2">
                 ${hasActiveFilters() ? `
-                    <button onclick="window.clearAllFilters()" class="mobile-clear-filters">
+                    <button onclick=\"window.clearAllFilters()\" class=\"mobile-clear-icon\" aria-label=\"Clear filters\">
                         ${renderIcon('x', '', 'width: 16px; height: 16px;')}
-                        Clear
                     </button>
                 ` : ''}
                 
                 <button
-                    onclick="window.openMobileFilters()"
-                    class="mobile-filters-btn ${hasActiveFilters() ? 'active' : ''}"
+                    onclick=\"window.openMobileFilters()\"
+                    class=\"mobile-filters-btn ${hasActiveFilters() ? 'active' : ''} only-icon\"
+                    aria-label=\"Open filters\"
                 >
                     ${renderIcon('filter', '', 'width: 16px; height: 16px;')}
-                    Filters
                     ${hasActiveFilters() ? `
-                        <span class="mobile-filters-badge">
+                        <span class=\"mobile-filters-badge\">
                             ${activeFiltersCount}
                         </span>
                     ` : ''}

@@ -768,7 +768,7 @@ body {
 
     .mobile-filters-btn {
         position: relative;
-        padding: 8px 16px;
+        padding: 8px 12px;
         border-radius: 8px;
         font-weight: 500;
         transition: all 0.2s;
@@ -778,6 +778,13 @@ body {
         border: 1px solid #e5e7eb;
         background-color: white;
         color: #6b7280;
+    }
+
+    .mobile-filters-btn.only-icon {
+        padding: 8px;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
     }
 
     .mobile-filters-btn.active {
@@ -804,17 +811,18 @@ body {
         border: 2px solid #cc6633;
     }
 
-    .mobile-clear-filters {
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.2s;
-        background-color: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        display: flex;
+    .mobile-clear-filters { display: none; }
+
+    .mobile-clear-icon {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1px solid #fecaca;
+        background: #fee2e2;
+        color: #ef4444;
     }
 
     .employee-card-mobile {

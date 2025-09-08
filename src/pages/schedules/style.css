@@ -230,6 +230,53 @@
     overflow-y: auto;
 }
 
+/* Mobile filter buttons (align with Team styles) */
+.mobile-filters-btn {
+    position: relative;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #e5e7eb;
+    background-color: white;
+    color: #6b7280;
+}
+
+.mobile-filters-btn.only-icon { padding: 8px; width: 40px; height: 40px; justify-content: center; }
+.mobile-filters-btn.active { background-color: #ffffff; color: #cc6633; border-color: #cc6633; box-shadow: 0 2px 4px rgba(204,102,51,0.15); }
+
+.mobile-filters-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: white;
+    color: #cc6633;
+    border: 2px solid #cc6633;
+}
+
+.mobile-clear-icon {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid #fecaca;
+    background: #fee2e2;
+    color: #ef4444;
+}
+
 .filter-option {
     display: flex;
     align-items: center;
@@ -764,6 +811,14 @@ td.employee-cell {
 @media (min-width: 785px) {
     .mobile-only { display: none !important; }
     .desktop-only { display: block !important; }
+}
+
+/* XS phones (<=360px): compact navigation & paddings */
+@media (max-width: 360px) {
+    .calendar-wrapper { padding: 1rem; }
+    .view-tabs { gap: 0.125rem; }
+    .view-tab { padding: 0.375rem 0.5rem; font-size: 0.8125rem; }
+    .nav-button { padding: 0.375rem; }
 }
 
 /* ========================================

@@ -170,10 +170,14 @@ class ShiftCalendar {
                 
                 const employees = monthData.employees || [];
                 const rawShifts = monthData.shifts || [];
+                // Normalize to canonical names (per schema)
                 const shifts = rawShifts.map(s => ({
                     ...s,
-                    shift_date: s.shift_date || s.start_shift_time || s.date || s.day || null,
-                    start_shift_date: s.start_shift_date || s.start_time || null
+                    start_shift_date: s.start_shift_date || s.shift_date || s.date || s.day || null,
+                    start_shift_time: s.start_shift_time || s.start_time || null,
+                    end_shift_time: s.end_shift_time || s.end_time || null,
+                    day_status: s.day_status || s.status || null,
+                    absence_reason: s.absence_reason || s.reason || null
                 }));
                 this.monthCache.set(key, { employees, shifts });
                 this.employeesData = employees;
@@ -313,7 +317,7 @@ class ShiftCalendar {
     getShiftsForEmployeeAndDate(employeeId, date) {
         const dateStr = this.toDateStr(date);
         return this.shiftsData.filter(shift => 
-            shift.employee_id === employeeId && shift.shift_date === dateStr
+            shift.employee_id === employeeId && shift.start_shift_date === dateStr
         );
     }
 
@@ -385,7 +389,7 @@ class ShiftCalendar {
         const currentMonthStr = `${this.state.currentYear}-${(this.state.currentMonth + 1).toString().padStart(2, '0')}`;
         
         const currentMonthShifts = this.shiftsData.filter(shift => 
-            shift.shift_date.startsWith(currentMonthStr)
+            (shift.start_shift_date || '').startsWith(currentMonthStr)
         );
         
         const todayStr = this.toDateStr(CONSTANTS.CURRENT_DATE);
@@ -397,23 +401,23 @@ class ShiftCalendar {
         const actualHours = currentMonthShifts
             .filter(shift => 
                 shift.schedule_type === 'fact schedule' && 
-                shift.status === 'completed' &&
-                shift.shift_date < todayStr
+                shift.day_status === 'completed' &&
+                shift.start_shift_date < todayStr
             )
             .reduce((total, shift) => total + (shift.pay_time || 0), 0);
         
         const factHoursBeforeToday = currentMonthShifts
             .filter(shift => 
                 shift.schedule_type === 'fact schedule' && 
-                shift.status === 'completed' &&
-                shift.shift_date < todayStr
+                shift.day_status === 'completed' &&
+                shift.start_shift_date < todayStr
             )
             .reduce((total, shift) => total + (shift.pay_time || 0), 0);
             
         const baselineHoursFromToday = currentMonthShifts
             .filter(shift => 
                 shift.schedule_type === 'baseline schedule' &&
-                shift.shift_date >= todayStr
+                shift.start_shift_date >= todayStr
             )
             .reduce((total, shift) => total + (shift.pay_time || 0), 0);
         
@@ -564,10 +568,12 @@ class ShiftCalendar {
 
     renderNavigation() {
         if (this.isMobile) {
+            const activeFiltersCount = this.state.filters.project.length + this.state.filters.stage.length + this.state.filters.position.length;
+            const hasActiveFilters = activeFiltersCount > 0;
             return `
                 <div class="mobile-only" style="padding: 0;">
                     <div class="flex items-center gap-3" style="margin-bottom: 1rem;">
-                        <div class="search-container">
+                        <div class="search-container" style="flex: 1;">
                             <span class="search-icon">${ICONS.search}</span>
                             <input type="text" 
                                    class="search-input" 
@@ -575,9 +581,17 @@ class ShiftCalendar {
                                    placeholder="Search..."
                                    value="${this.state.searchTerm}">
                         </div>
-                        <button type="button" class="nav-button" id="filter-button" style="padding: 0.75rem;">
-                            ${ICONS.filter}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            ${hasActiveFilters ? `
+                                <button type="button" class="mobile-clear-icon" id="clear-mobile-filters" aria-label="Clear filters">
+                                    ${ICONS.x}
+                                </button>
+                            ` : ''}
+                            <button type="button" class="mobile-filters-btn ${hasActiveFilters ? 'active' : ''} only-icon" id="filter-button" aria-label="Open filters">
+                                ${ICONS.filter}
+                                ${hasActiveFilters ? `<span class="mobile-filters-badge">${activeFiltersCount}</span>` : ''}
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="flex items-center justify-between">
@@ -955,7 +969,7 @@ class ShiftCalendar {
                                 <span class="badge badge-project">
                                     ${employee.project}
                                 </span>
-                                ${employee.staffing_type === 'backup' ? `
+                                ${employee.staffing_type === 'Backup' ? `
                                     <span class="badge badge-backup">Backup</span>
                                 ` : ''}
                             </div>
@@ -1043,20 +1057,20 @@ class ShiftCalendar {
     }
 
     renderShiftCell(shift, baselineShift, employee, isChildRow) {
-        const isPastShift = this.isPast(this.formatDate(shift.shift_date));
+        const isPastShift = this.isPast(this.formatDate(shift.start_shift_date));
         
         let statusCode = null;
         let showDiscrepancy = false;
         
-        if (shift.status === 'missed' || shift.status === 'cancelled') {
-            statusCode = shift.reason || shift.status;
+        if (shift.day_status === 'missed' || shift.day_status === 'cancelled') {
+            statusCode = shift.absence_reason || shift.day_status;
         }
         
-        if (shift.status === 'completed' && baselineShift && 
-            baselineShift.start_shift_date && baselineShift.end_time && 
-            shift.start_shift_date && shift.end_time) {
-            const baselineTime = `${baselineShift.start_shift_date}-${baselineShift.end_time}`;
-            const actualTime = `${shift.start_shift_date}-${shift.end_time}`;
+        if (shift.day_status === 'completed' && baselineShift && 
+            baselineShift.start_shift_time && baselineShift.end_shift_time && 
+            shift.start_shift_time && shift.end_shift_time) {
+            const baselineTime = `${baselineShift.start_shift_time}-${baselineShift.end_shift_time}`;
+            const actualTime = `${shift.start_shift_time}-${shift.end_shift_time}`;
             if (baselineTime !== actualTime) {
                 showDiscrepancy = this.checkTimeDiscrepancy(baselineTime, actualTime);
             }
@@ -1065,15 +1079,15 @@ class ShiftCalendar {
         let bgColor = '#86efac'; // green-300
         if (shift.schedule_type === 'baseline schedule') {
             bgColor = isPastShift ? '#9ca3af' : '#86efac';
-        } else if (shift.status === 'completed') {
+        } else if (shift.day_status === 'completed') {
             bgColor = '#15803d'; // green-700
-        } else if (shift.status === 'missed') {
+        } else if (shift.day_status === 'missed') {
             bgColor = '#fca5a5'; // red-300
         }
 
-        const timeText = shift.start_shift_date && shift.end_time 
-            ? `${shift.start_shift_date}-${shift.end_time}`
-            : shift.status === 'missed' ? 'MISSED' : 'NO TIME';
+        const timeText = shift.start_shift_time && shift.end_shift_time 
+            ? `${shift.start_shift_time.slice(0,5)}-${shift.end_shift_time.slice(0,5)}`
+            : shift.day_status === 'missed' ? 'MISSED' : 'NO TIME';
 
         const hasIssue = statusCode || showDiscrepancy;
 
@@ -1139,7 +1153,7 @@ class ShiftCalendar {
                         <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                             <span class="badge ${COLORS.STAGES[employee.stage]}">${employee.stage}</span>
                             <span class="badge badge-project">${employee.project}</span>
-                            ${employee.staffing_type === 'backup' ? '<span class="badge badge-backup">Backup</span>' : ''}
+                            ${employee.staffing_type === 'Backup' ? '<span class="badge badge-backup">Backup</span>' : ''}
                         </div>
                         <div style="margin-top: 1rem; font-size: 0.875rem; color: #4b5563;">
                             Start Date: ${this.formatDate(employee.start_date).toLocaleDateString()}
@@ -1243,6 +1257,12 @@ class ShiftCalendar {
         if (content) {
             content.innerHTML = this.renderBottomSheetContent(options[this.state.bottomSheetTab], this.state.bottomSheetTab);
         }
+
+        // Keep mobile navigation indicators (icon color, badge, clear-icon) in sync while bottom sheet is open
+        const nav = document.getElementById('navigation-section');
+        if (nav && this.isMobile) {
+            nav.innerHTML = this.renderNavigation();
+        }
     }
 
     renderBottomSheetContent(options, type) {
@@ -1272,15 +1292,15 @@ class ShiftCalendar {
 
     createShiftInfo(shift, baselineShift, employee, showHeader = true, isCompact = false) {
         const calculateDiscrepancies = (planned, actual) => {
-            if (!planned || !actual || !planned.start_shift_date || !planned.end_time || 
-                !actual.start_shift_date || !actual.end_time) {
+            if (!planned || !actual || !planned.start_shift_time || !planned.end_shift_time || 
+                !actual.start_shift_time || !actual.end_shift_time) {
                 return null;
             }
             
-            const plannedStart = this.parseTime(planned.start_shift_date);
-            const plannedEnd = this.parseTime(planned.end_time);
-            const actualStart = this.parseTime(actual.start_shift_date);
-            const actualEnd = this.parseTime(actual.end_time);
+            const plannedStart = this.parseTime(planned.start_shift_time);
+            const plannedEnd = this.parseTime(planned.end_shift_time);
+            const actualStart = this.parseTime(actual.start_shift_time);
+            const actualEnd = this.parseTime(actual.end_shift_time);
             
             const late = Math.max(0, actualStart - plannedStart);
             const earlyLeave = Math.max(0, plannedEnd - actualEnd);
@@ -1294,7 +1314,7 @@ class ShiftCalendar {
         };
 
         const discrepancies = baselineShift ? calculateDiscrepancies(baselineShift, shift) : null;
-        const isAbsence = shift.status === 'missed' || shift.status === 'cancelled';
+        const isAbsence = shift.day_status === 'missed' || shift.day_status === 'cancelled';
         const hasDiscrepancy = discrepancies && (discrepancies.late > 0 || discrepancies.earlyLeave > 0);
 
         const formatShiftDate = (dateStr) => {
@@ -1316,7 +1336,7 @@ class ShiftCalendar {
                         ${employee?.full_name}
                     </h4>
                     <p style="color: #4b5563; font-size: ${isCompact ? '0.875rem' : '1rem'};">
-                        ${formatShiftDate(shift.shift_date)}
+                        ${formatShiftDate(shift.start_shift_date)}
                     </p>
                 </div>
             `;
@@ -1336,9 +1356,9 @@ class ShiftCalendar {
                                     font-size: ${isCompact ? '0.875rem' : '1rem'};">
                             MISSED SHIFT
                         </span>
-                        ${shift.reason ? `
+                        ${shift.absence_reason ? `
                             <div style="color: #dc2626; font-size: ${isCompact ? '0.75rem' : '0.875rem'};">
-                                Reason: ${shift.reason.toUpperCase()}
+                                Reason: ${shift.absence_reason.toUpperCase()}
                             </div>
                         ` : ''}
                     </div>
@@ -1386,8 +1406,8 @@ class ShiftCalendar {
                 <div style="margin-bottom: 0.5rem;">
                     <span style="font-weight: 500; color: #374151;">Planned:</span>
                     <span style="margin-left: 0.5rem;">
-                        ${baselineShift?.start_shift_date && baselineShift?.end_time 
-                            ? `${baselineShift.start_shift_date}-${baselineShift.end_time}`
+                        ${baselineShift?.start_shift_time && baselineShift?.end_shift_time 
+                            ? `${baselineShift.start_shift_time}-${baselineShift.end_shift_time}`
                             : 'Not scheduled'}
                     </span>
                 </div>
@@ -1405,8 +1425,8 @@ class ShiftCalendar {
                         <span style="font-weight: 500; color: #374151;">Planned:</span>
                         <div style="color: #2563eb; font-family: 'SF Mono', 'Monaco', monospace; 
                                    font-size: ${isCompact ? '0.875rem' : '1.125rem'};">
-                            ${baselineShift?.start_shift_date && baselineShift?.end_time 
-                                ? `${baselineShift.start_shift_date}-${baselineShift.end_time}`
+                            ${baselineShift?.start_shift_time && baselineShift?.end_shift_time 
+                                ? `${baselineShift.start_shift_time}-${baselineShift.end_shift_time}`
                                 : 'Not scheduled'}
                         </div>
                     </div>
@@ -1414,8 +1434,8 @@ class ShiftCalendar {
                         <span style="font-weight: 500; color: #374151;">Actual:</span>
                         <div style="color: #16a34a; font-family: 'SF Mono', 'Monaco', monospace; 
                                    font-size: ${isCompact ? '0.875rem' : '1.125rem'};">
-                            ${shift.start_shift_date && shift.end_time 
-                                ? `${shift.start_shift_date}-${shift.end_time}`
+                            ${shift.start_shift_time && shift.end_shift_time 
+                                ? `${shift.start_shift_time}-${shift.end_shift_time}`
                                 : 'No time recorded'}
                         </div>
                     </div>
@@ -1604,6 +1624,13 @@ class ShiftCalendar {
                 this.showBottomSheet();
             }
 
+            // Quick clear mobile filters
+            if (e.target.closest('#clear-mobile-filters')) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.clearAllFilters();
+            }
+
             // Filter dropdowns (desktop)
             if (e.target.closest('.filter-button')) {
                 e.preventDefault();
@@ -1746,27 +1773,59 @@ class ShiftCalendar {
             }
         });
 
-        // Bottom sheet events (on document level since they're outside container)
-        document.addEventListener('click', (e) => {
-            // Close dropdowns on outside click
-            if (!e.target.closest('.filter-dropdown')) {
-                this.closeAllDropdowns();
-            }
-            
-            // Bottom sheet tabs
-            if (e.target.closest('.bottom-sheet-tab')) {
-                const tab = e.target.closest('.bottom-sheet-tab').dataset.tab;
-                this.setBottomSheetTab(tab);
-            }
-            
-            // Bottom sheet checkboxes
-            if (e.target.closest('#bottom-sheet-content input[type="checkbox"]')) {
-                const checkbox = e.target;
-                const type = checkbox.dataset.filterType;
-                const option = checkbox.dataset.option;
-                this.toggleFilterOption(type, option);
-            }
-        });
+        // Bottom sheet + modal events (on document level since they're outside container)
+        if (!this._boundGlobalClickHandler) {
+            this._boundGlobalClickHandler = (e) => {
+                // Close dropdowns on outside click
+                if (!e.target.closest('.filter-dropdown')) {
+                    this.closeAllDropdowns();
+                }
+                
+                // Bottom sheet tabs
+                if (e.target.closest('.bottom-sheet-tab')) {
+                    const tab = e.target.closest('.bottom-sheet-tab').dataset.tab;
+                    this.setBottomSheetTab(tab);
+                }
+                
+                // Bottom sheet checkboxes
+                if (e.target.closest('#bottom-sheet-content input[type="checkbox"]')) {
+                    const checkbox = e.target;
+                    const type = checkbox.dataset.filterType;
+                    const option = checkbox.dataset.option;
+                    this.toggleFilterOption(type, option);
+                }
+
+                // Close bottom sheet by overlay click
+                if (e.target.id === 'bottom-sheet-overlay') {
+                    e.preventDefault();
+                    this.closeModal('bottom-sheet');
+                }
+
+                // Clear all filters button in bottom sheet
+                if (e.target && (e.target.id === 'clear-all-filters' || e.target.closest('#clear-all-filters'))) {
+                    e.preventDefault();
+                    this.clearAllFilters();
+                }
+
+                // Close any modal by clicking the close button
+                if (e.target.closest('.modal-close')) {
+                    e.preventDefault();
+                    const btn = e.target.closest('.modal-close');
+                    const modalId = btn && btn.dataset.modal;
+                    if (modalId) this.closeModal(modalId);
+                }
+
+                // Close any modal by clicking its overlay
+                if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+                    e.preventDefault();
+                    const overlayId = e.target.id;
+                    if (overlayId) this.closeModal(overlayId);
+                }
+            };
+        }
+        // Rebind to avoid duplicates
+        document.removeEventListener('click', this._boundGlobalClickHandler);
+        document.addEventListener('click', this._boundGlobalClickHandler);
 
         // Setup carousel scroll listener
         if (this.isMobile) {
