@@ -80,7 +80,9 @@ class ShiftCalendar {
             showProjectDropdown: false,
             showStageDropdown: false,
             showPositionDropdown: false,
-            bottomSheetTab: 'project'
+            bottomSheetTab: 'project',
+            // Local month loading overlay flag
+            isMonthLoading: false
         };
 
         // Data from API
@@ -95,6 +97,9 @@ class ShiftCalendar {
             filteredEmployees: null,
             analytics: null
         };
+
+        // Month data cache (per YYYY-MM)
+        this.monthCache = new Map();
 
         // Initialize
         this.init();
@@ -116,7 +121,6 @@ class ShiftCalendar {
             // Render calendar
             console.log('📍 Rendering calendar...');
             this.render();
-            this.setupEventListeners();
             this.setupResizeListener();
             
             // Center on today
@@ -152,21 +156,29 @@ class ShiftCalendar {
                 throw new Error('API method not found');
             }
             
-            // Load shifts for month
-            const monthData = await api.getShiftsForMonth(this.state.currentYear, this.state.currentMonth + 1);
-            
-            console.log('📍 Data received:', monthData);
-            
-            this.employeesData = monthData.employees || [];
-            // Normalize shift fields so UI logic can rely on consistent names
-            const rawShifts = monthData.shifts || [];
-            this.shiftsData = rawShifts.map(s => ({
-                ...s,
-                // Ensure date field exists as `shift_date`
-                shift_date: s.shift_date || s.start_shift_time || s.date || s.day || null,
-                // Ensure start time accessible via `start_shift_date` (legacy name in UI)
-                start_shift_date: s.start_shift_date || s.start_time || null
-            }));
+            const key = `${this.state.currentYear}-${String(this.state.currentMonth + 1).padStart(2, '0')}`;
+            if (this.monthCache.has(key)) {
+                const { employees, shifts } = this.monthCache.get(key);
+                this.employeesData = employees;
+                this.shiftsData = shifts;
+                console.log('📍 Loaded data from cache for', key);
+            } else {
+                // Load shifts for month
+                const monthData = await api.getShiftsForMonth(this.state.currentYear, this.state.currentMonth + 1);
+                
+                console.log('📍 Data received:', monthData);
+                
+                const employees = monthData.employees || [];
+                const rawShifts = monthData.shifts || [];
+                const shifts = rawShifts.map(s => ({
+                    ...s,
+                    shift_date: s.shift_date || s.start_shift_time || s.date || s.day || null,
+                    start_shift_date: s.start_shift_date || s.start_time || null
+                }));
+                this.monthCache.set(key, { employees, shifts });
+                this.employeesData = employees;
+                this.shiftsData = shifts;
+            }
             
             console.log('✅ Data loaded:', {
                 employees: this.employeesData.length,
@@ -446,12 +458,14 @@ class ShiftCalendar {
     // ========================================
     render() {
         const html = `
-            ${this.renderAnalytics()}
+            <div id="analytics-section">${this.renderAnalytics()}</div>
             ${this.renderMainContent()}
         `;
         this.container.innerHTML = html;
         // Re-setup event listeners after render as DOM was replaced
         this.setupEventListeners();
+        // Attach listeners for elements created within partial sections
+        this.afterPartialUpdateSetup();
     }
 
     renderAnalytics() {
@@ -534,9 +548,16 @@ class ShiftCalendar {
     renderMainContent() {
         return `
             <div class="calendar-wrapper" style="position: relative;">
-                ${this.renderNavigation()}
-                ${this.renderLegend()}
-                ${this.renderCalendar()}
+                <div id="navigation-section">${this.renderNavigation()}</div>
+                <div id="legend-section">${this.renderLegend()}</div>
+                <div id="calendar-section" style="position: relative;">
+                    ${this.state.isMonthLoading ? `
+                        <div class="calendar-overlay">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    ` : ''}
+                    ${this.renderCalendar()}
+                </div>
             </div>
         `;
     }
@@ -561,8 +582,8 @@ class ShiftCalendar {
                     
                     <div class="flex items-center justify-between">
                         <div class="flex gap-2">
-                            <button type="button" class="nav-button" id="prev-month-mobile">${ICONS.chevronLeft}</button>
-                            <button type="button" class="nav-button" id="next-month-mobile">${ICONS.chevronRight}</button>
+                            <button type="button" class="nav-button" id="prev-month-mobile" ${this.state.isMonthLoading ? 'disabled' : ''}>${ICONS.chevronLeft}</button>
+                            <button type="button" class="nav-button" id="next-month-mobile" ${this.state.isMonthLoading ? 'disabled' : ''}>${ICONS.chevronRight}</button>
                         </div>
                         
                         <div class="view-tabs">
@@ -624,9 +645,9 @@ class ShiftCalendar {
                          style="border-radius: 0.75rem; padding: 1rem 1.5rem; 
                                 background-color: #f9fafb; border: 1px solid #e5e7eb;">
                         <div class="flex gap-2">
-                            <button type="button" class="nav-button" id="prev-month">${ICONS.chevronLeft}</button>
-                            <button type="button" class="nav-button" id="next-month">${ICONS.chevronRight}</button>
-                            <button type="button" class="nav-button" id="today-button" style="padding: 0.5rem 1rem;">Today</button>
+                            <button type="button" class="nav-button" id="prev-month" ${this.state.isMonthLoading ? 'disabled' : ''}>${ICONS.chevronLeft}</button>
+                            <button type="button" class="nav-button" id="next-month" ${this.state.isMonthLoading ? 'disabled' : ''}>${ICONS.chevronRight}</button>
+                            <button type="button" class="nav-button" id="today-button" ${this.state.isMonthLoading ? 'disabled' : ''} style="padding: 0.5rem 1rem;">Today</button>
                         </div>
                         
                         <h2 style="font-size: 1.5rem; font-weight: 700;">
@@ -764,6 +785,44 @@ class ShiftCalendar {
                 </table>
             </div>
         `;
+    }
+
+    // ========================================
+    // PARTIAL UPDATE HELPERS
+    // ========================================
+    updateCalendarContent() {
+        // Update analytics, navigation, legend, and calendar separately
+        const analytics = document.getElementById('analytics-section');
+        if (analytics) {
+            analytics.innerHTML = this.renderAnalytics();
+        }
+
+        const nav = document.getElementById('navigation-section');
+        if (nav) {
+            nav.innerHTML = this.renderNavigation();
+        }
+
+        const legend = document.getElementById('legend-section');
+        if (legend) {
+            legend.innerHTML = this.renderLegend();
+        }
+
+        const calendar = document.getElementById('calendar-section');
+        if (calendar) {
+            calendar.innerHTML = this.renderCalendar();
+        }
+
+        // Reattach listeners that bind to specific nodes
+        this.afterPartialUpdateSetup();
+    }
+
+    afterPartialUpdateSetup() {
+        // Legend tooltip needs rebinding
+        this.setupLegendTooltip();
+        // Mobile analytics carousel indicators need rebinding
+        if (this.isMobile) {
+            this.setupCarouselScroll();
+        }
     }
 
     renderEmptyState() {
@@ -1565,7 +1624,7 @@ class ShiftCalendar {
             if (e.target.closest('#clear-search')) {
                 e.preventDefault();
                 this.state.searchTerm = '';
-                this.render();
+                this.updateCalendarContent();
             }
 
             // Avatar click
@@ -1622,6 +1681,31 @@ class ShiftCalendar {
             }
         });
 
+        // Safety net: intercept nav clicks at capture phase to prevent any default navigation
+        if (!this._boundDocNavHandler) {
+            this._boundDocNavHandler = async (e) => {
+                const prev = e.target.closest('#prev-month') || e.target.closest('#prev-month-mobile');
+                const next = e.target.closest('#next-month') || e.target.closest('#next-month-mobile');
+                const todayBtn = e.target.closest('#today-button') || e.target.closest('#go-to-today');
+                if (prev) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await this.navigateMonth('prev');
+                } else if (next) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await this.navigateMonth('next');
+                } else if (todayBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await this.goToToday();
+                }
+            };
+        }
+        // Rebind to avoid duplicates
+        document.removeEventListener('click', this._boundDocNavHandler, true);
+        document.addEventListener('click', this._boundDocNavHandler, true);
+
         // Desktop-only hover events for tooltips
         if (!this.isMobile && window.innerWidth >= 785) {
             // Shift cell hover
@@ -1649,7 +1733,7 @@ class ShiftCalendar {
         this.container.addEventListener('input', (e) => {
             if (e.target.id === 'search-input') {
                 this.state.searchTerm = e.target.value;
-                this.render();
+                this.updateCalendarContent();
             }
         });
 
@@ -1826,6 +1910,7 @@ class ShiftCalendar {
     // STATE MANAGEMENT METHODS
     // ========================================
     async navigateMonth(direction) {
+        if (this.state.isMonthLoading) return;
         if (direction === 'prev') {
             if (this.state.currentMonth === 0) {
                 this.state.currentMonth = 11;
@@ -1845,12 +1930,16 @@ class ShiftCalendar {
         // Clear cache
         this.cache = {};
         
-        // Reload data for new month
-        this.showLoading();
+        // Local overlay loading (only if not cached)
+        const key = `${this.state.currentYear}-${String(this.state.currentMonth + 1).padStart(2, '0')}`;
+        const needsOverlay = !this.monthCache.has(key);
+        if (needsOverlay) {
+            this.state.isMonthLoading = true;
+            this.updateCalendarContent();
+        }
         await this.loadData();
-        this.hideLoading();
-        
-        this.render();
+        this.state.isMonthLoading = false;
+        this.updateCalendarContent();
         
         // Auto-scroll to today if we're in current month
         if (this.state.currentMonth === CONSTANTS.CURRENT_DATE.getMonth() && 
@@ -1860,6 +1949,7 @@ class ShiftCalendar {
     }
 
     async goToToday() {
+        if (this.state.isMonthLoading) return;
         const today = CONSTANTS.CURRENT_DATE;
         this.state.currentMonth = today.getMonth();
         this.state.currentYear = today.getFullYear();
@@ -1867,18 +1957,22 @@ class ShiftCalendar {
         // Clear cache
         this.cache = {};
         
-        // Reload data for current month
-        this.showLoading();
+        // Local overlay loading (only if not cached)
+        const key = `${this.state.currentYear}-${String(this.state.currentMonth + 1).padStart(2, '0')}`;
+        const needsOverlay = !this.monthCache.has(key);
+        if (needsOverlay) {
+            this.state.isMonthLoading = true;
+            this.updateCalendarContent();
+        }
         await this.loadData();
-        this.hideLoading();
-        
-        this.render();
+        this.state.isMonthLoading = false;
+        this.updateCalendarContent();
         setTimeout(() => this.centerTodayInCalendar(), 100);
     }
 
     setViewMode(mode) {
         this.state.viewMode = mode;
-        this.render();
+        this.updateCalendarContent();
         if (this.state.currentMonth === CONSTANTS.CURRENT_DATE.getMonth() && 
             this.state.currentYear === CONSTANTS.CURRENT_DATE.getFullYear()) {
             setTimeout(() => this.centerTodayInCalendar(), 100);
@@ -1896,7 +1990,7 @@ class ShiftCalendar {
         });
         
         this.state[dropdownKey] = !this.state[dropdownKey];
-        this.render();
+        this.updateCalendarContent();
     }
 
     closeAllDropdowns() {
@@ -1908,7 +2002,7 @@ class ShiftCalendar {
             document.querySelector('.filter-dropdown-menu');
             
         if (needsRerender) {
-            this.render();
+            this.updateCalendarContent();
         }
     }
 
@@ -1924,18 +2018,18 @@ class ShiftCalendar {
             // Update bottom sheet
             this.updateBottomSheetContent();
         } else {
-            this.render();
+            this.updateCalendarContent();
         }
     }
 
     clearFilter(type) {
         this.state.filters[type] = [];
-        this.render();
+        this.updateCalendarContent();
     }
 
     clearAllFilters() {
         this.state.filters = { project: [], stage: [], position: [] };
-        this.render();
+        this.updateCalendarContent();
         this.closeModal('bottom-sheet');
     }
 
