@@ -1527,6 +1527,23 @@ const handleClick = e => {
             const {members, coverage, active, status} = getTeamData();
             const costs = calculateCosts();
             if (!state.notifs.length) state.notifs = generateNotifications();
+            // Update navbar badge with unread count (and persist for other pages)
+            try {
+                const unread = state.notifs.filter(n => !n.read).length;
+                const el = document.getElementById('navbar-today-badge') || document.querySelector('.navbar__link[data-nav="today"] .navbar__link-badge');
+                if (el) {
+                    if (unread > 0) {
+                        el.textContent = unread > 99 ? '99+' : String(unread);
+                        el.style.display = '';
+                        el.setAttribute('aria-label', `${unread} unread`);
+                    } else {
+                        el.textContent = '0';
+                        el.style.display = 'none';
+                        el.removeAttribute('aria-label');
+                    }
+                }
+                try { localStorage.setItem('today-unread-count', String(unread)); } catch (_) {}
+            } catch (e) {}
             
             const mobile = isMobile();
             

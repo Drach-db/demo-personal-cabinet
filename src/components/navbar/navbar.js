@@ -32,6 +32,13 @@ class UnifiedNavbar {
         this.loadState();
         this.bindEvents();
         this.detectActivePage();
+        this.updateTodayBadge();
+        // Listen storage updates (from Today page or other tabs)
+        window.addEventListener('storage', (e) => {
+            if (e && e.key === 'today-unread-count') {
+                this.updateTodayBadge();
+            }
+        });
         
         // Apply the initial state ТОЛЬКО для десктопа
         if (!this.isMobile) {
@@ -44,6 +51,27 @@ class UnifiedNavbar {
             }
             // Remove pre-collapsed class set early in <head>
             document.documentElement.classList.remove('navbar-pre-collapsed');
+        }
+    }
+
+    /**
+     * Update Today badge using persisted unread count
+     */
+    updateTodayBadge() {
+        const el = document.getElementById('navbar-today-badge');
+        if (!el) return;
+        let count = 0;
+        try {
+            const raw = localStorage.getItem('today-unread-count');
+            count = raw ? parseInt(raw, 10) : 0;
+        } catch (e) { /* ignore */ }
+        if (count > 0) {
+            el.textContent = count > 99 ? '99+' : String(count);
+            el.style.display = '';
+            el.setAttribute('aria-label', `${count} unread`);
+        } else {
+            el.style.display = 'none';
+            el.removeAttribute('aria-label');
         }
     }
 

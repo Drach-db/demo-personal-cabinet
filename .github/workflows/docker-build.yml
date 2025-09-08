@@ -45,6 +45,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -52,3 +53,36 @@ jobs:
             DOPPLER_TOKEN=${{ github.ref == 'refs/heads/main' && secrets.DOPPLER_TOKEN_PROD || secrets.DOPPLER_TOKEN_DEV }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy-dev:
+    name: Deploy to dev server
+    if: github.ref == 'refs/heads/dev'
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            echo "Logging into GHCR..."
+            if [ -n "${{ secrets.GHCR_USER }}" ] && [ -n "${{ secrets.GHCR_PAT }}" ]; then
+              echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ secrets.GHCR_USER }}" --password-stdin
+            fi
+            echo "Switching to deploy directory..."
+            cd "${{ secrets.DEPLOY_DIR }}"
+            if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+              COMPOSE="docker compose"
+            else
+              COMPOSE="docker-compose"
+            fi
+            echo "Pulling latest dev image..."
+            $COMPOSE -f docker-compose.dev.yml pull
+            echo "Restarting service..."
+            $COMPOSE -f docker-compose.dev.yml up -d
+            echo "Pruning old images..."
+            docker image prune -f

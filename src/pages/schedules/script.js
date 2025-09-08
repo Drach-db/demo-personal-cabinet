@@ -64,6 +64,9 @@ class ShiftCalendar {
         this.container = document.getElementById(containerId);
         this.isMobile = window.innerWidth < 784;
         this._resizeHandlerBound = null;
+        this._scrollHandlerBound = null; // not used now
+        this._windowLoadBound = null;
+        this._calendarTopOffset = null; // Зафиксированная верхняя позиция scroller относительно вьюпорта
         
         // State
         this.state = {
@@ -124,7 +127,16 @@ class ShiftCalendar {
             this.render();
             this.setupResizeListener();
             // Выставляем высоту скролл-контейнера и центрируем сегодня
-            this.fitCalendarScrollHeight();
+            this.fitCalendarScrollHeight(true);
+            // Доп. пересчёт после макета/ресурсов
+            requestAnimationFrame(() => this.fitCalendarScrollHeight(true));
+            if (!this._windowLoadBound) {
+                this._windowLoadBound = () => this.fitCalendarScrollHeight(true);
+                window.addEventListener('load', this._windowLoadBound, { once: true });
+            }
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(() => this.fitCalendarScrollHeight(true)).catch(() => {});
+            }
             setTimeout(() => this.centerTodayInCalendar(), 100);
             console.log('✅ Init completed');
         } catch (error) {
@@ -305,6 +317,23 @@ class ShiftCalendar {
         return days[date.getDay()];
     }
 
+    // Number formatting helpers
+    formatThousands(value) {
+        const v = Math.round(Number(value || 0));
+        if (Math.abs(v) >= 1000) {
+            return Math.floor(v / 1000).toLocaleString('en-US');
+        }
+        return v.toLocaleString('en-US');
+    }
+
+    formatCurrency(value) {
+        return `$${this.formatThousands(value)}`;
+    }
+
+    formatInt(value) {
+        return this.formatThousands(value);
+    }
+
     getDaysInMonth(month, year) {
         const days = [];
         const date = new Date(year, month, 1);
@@ -393,36 +422,43 @@ class ShiftCalendar {
             (shift.start_shift_date || '').startsWith(currentMonthStr)
         );
         
-        const todayStr = this.toDateStr(CONSTANTS.CURRENT_DATE);
+        const today = new Date(CONSTANTS.CURRENT_DATE.getFullYear(), CONSTANTS.CURRENT_DATE.getMonth(), CONSTANTS.CURRENT_DATE.getDate());
+        const todayStr = this.toDateStr(today);
+        const selectedYM = this.state.currentYear * 12 + this.state.currentMonth;
+        const todayYM = today.getFullYear() * 12 + today.getMonth();
         
+        // Planned: весь месяц baseline schedule
         const plannedHours = currentMonthShifts
             .filter(shift => shift.schedule_type === 'baseline schedule')
             .reduce((total, shift) => total + (shift.pay_time || 0), 0);
-        
+
+        // Actual: весь месяц fact schedule (без ограничений по статусу/дате)
         const actualHours = currentMonthShifts
-            .filter(shift => 
-                shift.schedule_type === 'fact schedule' && 
-                shift.day_status === 'completed' &&
-                shift.start_shift_date < todayStr
-            )
+            .filter(shift => shift.schedule_type === 'fact schedule')
             .reduce((total, shift) => total + (shift.pay_time || 0), 0);
-        
-        const factHoursBeforeToday = currentMonthShifts
-            .filter(shift => 
-                shift.schedule_type === 'fact schedule' && 
-                shift.day_status === 'completed' &&
-                shift.start_shift_date < todayStr
-            )
-            .reduce((total, shift) => total + (shift.pay_time || 0), 0);
-            
-        const baselineHoursFromToday = currentMonthShifts
-            .filter(shift => 
-                shift.schedule_type === 'baseline schedule' &&
-                shift.start_shift_date >= todayStr
-            )
-            .reduce((total, shift) => total + (shift.pay_time || 0), 0);
-        
-        const projectedHours = factHoursBeforeToday + baselineHoursFromToday;
+
+        // Projected:
+        // - Если выбранный месяц в прошлом: весь месяц fact
+        // - Если в будущем: весь месяц baseline
+        // - Если текущий: baseline до today (строго < today) + fact от today (>= today)
+        let projectedHours;
+        if (selectedYM < todayYM) {
+            projectedHours = currentMonthShifts
+                .filter(s => s.schedule_type === 'fact schedule')
+                .reduce((t, s) => t + (s.pay_time || 0), 0);
+        } else if (selectedYM > todayYM) {
+            projectedHours = currentMonthShifts
+                .filter(s => s.schedule_type === 'baseline schedule')
+                .reduce((t, s) => t + (s.pay_time || 0), 0);
+        } else {
+            const baselineHoursBeforeToday = currentMonthShifts
+                .filter(s => s.schedule_type === 'baseline schedule' && s.start_shift_date < todayStr)
+                .reduce((t, s) => t + (s.pay_time || 0), 0);
+            const factHoursFromToday = currentMonthShifts
+                .filter(s => s.schedule_type === 'fact schedule' && s.start_shift_date >= todayStr)
+                .reduce((t, s) => t + (s.pay_time || 0), 0);
+            projectedHours = baselineHoursBeforeToday + factHoursFromToday;
+        }
 
         return [
             { 
@@ -516,7 +552,9 @@ class ShiftCalendar {
 
     createAnalyticsCard(data, isMobile) {
         const title = isMobile && data.mobileTitle ? data.mobileTitle : data.title;
-        const value = isMobile ? `${data.hours}h` : `$${data.cost} / ${data.hours}h`;
+        const formattedCost = this.formatCurrency(data.cost);
+        const formattedHours = `${this.formatInt(data.hours)}h`;
+        const value = isMobile ? formattedHours : `${formattedCost} / ${formattedHours}`;
         
         return `
             <div class="analytics-card" style="background-color: ${data.color}15; border-color: ${data.color}20;">
@@ -1967,6 +2005,8 @@ class ShiftCalendar {
                         showPositionDropdown: false
                     };
                     this.render();
+                    // После смены брейкпоинта пересчитываем верхнюю точку
+                    requestAnimationFrame(() => this.fitCalendarScrollHeight(true));
                 } else {
                     // Брейкпоинт тот же — просто подгоняем высоту
                     this.fitCalendarScrollHeight();
@@ -1977,21 +2017,26 @@ class ShiftCalendar {
         this._resizeHandlerBound = onResize;
     }
 
+    // Removed scroll listener to avoid container "endless growth" while page scrolls
+
     // ========================================
     // UTILITY FUNCTIONS
     // ========================================
-    fitCalendarScrollHeight() {
+    fitCalendarScrollHeight(forceRecalcTop = false) {
         // Внутренняя область прокрутки таблицы
         const scroller = document.getElementById('calendar-scroll');
         if (!scroller) return;
         // Высота окна (учитываем адресную строку мобильных браузеров)
         const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        // Верхняя граница scroller относительно вьюпорта
-        const top = scroller.getBoundingClientRect().top;
-        // Отступ от низа окна — можно чуть оставить воздуха
-        const bottomPadding = 16;
-        const maxH = Math.max(200, vh - top - bottomPadding);
-        scroller.style.maxHeight = `${maxH}px`;
+        // Верхняя граница scroller относительно вьюпорта (фиксируем при первом расчёте)
+        if (forceRecalcTop || this._calendarTopOffset === null) {
+            this._calendarTopOffset = Math.round(scroller.getBoundingClientRect().top);
+        }
+        const top = this._calendarTopOffset;
+        // Максимально заполняем окно по высоте
+        const bottomPadding = 8; // визуальный отступ от низа окна
+        const h = Math.max(200, Math.floor(vh - top - bottomPadding));
+        scroller.style.maxHeight = `${h}px`;
         scroller.style.overflowY = 'auto';
     }
 

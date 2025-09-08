@@ -43,7 +43,9 @@ export default defineConfig({
         team: resolve(__dirname, 'src/pages/team/index.html'),
         dashboard: resolve(__dirname, 'src/pages/dashboard/index.html'),
         onboarding: resolve(__dirname, 'src/pages/onboarding/index.html'),
-        today: resolve(__dirname, 'src/pages/today/index.html')
+        today: resolve(__dirname, 'src/pages/today/index.html'),
+        schedules: resolve(__dirname, 'src/pages/schedules/index.html'),
+        billing: resolve(__dirname, 'src/pages/billing/index.html')
       }
     }
   },
