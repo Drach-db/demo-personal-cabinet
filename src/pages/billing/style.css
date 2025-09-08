@@ -260,12 +260,6 @@
     color: var(--billing-color-danger);
 }
 
-.billing-status-badge--unpaid {
-    background-color: rgba(var(--billing-color-gray-rgb), 0.2);
-    border: 1px solid rgba(var(--billing-color-gray-rgb), 0.2);
-    color: var(--billing-color-gray);
-}
-
 /* ========================================
    ACTION BUTTONS
    ======================================== */

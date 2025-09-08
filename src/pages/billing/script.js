@@ -5,6 +5,7 @@ import '../../components/layout/layout.js';
 import '../../components/navbar/navbar.js';
 import '../../components/header/header.js';
 import api from './api.js';
+window.api = api;
 
 // ========================================
 // CONFIGURATION & CONSTANTS
@@ -14,8 +15,7 @@ const CONFIG = {
     paymentStatus: {
         paid: { color: 'success', icon: 'checkCircle' },
         pending: { color: 'warning', icon: 'clock' },
-        overdue: { color: 'danger', icon: 'alertCircle' },
-        unpaid: { color: 'gray', icon: 'xCircle' }
+        overdue: { color: 'danger', icon: 'alertCircle' }
     },
     
     // Period types
@@ -39,8 +39,10 @@ const state = {
     billingData: [],
     loading: true,
     activeCardIndex: 0,
-    windowWidth: window.innerWidth
+    windowWidth: window.innerWidth,
+    historyLimit: 10
 };
+window.state = state;
 
 // ========================================
 // ICON SYSTEM
@@ -491,8 +493,14 @@ function renderDashboard(currentMonthData) {
 
 function renderHistory() {
     const total = state.billingData.length;
-    const rows = state.billingData.slice(0, state.historyLimit);
+    
+    // ✅ Безопасное использование historyLimit с fallback
+    const limit = state.historyLimit || 10;
+    const rows = state.billingData.slice(0, limit);
     const showing = rows.length;
+    
+    console.log('📊 Rendering history:', { total, limit, showing }); // Для отладки
+    
     return `
         ${components.sectionHeader({
             icon: createIcon('fileText'),
@@ -621,13 +629,26 @@ async function loadBillingData() {
     try {
         console.log('📊 Loading billing data...');
         const data = await api.getBillingRecords();
+        
+        // ✅ Добавим валидацию и логирование
+        if (!Array.isArray(data)) {
+            console.error('❌ Data is not an array:', data);
+            state.billingData = [];
+            return [];
+        }
+        
+        console.log(`✅ Loaded ${data.length} billing records:`, data);
+        
+        // ✅ Проверим первую запись для отладки
+        if (data.length > 0) {
+            console.log('First record structure:', data[0]);
+        }
+        
         state.billingData = data;
-        console.log(`✅ Loaded ${data.length} billing records`);
         cacheSet(cacheKeyBilling(), data);
         return data;
     } catch (error) {
         console.error('❌ Error loading billing data:', error);
-        // Fallback to empty array if error
         state.billingData = [];
         throw error;
     }

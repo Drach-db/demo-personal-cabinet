@@ -158,7 +158,15 @@ class ShiftCalendar {
             console.log('📍 Data received:', monthData);
             
             this.employeesData = monthData.employees || [];
-            this.shiftsData = monthData.shifts || [];
+            // Normalize shift fields so UI logic can rely on consistent names
+            const rawShifts = monthData.shifts || [];
+            this.shiftsData = rawShifts.map(s => ({
+                ...s,
+                // Ensure date field exists as `shift_date`
+                shift_date: s.shift_date || s.start_shift_time || s.date || s.day || null,
+                // Ensure start time accessible via `start_shift_date` (legacy name in UI)
+                start_shift_date: s.start_shift_date || s.start_time || null
+            }));
             
             console.log('✅ Data loaded:', {
                 employees: this.employeesData.length,
@@ -199,7 +207,7 @@ class ShiftCalendar {
                     </div>
                     <h3 class="empty-state-title">Error Loading Data</h3>
                     <p class="empty-state-text">${error.message || 'Failed to load schedules'}</p>
-                    <button class="empty-state-button" onclick="location.reload()">
+                    <button type="button" class="empty-state-button" onclick="location.reload()">
                         Try Again
                     </button>
                 </div>
@@ -546,20 +554,20 @@ class ShiftCalendar {
                                    placeholder="Search..."
                                    value="${this.state.searchTerm}">
                         </div>
-                        <button class="nav-button" id="filter-button" style="padding: 0.75rem;">
+                        <button type="button" class="nav-button" id="filter-button" style="padding: 0.75rem;">
                             ${ICONS.filter}
                         </button>
                     </div>
                     
                     <div class="flex items-center justify-between">
                         <div class="flex gap-2">
-                            <button class="nav-button" id="prev-month-mobile">${ICONS.chevronLeft}</button>
-                            <button class="nav-button" id="next-month-mobile">${ICONS.chevronRight}</button>
+                            <button type="button" class="nav-button" id="prev-month-mobile">${ICONS.chevronLeft}</button>
+                            <button type="button" class="nav-button" id="next-month-mobile">${ICONS.chevronRight}</button>
                         </div>
                         
                         <div class="view-tabs">
                             ${['Baseline', 'Actual', 'All'].map(mode => `
-                                <button class="view-tab ${this.state.viewMode === mode ? 'active' : ''}"
+                                <button type="button" class="view-tab ${this.state.viewMode === mode ? 'active' : ''}"
                                         data-mode="${mode}">
                                     ${mode === 'Baseline' ? 'Plan' : mode}
                                 </button>
@@ -588,7 +596,7 @@ class ShiftCalendar {
                                    placeholder="Search employees by name, position, or project..."
                                    value="${this.state.searchTerm}">
                             ${this.state.searchTerm ? `
-                                <button id="clear-search" style="position: absolute; right: 0.75rem; top: 50%; 
+                                <button type="button" id="clear-search" style="position: absolute; right: 0.75rem; top: 50%; 
                                         transform: translateY(-50%); padding: 0.25rem; border-radius: 50%; 
                                         background: transparent; border: none; cursor: pointer;">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -616,9 +624,9 @@ class ShiftCalendar {
                          style="border-radius: 0.75rem; padding: 1rem 1.5rem; 
                                 background-color: #f9fafb; border: 1px solid #e5e7eb;">
                         <div class="flex gap-2">
-                            <button class="nav-button" id="prev-month">${ICONS.chevronLeft}</button>
-                            <button class="nav-button" id="next-month">${ICONS.chevronRight}</button>
-                            <button class="nav-button" id="today-button" style="padding: 0.5rem 1rem;">Today</button>
+                            <button type="button" class="nav-button" id="prev-month">${ICONS.chevronLeft}</button>
+                            <button type="button" class="nav-button" id="next-month">${ICONS.chevronRight}</button>
+                            <button type="button" class="nav-button" id="today-button" style="padding: 0.5rem 1rem;">Today</button>
                         </div>
                         
                         <h2 style="font-size: 1.5rem; font-weight: 700;">
@@ -627,7 +635,7 @@ class ShiftCalendar {
                         
                         <div class="view-tabs">
                             ${['Baseline', 'Actual', 'All'].map(mode => `
-                                <button class="view-tab ${this.state.viewMode === mode ? 'active' : ''}"
+                                <button type="button" class="view-tab ${this.state.viewMode === mode ? 'active' : ''}"
                                         data-mode="${mode}">
                                     ${mode === 'Baseline' ? 'Plan' : mode}
                                 </button>
@@ -654,11 +662,11 @@ class ShiftCalendar {
                     <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); z-index: 30;">
                         ${ICONS[icon]}
                     </span>
-                    <button class="filter-button" data-filter-type="${type}">
+                    <button type="button" class="filter-button" data-filter-type="${type}">
                         <span>${selected.length === 0 ? `All ${label}s` : `${selected.length} Selected`}</span>
                     </button>
                     ${selected.length > 0 ? `
-                        <button class="clear-filter" data-filter-type="${type}"
+                        <button type="button" class="clear-filter" data-filter-type="${type}"
                                 style="position: absolute; right: 1.75rem; top: 50%; transform: translateY(-50%); 
                                        padding: 0.125rem; border-radius: 50%; background: transparent; 
                                        border: none; cursor: pointer; z-index: 50;">
@@ -714,7 +722,7 @@ class ShiftCalendar {
         return `
             <div style="padding: 0.5rem 0; margin-top: 8px;">
                 <div class="flex items-center gap-1" style="color: #374151;">
-                    <button id="legend-button" class="flex items-center gap-1" 
+                    <button type="button" id="legend-button" class="flex items-center gap-1" 
                             style="background: none; border: none; cursor: pointer; color: inherit;">
                         <span style="font-size: ${this.isMobile ? '0.75rem' : '0.875rem'}; font-weight: 600;">
                         Legend
@@ -767,7 +775,7 @@ class ShiftCalendar {
                     <p class="empty-state-text">
                         No one was working in ${this.getMonthName(this.state.currentMonth)} ${this.state.currentYear}
                     </p>
-                    <button class="empty-state-button" id="go-to-today">
+                    <button type="button" class="empty-state-button" id="go-to-today">
                         ${ICONS.calendar}
                         Go to current month
                     </button>
@@ -931,10 +939,23 @@ class ShiftCalendar {
         const shifts = this.getShiftsForEmployeeAndDate(employee.employee_id, day);
         const actualShifts = shifts.filter(s => s.schedule_type === 'fact schedule');
         const baselineShifts = shifts.filter(s => s.schedule_type === 'baseline schedule');
-        
+
+        // Decide what to show based on date boundary logic
+        const dateStr = this.toDateStr(day);
+        const todayStr = this.toDateStr(CONSTANTS.CURRENT_DATE);
+        const isBeforeToday = dateStr < todayStr;
+        // const isToday = dateStr === todayStr; // reserved if needed
+        // const isAfterOrToday = dateStr >= todayStr;
+
         let displayShifts = [];
         if (scheduleType === 'Actual') {
-            displayShifts = actualShifts.length > 0 ? actualShifts : baselineShifts;
+            // In Actual view: for past dates show fact (fallback to baseline);
+            // for today/future always show baseline
+            if (isBeforeToday) {
+                displayShifts = actualShifts.length > 0 ? actualShifts : baselineShifts;
+            } else {
+                displayShifts = baselineShifts;
+            }
         } else if (scheduleType === 'Baseline') {
             displayShifts = baselineShifts;
         }
@@ -973,10 +994,10 @@ class ShiftCalendar {
         }
         
         if (shift.status === 'completed' && baselineShift && 
-            baselineShift.start_time && baselineShift.end_time && 
-            shift.start_time && shift.end_time) {
-            const baselineTime = `${baselineShift.start_time}-${baselineShift.end_time}`;
-            const actualTime = `${shift.start_time}-${shift.end_time}`;
+            baselineShift.start_shift_date && baselineShift.end_time && 
+            shift.start_shift_date && shift.end_time) {
+            const baselineTime = `${baselineShift.start_shift_date}-${baselineShift.end_time}`;
+            const actualTime = `${shift.start_shift_date}-${shift.end_time}`;
             if (baselineTime !== actualTime) {
                 showDiscrepancy = this.checkTimeDiscrepancy(baselineTime, actualTime);
             }
@@ -991,8 +1012,8 @@ class ShiftCalendar {
             bgColor = '#fca5a5'; // red-300
         }
 
-        const timeText = shift.start_time && shift.end_time 
-            ? `${shift.start_time}-${shift.end_time}`
+        const timeText = shift.start_shift_date && shift.end_time 
+            ? `${shift.start_shift_date}-${shift.end_time}`
             : shift.status === 'missed' ? 'MISSED' : 'NO TIME';
 
         const hasIssue = statusCode || showDiscrepancy;
@@ -1044,7 +1065,7 @@ class ShiftCalendar {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3 style="font-size: 1.125rem; font-weight: 600;">Employee Info</h3>
-                        <button class="modal-close" data-modal="employee-modal">
+                        <button type="button" class="modal-close" data-modal="employee-modal">
                             ${ICONS.x}
                         </button>
                     </div>
@@ -1081,7 +1102,7 @@ class ShiftCalendar {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3 style="font-size: 1.125rem; font-weight: 600;">Shift Details</h3>
-                        <button class="modal-close" data-modal="shift-modal">
+                        <button type="button" class="modal-close" data-modal="shift-modal">
                             ${ICONS.x}
                         </button>
                     </div>
@@ -1104,7 +1125,7 @@ class ShiftCalendar {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3 style="font-size: 1.125rem; font-weight: 600;">Legend</h3>
-                        <button class="modal-close" data-modal="legend-modal">
+                        <button type="button" class="modal-close" data-modal="legend-modal">
                             ${ICONS.x}
                         </button>
                     </div>
@@ -1192,14 +1213,14 @@ class ShiftCalendar {
 
     createShiftInfo(shift, baselineShift, employee, showHeader = true, isCompact = false) {
         const calculateDiscrepancies = (planned, actual) => {
-            if (!planned || !actual || !planned.start_time || !planned.end_time || 
-                !actual.start_time || !actual.end_time) {
+            if (!planned || !actual || !planned.start_shift_date || !planned.end_time || 
+                !actual.start_shift_date || !actual.end_time) {
                 return null;
             }
             
-            const plannedStart = this.parseTime(planned.start_time);
+            const plannedStart = this.parseTime(planned.start_shift_date);
             const plannedEnd = this.parseTime(planned.end_time);
-            const actualStart = this.parseTime(actual.start_time);
+            const actualStart = this.parseTime(actual.start_shift_date);
             const actualEnd = this.parseTime(actual.end_time);
             
             const late = Math.max(0, actualStart - plannedStart);
@@ -1306,8 +1327,8 @@ class ShiftCalendar {
                 <div style="margin-bottom: 0.5rem;">
                     <span style="font-weight: 500; color: #374151;">Planned:</span>
                     <span style="margin-left: 0.5rem;">
-                        ${baselineShift?.start_time && baselineShift?.end_time 
-                            ? `${baselineShift.start_time}-${baselineShift.end_time}`
+                        ${baselineShift?.start_shift_date && baselineShift?.end_time 
+                            ? `${baselineShift.start_shift_date}-${baselineShift.end_time}`
                             : 'Not scheduled'}
                     </span>
                 </div>
@@ -1325,8 +1346,8 @@ class ShiftCalendar {
                         <span style="font-weight: 500; color: #374151;">Planned:</span>
                         <div style="color: #2563eb; font-family: 'SF Mono', 'Monaco', monospace; 
                                    font-size: ${isCompact ? '0.875rem' : '1.125rem'};">
-                            ${baselineShift?.start_time && baselineShift?.end_time 
-                                ? `${baselineShift.start_time}-${baselineShift.end_time}`
+                            ${baselineShift?.start_shift_date && baselineShift?.end_time 
+                                ? `${baselineShift.start_shift_date}-${baselineShift.end_time}`
                                 : 'Not scheduled'}
                         </div>
                     </div>
@@ -1334,8 +1355,8 @@ class ShiftCalendar {
                         <span style="font-weight: 500; color: #374151;">Actual:</span>
                         <div style="color: #16a34a; font-family: 'SF Mono', 'Monaco', monospace; 
                                    font-size: ${isCompact ? '0.875rem' : '1.125rem'};">
-                            ${shift.start_time && shift.end_time 
-                                ? `${shift.start_time}-${shift.end_time}`
+                            ${shift.start_shift_date && shift.end_time 
+                                ? `${shift.start_shift_date}-${shift.end_time}`
                                 : 'No time recorded'}
                         </div>
                     </div>
@@ -1489,37 +1510,52 @@ class ShiftCalendar {
         this.container.addEventListener('click', async (e) => {
             // Navigation
             if (e.target.closest('#prev-month') || e.target.closest('#prev-month-mobile')) {
+                e.preventDefault();
+                e.stopPropagation();
                 await this.navigateMonth('prev');
             }
             if (e.target.closest('#next-month') || e.target.closest('#next-month-mobile')) {
+                e.preventDefault();
+                e.stopPropagation();
                 await this.navigateMonth('next');
             }
             if (e.target.closest('#today-button')) {
+                e.preventDefault();
+                e.stopPropagation();
                 await this.goToToday();
             }
             if (e.target.closest('#go-to-today')) {
+                e.preventDefault();
+                e.stopPropagation();
                 await this.goToToday();
             }
 
             // View mode tabs
             if (e.target.closest('.view-tab')) {
+                e.preventDefault();
+                e.stopPropagation();
                 const mode = e.target.closest('.view-tab').dataset.mode;
                 this.setViewMode(mode);
             }
 
             // Filter button (mobile)
             if (e.target.closest('#filter-button')) {
+                e.preventDefault();
+                e.stopPropagation();
                 this.showBottomSheet();
             }
 
             // Filter dropdowns (desktop)
             if (e.target.closest('.filter-button')) {
+                e.preventDefault();
+                e.stopPropagation();
                 const type = e.target.closest('.filter-button').dataset.filterType;
                 this.toggleFilterDropdown(type);
             }
 
             // Clear filter
             if (e.target.closest('.clear-filter')) {
+                e.preventDefault();
                 const type = e.target.closest('.clear-filter').dataset.filterType;
                 this.clearFilter(type);
                 e.stopPropagation();
@@ -1527,6 +1563,7 @@ class ShiftCalendar {
 
             // Clear search
             if (e.target.closest('#clear-search')) {
+                e.preventDefault();
                 this.state.searchTerm = '';
                 this.render();
             }
