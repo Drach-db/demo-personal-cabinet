@@ -111,11 +111,13 @@ body {
    SEARCH & FILTERS
    ======================================== */
 .search-filters-container {
+    /* Единый источник истины для внутренних отступов и промежутков */
+    --filters-gap: clamp(12px, 1.6vw, 16px);
     background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 0.75rem;
-    padding: 1.5rem;
+    padding: var(--filters-gap);
     margin-bottom: 1.5rem;
     position: relative;
     z-index: 100;
@@ -131,8 +133,8 @@ body {
 
 .filters-row {
     display: grid;
-    grid-template-columns: 1fr auto auto; /* search | filters | counter */
-    column-gap: 1rem; /* равные отступы слева и справа от фильтров */
+    grid-template-columns: minmax(0, 1fr) auto auto; /* search | filters | counter */
+    column-gap: var(--filters-gap); /* внутренние зазоры = паддингу контейнера */
     align-items: center;
 }
 
@@ -187,7 +189,7 @@ body {
 .filters-group {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--filters-gap);
 }
 
 .results-count {
@@ -200,6 +202,8 @@ body {
     background-color: rgba(204, 102, 51, 0.1);
     color: #cc6633;
     min-width: 96px;
+    justify-self: end;
+    margin-right: 0; /* ровно к внутреннему краю контейнера */
 }
 
 /* ========================================
@@ -207,9 +211,9 @@ body {
    ======================================== */
 .dropdown-container {
     position: relative;
-    flex: 0 0 auto; /* Не растягиваем, ширина по содержимому */
-    min-width: 180px; /* Чуть шире, чтобы уменьшить ширину поиска */
-    max-width: 280px; /* Позволим фильтрам быть шире на десктопе */
+    flex: 0 1 auto; /* Разрешаем ужиматься, не выталкивая за края */
+    min-width: clamp(120px, 14vw, 180px);
+    max-width: clamp(180px, 20vw, 260px);
 }
 
 .dropdown-trigger {
@@ -245,6 +249,36 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* =============================
+   Responsive tweaks for filters
+   ============================= */
+@media (max-width: 1440px) {
+    .search-container { min-width: clamp(220px, 30vw, 280px); }
+    .filters-group { gap: 0.75rem; }
+    .dropdown-container { min-width: clamp(120px, 13vw, 170px); max-width: clamp(160px, 18vw, 210px); }
+    .results-count { padding: 8px 12px; font-size: 13px; min-width: 84px; }
+}
+
+@media (max-width: 1366px) {
+    /* Разрешаем перенос элементов на вторую строку */
+    .filters-row { grid-template-columns: 1fr auto; row-gap: 0.75rem; }
+    .filters-group { flex-wrap: wrap; gap: 0.5rem; }
+    /* Счетчик на вторую строку справа */
+    .results-count { grid-column: 1 / -1; justify-self: end; }
+    /* Еще компактнее поля */
+    .search-container { min-width: 220px; }
+    .dropdown-container { min-width: 120px; max-width: 170px; }
+}
+
+/* Узкий десктоп 14" (~1512px) — подравниваем симметрию краёв */
+/* Удаляем локальные паддинги у ряда — опираемся на паддинг контейнера */
+
+/* Узкий десктоп (например, 1280–1366): выравнивание отступов слева/справа визуально одинаковое */
+@media (min-width: 1280px) and (max-width: 1366px) {
+    .filters-row { column-gap: 0.75rem; }
+    .results-count { margin-right: 0; }
 }
 
 .dropdown-clear {
@@ -291,8 +325,12 @@ body {
 }
 
 .dropdown-item {
-    display: flex;
-    align-items: center;
+    /* Чекбокс и кружок по центру ячейки, текст центрирован по высоте строки */
+    display: grid;
+    grid-template-columns: 16px 10px 1fr; /* checkbox | dot | label */
+    column-gap: 8px;
+    align-items: center; /* вертикальное центрирование всех ячеек */
+    grid-auto-rows: minmax(32px, auto); /* комфортная минимальная высота строки */
     padding: 0.5rem;
     border-radius: 0.5rem;
     cursor: pointer;
@@ -304,26 +342,32 @@ body {
 }
 
 .dropdown-item input[type="checkbox"] {
-    margin-right: 0.5rem;
+    margin: 0;
     width: 16px;
     height: 16px;
     accent-color: #cc6633;
+    align-self: center; /* центрируем чекбокс по высоте строки */
+    justify-self: start;
 }
 
 .dropdown-item-dot {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    margin-right: 8px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    flex-shrink: 0;
+    align-self: center;
+    justify-self: center; /* строго по центру своей колонки */
 }
 
 .dropdown-item-label {
     font-size: 12px;
     font-weight: 500;
     color: #374151;
-    line-height: 1.2;
+    line-height: 1.25;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    align-self: center; /* центрируем текстовый блок по высоте строки */
 }
 
 /* ========================================
@@ -954,10 +998,13 @@ body {
     cursor: pointer;
 }
 
-.mobile-filters-close {
-    padding: 8px;
+.mobile-filters-done {
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 12px;
     border-radius: 8px;
-    background: transparent;
+    background-color: rgba(34, 197, 94, 0.12); /* success */
+    color: #22c55e;
     border: none;
     cursor: pointer;
 }

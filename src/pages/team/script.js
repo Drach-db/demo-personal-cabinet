@@ -186,6 +186,7 @@ function getFilteredEmployees() {
             employee.full_name.toLowerCase().includes(q) ||
             employee.position.toLowerCase().includes(q) ||
             employee.project.toLowerCase().includes(q) ||
+            (employee.stage && employee.stage.toLowerCase().includes(q)) ||
             (employee.staffing_type && employee.staffing_type.toLowerCase().includes(q));
         const matchesProject = state.filterProject.length === 0 || state.filterProject.includes(employee.project);
         const matchesStage = state.filterStage.length === 0 || state.filterStage.includes(employee.stage);
@@ -1174,13 +1175,22 @@ function setupEventListeners() {
         render();
     });
     
-    // Document click for closing dropdowns
+    // Document click for closing dropdowns (не ломаем фокус в поиске)
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.dropdown-container')) {
+        const insideDropdown = e.target.closest('.dropdown-container');
+        const insideSearch = e.target.closest('.search-container') || e.target.closest('.mobile-search-container');
+        const isFormControl = ['INPUT','TEXTAREA','SELECT','BUTTON','LABEL'].includes(e.target.tagName);
+        if (insideDropdown || insideSearch || isFormControl) return;
+
+        const wasOpen = state.showProjectDropdown || state.showStageDropdown || state.showPositionDropdown;
+        if (wasOpen) {
             state.showProjectDropdown = false;
             state.showStageDropdown = false;
             state.showPositionDropdown = false;
-            render();
+            // Обновим только область фильтров, чтобы не терять фокус ввода
+            renderDesktopFilters();
+            const mobileFilters = document.getElementById('mobileFilters');
+            if (mobileFilters) renderMobileFilters();
         }
     });
     
