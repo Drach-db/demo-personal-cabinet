@@ -1196,6 +1196,7 @@ button {
     text-decoration: none;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
 }
 
@@ -1217,7 +1218,30 @@ button {
     text-decoration: none;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
+}
+
+/* Нормализуем размеры и вертикальное центрирование иконок в кнопках */
+.btn-primary svg, .btn-secondary svg {
+    display: block;
+}
+
+/* Мобильная выравниловка: одинаковая высота, центрирование, единый размер иконок */
+@media (max-width: 784px) {
+    .btn-primary, .btn-secondary {
+        font-size: 14px;
+        line-height: 1;
+        padding: 10px 12px;
+        height: 40px;
+        min-height: 40px;
+        width: 100%;
+    }
+    .btn-primary svg, .btn-secondary svg {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 16px;
+    }
 }
 
 .btn-secondary:hover {

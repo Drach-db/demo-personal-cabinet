@@ -148,13 +148,26 @@ function renderIcon(iconName, className = '', style = '') {
 // ========================================
 // FILTER FUNCTIONS
 // ========================================
+function enforceConsistentSelections() {
+    const opts = getFilterOptions();
+    state.filterProject = state.filterProject.filter(v => opts.projects.includes(v));
+    state.filterStage = state.filterStage.filter(v => opts.stages.includes(v));
+    state.filterPosition = state.filterPosition.filter(v => opts.positions.includes(v));
+}
+
 function toggleFilter(value, filterType) {
-    const currentFilters = state[filterType];
-    if (currentFilters.includes(value)) {
-        state[filterType] = currentFilters.filter(item => item !== value);
-    } else {
-        state[filterType] = [...currentFilters, value];
+    const current = state[filterType];
+    const isAdd = !current.includes(value);
+    const next = isAdd ? [...current, value] : current.filter(x => x !== value);
+    state[filterType] = next;
+    if (isAdd) {
+        const hasResults = getFilteredEmployees().length > 0;
+        if (!hasResults) {
+            state[filterType] = current; // запрет пустых комбинаций
+            return;
+        }
     }
+    enforceConsistentSelections();
     render();
 }
 
@@ -162,14 +175,18 @@ function clearAllFilters() {
     state.filterProject = [];
     state.filterStage = [];
     state.filterPosition = [];
+    enforceConsistentSelections();
     render();
 }
 
 function getFilteredEmployees() {
     return state.employees.filter(employee => {
-        const matchesSearch = employee.full_name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
-                             employee.position.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
-                             employee.project.toLowerCase().includes(state.searchTerm.toLowerCase());
+        const q = (state.searchTerm || '').toLowerCase().trim();
+        const matchesSearch = q === '' ||
+            employee.full_name.toLowerCase().includes(q) ||
+            employee.position.toLowerCase().includes(q) ||
+            employee.project.toLowerCase().includes(q) ||
+            (employee.staffing_type && employee.staffing_type.toLowerCase().includes(q));
         const matchesProject = state.filterProject.length === 0 || state.filterProject.includes(employee.project);
         const matchesStage = state.filterStage.length === 0 || state.filterStage.includes(employee.stage);
         const matchesPosition = state.filterPosition.length === 0 || state.filterPosition.includes(employee.position);
@@ -1030,14 +1047,24 @@ window.toggleEmployee = function(id) {
     render();
 };
 
+// Быстрый поиск без полного перерендера (чтобы инпут не терял фокус)
+function updateSearchUI() {
+    const container = document.getElementById('employeeGrid');
+    if (container) renderEmployeeGrid();
+    const filteredCount = getFilteredEmployees().length;
+    document.querySelectorAll('.results-count').forEach(el => {
+        el.textContent = `${filteredCount} of ${state.employees.length}`;
+    });
+}
+
 window.updateSearch = function(value) {
     state.searchTerm = value;
-    render();
+    updateSearchUI();
 };
 
 window.clearSearch = function() {
     state.searchTerm = '';
-    render();
+    updateSearchUI();
 };
 
 window.toggleDropdown = function(type) {
@@ -1060,6 +1087,7 @@ window.toggleFilter = function(value, filterType) {
 window.clearFilter = function(type) {
     const filterKey = `filter${type.charAt(0).toUpperCase() + type.slice(1)}`;
     state[filterKey] = [];
+    enforceConsistentSelections();
     render();
 };
 
