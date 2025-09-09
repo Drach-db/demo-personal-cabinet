@@ -322,8 +322,15 @@
     overflow: auto; /* x+y */
     position: relative;
     border-radius: 0.75rem;
-    /* Высота задаётся JS-ом, но можно подстраховаться дефолтом */
-    max-height: 90vh;
+    /* Фиксированная высота, чтобы всегда влезало больше сотрудников */
+    height: 88vh;
+    max-height: 88vh;
+    /* Гасим «резинку» (elastic) и скролл‑чейнинг */
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+    -webkit-overflow-scrolling: auto; /* без инерции на iOS */
+    touch-action: pan-x pan-y;
     /* Чтобы шапка не «дрожала» при появлении вертикального скролла */
     scrollbar-gutter: stable both-edges;
 }

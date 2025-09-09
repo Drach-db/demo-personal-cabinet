@@ -67,6 +67,8 @@ class ShiftCalendar {
         this._scrollHandlerBound = null; // not used now
         this._windowLoadBound = null;
         this._calendarTopOffset = null; // Зафиксированная верхняя позиция scroller относительно вьюпорта
+        this._navBusy = false; // защита от двойных навигаций при одном клике
+        this._scrollRaf = 0;
         
         // State
         this.state = {
@@ -507,8 +509,9 @@ class ShiftCalendar {
         this.setupEventListeners();
         // Attach listeners for elements created within partial sections
         this.afterPartialUpdateSetup();
-        // После полной перерисовки выставляем высоту скролла
-        this.fitCalendarScrollHeight();
+        // После полной перерисовки сбрасываем кеш top и пересчитываем высоту
+        this._calendarTopOffset = null;
+        this.fitCalendarScrollHeight(true);
     }
 
     renderAnalytics() {
@@ -869,8 +872,8 @@ class ShiftCalendar {
 
         // Reattach listeners that bind to specific nodes
         this.afterPartialUpdateSetup();
-        // И здесь тоже — высота могла измениться из-за фильтров/шапок
-        this.fitCalendarScrollHeight();
+        // Применяем защиту от «резинки» на мобильных
+        this.applyRubberBandGuard();
     }
 
     afterPartialUpdateSetup() {
@@ -880,8 +883,6 @@ class ShiftCalendar {
         if (this.isMobile) {
             this.setupCarouselScroll();
         }
-        // Подгон высоты при частичной перерисовке
-        this.fitCalendarScrollHeight();
     }
 
     renderEmptyState() {
@@ -1629,6 +1630,8 @@ class ShiftCalendar {
         const newContainer = this.container.cloneNode(true);
         this.container.parentNode.replaceChild(newContainer, this.container);
         this.container = newContainer;
+        // Контейнер заменён — сбрасываем кеш верхней границы
+        this._calendarTopOffset = null;
         
         // Delegate events
         this.container.addEventListener('click', async (e) => {
@@ -1756,6 +1759,8 @@ class ShiftCalendar {
         // Safety net: intercept nav clicks at capture phase to prevent any default navigation
         if (!this._boundDocNavHandler) {
             this._boundDocNavHandler = async (e) => {
+                // Если клик пришёл изнутри контейнера — обрабатывает локальный делегат, здесь выходим
+                if (this.container && this.container.contains(e.target)) return;
                 const prev = e.target.closest('#prev-month') || e.target.closest('#prev-month-mobile');
                 const next = e.target.closest('#next-month') || e.target.closest('#next-month-mobile');
                 const todayBtn = e.target.closest('#today-button') || e.target.closest('#go-to-today');
@@ -2017,34 +2022,55 @@ class ShiftCalendar {
         this._resizeHandlerBound = onResize;
     }
 
+    // scroll sync больше не нужен — фиксированная высота из CSS
+
     // Removed scroll listener to avoid container "endless growth" while page scrolls
 
     // ========================================
     // UTILITY FUNCTIONS
     // ========================================
-    fitCalendarScrollHeight(forceRecalcTop = false) {
-        // Внутренняя область прокрутки таблицы
+    fitCalendarScrollHeight() {
+        // Отключаем JS‑управление высотой — используем только CSS
         const scroller = document.getElementById('calendar-scroll');
         if (!scroller) return;
-        // Высота окна (учитываем адресную строку мобильных браузеров)
-        const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        // Верхняя граница scroller относительно вьюпорта (фиксируем при первом расчёте)
-        if (forceRecalcTop || this._calendarTopOffset === null) {
-            this._calendarTopOffset = Math.round(scroller.getBoundingClientRect().top);
-        }
-        const top = this._calendarTopOffset;
-        // Максимально заполняем окно по высоте
-        const bottomPadding = 8; // визуальный отступ от низа окна
-        const h = Math.max(200, Math.floor(vh - top - bottomPadding));
-        scroller.style.maxHeight = `${h}px`;
+        scroller.style.height = '';
+        scroller.style.maxHeight = '';
         scroller.style.overflowY = 'auto';
+    }
+
+    // Отменяем iOS «резинку» внутри внутреннего скролл‑контейнера
+    applyRubberBandGuard() {
+        const scroller = document.getElementById('calendar-scroll');
+        if (!scroller || scroller._rbGuardApplied) return;
+        let startY = 0, startX = 0;
+        scroller.addEventListener('touchstart', (e) => {
+            const t = e.touches && e.touches[0];
+            if (!t) return;
+            startY = t.clientY;
+            startX = t.clientX;
+        }, { passive: true });
+        scroller.addEventListener('touchmove', (e) => {
+            const t = e.touches && e.touches[0];
+            if (!t) return;
+            const dy = t.clientY - startY;
+            const dx = t.clientX - startX;
+            const atTop = scroller.scrollTop <= 0;
+            const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
+            const atLeft = scroller.scrollLeft <= 0;
+            const atRight = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1;
+            if ((atTop && dy > 0) || (atBottom && dy < 0) || (atLeft && dx > 0) || (atRight && dx < 0)) {
+                e.preventDefault(); // блокируем растяжение
+            }
+        }, { passive: false });
+        scroller._rbGuardApplied = true;
     }
 
     // ========================================
     // STATE MANAGEMENT METHODS
     // ========================================
     async navigateMonth(direction) {
-        if (this.state.isMonthLoading) return;
+        if (this.state.isMonthLoading || this._navBusy) return;
+        this._navBusy = true;
         if (direction === 'prev') {
             if (this.state.currentMonth === 0) {
                 this.state.currentMonth = 11;
@@ -2071,9 +2097,13 @@ class ShiftCalendar {
             this.state.isMonthLoading = true;
             this.updateCalendarContent();
         }
-        await this.loadData();
-        this.state.isMonthLoading = false;
-        this.updateCalendarContent();
+        try {
+            await this.loadData();
+        } finally {
+            this.state.isMonthLoading = false;
+            this.updateCalendarContent();
+            this._navBusy = false;
+        }
         
         // Auto-scroll to today if we're in current month
         if (this.state.currentMonth === CONSTANTS.CURRENT_DATE.getMonth() && 
@@ -2083,7 +2113,8 @@ class ShiftCalendar {
     }
 
     async goToToday() {
-        if (this.state.isMonthLoading) return;
+        if (this.state.isMonthLoading || this._navBusy) return;
+        this._navBusy = true;
         const today = CONSTANTS.CURRENT_DATE;
         this.state.currentMonth = today.getMonth();
         this.state.currentYear = today.getFullYear();
@@ -2098,9 +2129,13 @@ class ShiftCalendar {
             this.state.isMonthLoading = true;
             this.updateCalendarContent();
         }
-        await this.loadData();
-        this.state.isMonthLoading = false;
-        this.updateCalendarContent();
+        try {
+            await this.loadData();
+        } finally {
+            this.state.isMonthLoading = false;
+            this.updateCalendarContent();
+            this._navBusy = false;
+        }
         setTimeout(() => this.centerTodayInCalendar(), 100);
     }
 

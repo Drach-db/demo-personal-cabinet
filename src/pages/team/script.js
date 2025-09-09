@@ -511,18 +511,11 @@ function renderTimeline(employee) {
             <div class="timeline-events">
                 ${timelineEvents.map((event, index) => `
                     <div class="timeline-event">
-                        <div 
-                            class="timeline-event-label"
-                            onmouseover="window.showTooltip('${employee.id}-${index}')"
-                            onmouseout="window.hideTooltip()"
-                        >
+                        <div class="timeline-event-label" data-tooltip-id="${employee.id}-${index}">
                             <span>${event.short}</span>
                             ${(event.short.includes('.') || event.short !== event.label) ? `
                                 <div class="timeline-event-info">i</div>
-                            ` : ''}
-                            
-                            ${state.hoveredTooltip === `${employee.id}-${index}` && (event.short.includes('.') || event.short !== event.label) ? `
-                                <div class="timeline-tooltip">
+                                <div class="timeline-tooltip" role="tooltip">
                                     <div class="timeline-tooltip-content">
                                         ${event.label}
                                         <div class="timeline-tooltip-arrow"></div>

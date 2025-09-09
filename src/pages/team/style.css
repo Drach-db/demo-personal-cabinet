@@ -657,6 +657,10 @@ body {
     transform: translateX(-50%);
     margin-bottom: 8px;
     z-index: 99999;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease-in-out;
 }
 
 .timeline-tooltip-content {
@@ -682,6 +686,12 @@ body {
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
     border-top: 4px solid rgba(255, 255, 255, 0.95);
+}
+
+/* Показываем тултип без перерендера при наведении на метку */
+.timeline-event-label:hover .timeline-tooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* ========================================
@@ -985,8 +995,12 @@ body {
 }
 
 .filter-option {
-    display: flex;
-    align-items: center;
+    /* Фикс выравнивания: чекбокс и кружок всегда в одном ряду,
+       текст может переноситься на следующую строку */
+    display: grid;
+    grid-template-columns: 18px 12px 1fr; /* checkbox | dot | label */
+    column-gap: 12px;
+    align-items: start; /* многострочный текст выравниваем по верхнему краю */
     padding: 12px;
     border-radius: 8px;
     cursor: pointer;
@@ -998,7 +1012,7 @@ body {
 }
 
 .filter-checkbox {
-    margin-right: 12px;
+    /* фиксированная колонка сетки, без сжатия */
     width: 18px;
     height: 18px;
     accent-color: #cc6633;
@@ -1009,11 +1023,15 @@ body {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    margin-right: 12px;
+    /* фиксированная колонка сетки, без сжатия */
 }
 
 .filter-label {
     font-weight: 500;
+    line-height: 1.25;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 /* ========================================
