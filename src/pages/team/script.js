@@ -359,8 +359,9 @@ function renderDropdownFilter(type, label, options, icon) {
     const filterState = state[`filter${type.charAt(0).toUpperCase() + type.slice(1)}`];
     const dropdownState = state[`show${type.charAt(0).toUpperCase() + type.slice(1)}Dropdown`];
     
+    const isActive = filterState.length > 0;
     return `
-        <div class="dropdown-container">
+        <div class="dropdown-container ${isActive ? 'active' : ''}">
             <div style="position: relative;">
                 <div class="dropdown-icon">
                     ${renderIcon(icon, '', 'width: 16px; height: 16px;')}

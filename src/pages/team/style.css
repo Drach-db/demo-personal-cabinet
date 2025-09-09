@@ -245,6 +245,11 @@ body {
     color: #9ca3af;
 }
 
+/* Highlight filter icon when dropdown has active selections */
+.dropdown-container.active .dropdown-icon {
+    color: #cc6633;
+}
+
 .dropdown-text {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -842,10 +847,10 @@ body {
     }
 
     .mobile-filters-btn.active {
-        background-color: #cc6633;
-        color: white;
-        border-color: #cc6633;
-        box-shadow: 0 2px 4px rgba(204, 102, 51, 0.2);
+        background-color: #ffffff; /* white fill */
+        color: #cc6633;           /* orange icon lines */
+        border-color: #cc6633;    /* orange outline */
+        box-shadow: 0 2px 4px rgba(204, 102, 51, 0.15);
     }
 
     .mobile-filters-badge {
@@ -1307,6 +1312,10 @@ button {
     font-weight: 500;
     display: inline-flex;
     align-items: center;
+    white-space: nowrap;     /* keep content on one line */
+    line-height: 1.2;
+    word-break: keep-all;    /* avoid breaking at hyphen */
+    hyphens: none;
 }
 
 /* ========================================

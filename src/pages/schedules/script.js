@@ -67,6 +67,7 @@ class ShiftCalendar {
         this._scrollHandlerBound = null; // not used now
         this._windowLoadBound = null;
         this._calendarTopOffset = null; // Зафиксированная верхняя позиция scroller относительно вьюпорта
+        this._calendarBaseTop = null;   // Базовая верхняя точка scроллера для расчёта высоты
         this._navBusy = false; // защита от двойных навигаций при одном клике
         this._scrollRaf = 0;
         
@@ -417,6 +418,45 @@ class ShiftCalendar {
             });
     }
 
+    // Compute available options per filter dimension, taking into account the other active filters
+    getFilterOptions() {
+        const employees = this.getEmployeesInMonth();
+        const { project, stage, position } = this.state.filters;
+
+        // Employees available for each dimension under constraints of other dimensions
+        const employeesForProjects = employees.filter(emp => {
+            const matchesStage = stage.length === 0 || stage.includes(emp.stage);
+            const matchesPosition = position.length === 0 || position.includes(emp.position);
+            return matchesStage && matchesPosition;
+        });
+
+        const employeesForStages = employees.filter(emp => {
+            const matchesProject = project.length === 0 || project.includes(emp.project);
+            const matchesPosition = position.length === 0 || position.includes(emp.position);
+            return matchesProject && matchesPosition;
+        });
+
+        const employeesForPositions = employees.filter(emp => {
+            const matchesProject = project.length === 0 || project.includes(emp.project);
+            const matchesStage = stage.length === 0 || stage.includes(emp.stage);
+            return matchesProject && matchesStage;
+        });
+
+        return {
+            projects: [...new Set(employeesForProjects.map(emp => emp.project))],
+            stages: [...new Set(employeesForStages.map(emp => emp.stage))],
+            positions: [...new Set(employeesForPositions.map(emp => emp.position))]
+        };
+    }
+
+    // Remove selected values that are no longer available given the other filters
+    enforceConsistentSelections() {
+        const opts = this.getFilterOptions();
+        this.state.filters.project = (this.state.filters.project || []).filter(v => opts.projects.includes(v));
+        this.state.filters.stage = (this.state.filters.stage || []).filter(v => opts.stages.includes(v));
+        this.state.filters.position = (this.state.filters.position || []).filter(v => opts.positions.includes(v));
+    }
+
     getAnalytics() {
         const currentMonthStr = `${this.state.currentYear}-${(this.state.currentMonth + 1).toString().padStart(2, '0')}`;
         
@@ -667,7 +707,7 @@ class ShiftCalendar {
             return `
                 <div class="desktop-only" style="padding: 0; position: relative; z-index: 100;">
                     <div class="flex items-center gap-4" style="margin-bottom: 1rem;">
-                        <div class="search-container" style="width: 20rem;">
+                        <div class="search-container" style="width: clamp(12rem, 18vw, 16rem);">
                             <span class="search-icon">${ICONS.search}</span>
                             <input type="text" 
                                    class="search-input" 
@@ -693,8 +733,8 @@ class ShiftCalendar {
                         </div>
 
                         <div style="padding: 0.625rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; 
-                                    font-weight: 600; background-color: rgba(248, 247, 244, 0.6); 
-                                    color: #111827; white-space: nowrap;">
+                                    font-weight: 600; background-color: rgba(204, 102, 51, 0.1); 
+                                    color: #cc6633; white-space: nowrap;">
                             ${filteredEmployees.length} of ${employeesInMonth.length}
                         </div>
                     </div>
@@ -727,18 +767,19 @@ class ShiftCalendar {
     }
 
     renderFilterDropdown(type) {
-        const employeesInMonth = this.getEmployeesInMonth();
-        const options = [...new Set(employeesInMonth.map(emp => emp[type]))];
+        const optionsMap = this.getFilterOptions();
+        const options = type === 'project' ? optionsMap.projects : type === 'stage' ? optionsMap.stages : optionsMap.positions;
         const selected = this.state.filters[type];
         const isOpen = this.state[`show${type.charAt(0).toUpperCase() + type.slice(1)}Dropdown`];
         
         const label = type.charAt(0).toUpperCase() + type.slice(1);
         const icon = type === 'project' ? 'briefcase' : type === 'stage' ? 'userCheck' : 'award';
+        const isActive = selected.length > 0;
         
         return `
-            <div class="filter-dropdown">
+            <div class="filter-dropdown ${isActive ? 'active' : ''}">
                 <div style="position: relative;">
-                    <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); z-index: 30;">
+                    <span class="filter-icon" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); z-index: 30;">
                         ${ICONS[icon]}
                     </span>
                     <button type="button" class="filter-button" data-filter-type="${type}">
@@ -771,9 +812,7 @@ class ShiftCalendar {
                                            data-option="${option}"
                                            ${selected.includes(option) ? 'checked' : ''}>
                                     <span class="filter-color-dot" style="background-color: ${color};"></span>
-                                    <span style="font-size: 0.75rem; font-weight: 500; color: #374151;">
-                                        ${option}
-                                    </span>
+                                    <span class="filter-option-label">${option}</span>
                                 </label>
                             `;
                         }).join('')}
@@ -849,6 +888,9 @@ class ShiftCalendar {
     // PARTIAL UPDATE HELPERS
     // ========================================
     updateCalendarContent() {
+        // Ensure selected filters remain consistent with available options
+        this.enforceConsistentSelections();
+
         // Update analytics, navigation, legend, and calendar separately
         const analytics = document.getElementById('analytics-section');
         if (analytics) {
@@ -874,6 +916,8 @@ class ShiftCalendar {
         this.afterPartialUpdateSetup();
         // Применяем защиту от «резинки» на мобильных
         this.applyRubberBandGuard();
+        // Пересчитываем доступную высоту скроллера после частичного обновления
+        this.fitCalendarScrollHeight();
     }
 
     afterPartialUpdateSetup() {
@@ -1189,11 +1233,11 @@ class ShiftCalendar {
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="flex items-center gap-4" style="margin-bottom: 1.5rem;">
-                            ${this.createAvatar(employee, 'xl')}
-                            <div>
-                                <h4 style="font-size: 1.25rem; font-weight: 700;">${employee.full_name}</h4>
-                                <p style="color: #4b5563;">${employee.position}</p>
+                        <div class="employee-modal-header" style="margin-bottom: 1rem;">
+                            ${this.createAvatar(employee, this.isMobile ? 'lg' : 'xl')}
+                            <div style="min-width: 0;">
+                                <h4 class="employee-modal-name" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${employee.full_name}</h4>
+                                <p class="employee-modal-position" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${employee.position}</p>
                             </div>
                         </div>
                         <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
@@ -1271,11 +1315,11 @@ class ShiftCalendar {
     }
 
     updateBottomSheetContent() {
-        const employeesInMonth = this.getEmployeesInMonth();
+        const optionsMap = this.getFilterOptions();
         const options = {
-            project: [...new Set(employeesInMonth.map(emp => emp.project))],
-            stage: [...new Set(employeesInMonth.map(emp => emp.stage))],
-            position: [...new Set(employeesInMonth.map(emp => emp.position))]
+            project: optionsMap.projects,
+            stage: optionsMap.stages,
+            position: optionsMap.positions
         };
         
         const activeFiltersCount = 
@@ -1857,6 +1901,12 @@ class ShiftCalendar {
                     this.clearAllFilters();
                 }
 
+                // Done button in bottom sheet
+                if (e.target && (e.target.id === 'done-filters' || e.target.closest('#done-filters'))) {
+                    e.preventDefault();
+                    this.closeModal('bottom-sheet');
+                }
+
                 // Close any modal by clicking the close button
                 if (e.target.closest('.modal-close')) {
                     e.preventDefault();
@@ -2020,6 +2070,17 @@ class ShiftCalendar {
         };
         window.addEventListener('resize', onResize);
         this._resizeHandlerBound = onResize;
+
+        // Пересчёт высоты при скролле страницы (throttle через rAF)
+        const onScroll = () => {
+            if (this._scrollRaf) return;
+            this._scrollRaf = requestAnimationFrame(() => {
+                this._scrollRaf = 0;
+                this.fitCalendarScrollHeight();
+            });
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        this._scrollHandlerBound = onScroll;
     }
 
     // scroll sync больше не нужен — фиксированная высота из CSS
@@ -2030,39 +2091,33 @@ class ShiftCalendar {
     // UTILITY FUNCTIONS
     // ========================================
     fitCalendarScrollHeight() {
-        // Отключаем JS‑управление высотой — используем только CSS
         const scroller = document.getElementById('calendar-scroll');
         if (!scroller) return;
-        scroller.style.height = '';
-        scroller.style.maxHeight = '';
+
+        // Visible header height inside scroller (calendar table header)
+        const headerHeight = this.isMobile ? 60 : 88;
+        // Row heights must match renderDayCell values
+        const mainRow = this.isMobile ? 64 : 80;
+        const childRow = this.isMobile ? 54 : 70;
+
+        const perEmployeeBlock = this.state.viewMode === 'All' ? (mainRow + childRow) : mainRow;
+        const VISIBLE_EMPLOYEES = 7;
+        const target = headerHeight + perEmployeeBlock * VISIBLE_EMPLOYEES;
+
+        scroller.style.height = `${target}px`;
+        scroller.style.maxHeight = `${target}px`;
         scroller.style.overflowY = 'auto';
     }
 
-    // Отменяем iOS «резинку» внутри внутреннего скролл‑контейнера
+    // Настройки для комфортного скролл-ченинга (не блокируем прокрутку страницы)
     applyRubberBandGuard() {
         const scroller = document.getElementById('calendar-scroll');
-        if (!scroller || scroller._rbGuardApplied) return;
-        let startY = 0, startX = 0;
-        scroller.addEventListener('touchstart', (e) => {
-            const t = e.touches && e.touches[0];
-            if (!t) return;
-            startY = t.clientY;
-            startX = t.clientX;
-        }, { passive: true });
-        scroller.addEventListener('touchmove', (e) => {
-            const t = e.touches && e.touches[0];
-            if (!t) return;
-            const dy = t.clientY - startY;
-            const dx = t.clientX - startX;
-            const atTop = scroller.scrollTop <= 0;
-            const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
-            const atLeft = scroller.scrollLeft <= 0;
-            const atRight = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1;
-            if ((atTop && dy > 0) || (atBottom && dy < 0) || (atLeft && dx > 0) || (atRight && dx < 0)) {
-                e.preventDefault(); // блокируем растяжение
-            }
-        }, { passive: false });
-        scroller._rbGuardApplied = true;
+        if (!scroller) return;
+        // Разрешаем скролл-ченинг вверх/вниз к странице
+        scroller.style.overscrollBehavior = 'auto';
+        scroller.style.overscrollBehaviorY = 'auto';
+        scroller.style.overscrollBehaviorX = 'auto';
+        scroller.style.webkitOverflowScrolling = 'touch';
     }
 
     // ========================================
@@ -2177,14 +2232,22 @@ class ShiftCalendar {
 
     toggleFilterOption(type, option) {
         const current = this.state.filters[type];
-        if (current.includes(option)) {
-            this.state.filters[type] = current.filter(item => item !== option);
-        } else {
-            this.state.filters[type] = [...current, option];
+        const isAdd = !current.includes(option);
+        this.state.filters[type] = isAdd ? [...current, option] : current.filter(item => item !== option);
+
+        if (isAdd) {
+            const hasResults = this.getFilteredEmployees().length > 0;
+            if (!hasResults) {
+                // Revert if the new combination yields no employees
+                this.state.filters[type] = current;
+                return;
+            }
         }
-        
+
+        // Drop now-invalid selections in other dimensions
+        this.enforceConsistentSelections();
+
         if (this.isMobile) {
-            // Update bottom sheet
             this.updateBottomSheetContent();
         } else {
             this.updateCalendarContent();
@@ -2193,11 +2256,13 @@ class ShiftCalendar {
 
     clearFilter(type) {
         this.state.filters[type] = [];
+        this.enforceConsistentSelections();
         this.updateCalendarContent();
     }
 
     clearAllFilters() {
         this.state.filters = { project: [], stage: [], position: [] };
+        this.enforceConsistentSelections();
         this.updateCalendarContent();
         this.closeModal('bottom-sheet');
     }

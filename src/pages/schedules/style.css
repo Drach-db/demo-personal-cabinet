@@ -194,6 +194,10 @@
     flex: 1;
 }
 
+/* Desktop filter icon: gray by default, orange when filter is active */
+.filter-icon { color: #9ca3af; }
+.filter-dropdown.active .filter-icon { color: #cc6633; }
+
 .filter-button {
     width: 100%;
     padding: 0.625rem 2.25rem;
@@ -207,6 +211,16 @@
     cursor: pointer;
     transition: all 0.2s;
     outline: none;
+    display: flex;              /* keep text centered vertically */
+    align-items: center;        /* aligns label with icons */
+}
+
+/* Keep desktop filter labels on one line with ellipsis */
+.filter-button > span {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .filter-button:hover {
@@ -277,9 +291,13 @@
     color: #ef4444;
 }
 
-.filter-option {
-    display: flex;
-    align-items: center;
+/* Dropdown options: align checkbox, dot, and text like Team */
+.filter-dropdown-menu .filter-option {
+    display: grid;
+    grid-template-columns: 16px 10px 1fr; /* checkbox | dot | label */
+    column-gap: 8px;
+    align-items: center;              /* vertical centering for all cells */
+    grid-auto-rows: minmax(32px, auto); /* comfy min row height */
     padding: 0.5rem;
     border-radius: 0.5rem;
     cursor: pointer;
@@ -291,19 +309,33 @@
     background-color: #f9fafb;
 }
 
-.filter-checkbox {
-    width: 1rem;
-    height: 1rem;
-    margin-right: 0.5rem;
+.filter-dropdown-menu .filter-checkbox {
+    margin: 0;            /* grid handles spacing */
+    width: 16px;
+    height: 16px;
     accent-color: #cc6633;
+    align-self: center;
+    justify-self: start;
 }
 
-.filter-color-dot {
-    width: 0.625rem;
-    height: 0.625rem;
+.filter-dropdown-menu .filter-color-dot {
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    margin-right: 0.5rem;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    align-self: center;
+    justify-self: center; /* strictly center in its column */
+}
+
+.filter-dropdown-menu .filter-option-label {
+    font-size: 12px; /* 0.75rem */
+    font-weight: 500;
+    color: #374151;
+    line-height: 1.25;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    align-self: center; /* center text block vertically */
 }
 
 /* ========================================
@@ -322,14 +354,14 @@
     overflow: auto; /* x+y */
     position: relative;
     border-radius: 0.75rem;
-    /* Фиксированная высота, чтобы всегда влезало больше сотрудников */
-    height: 88vh;
-    max-height: 88vh;
-    /* Гасим «резинку» (elastic) и скролл‑чейнинг */
-    overscroll-behavior: none;
-    overscroll-behavior-y: none;
-    overscroll-behavior-x: none;
-    -webkit-overflow-scrolling: auto; /* без инерции на iOS */
+    /* Динамическая высота: заполняем доступное окно */
+    height: calc(100vh - var(--calendar-top, 300px) - 16px);
+    max-height: calc(100vh - var(--calendar-top, 300px) - 16px);
+    /* Разрешаем естественный скролл-ченинг к странице сверху/снизу */
+    overscroll-behavior: auto;
+    overscroll-behavior-y: auto;
+    overscroll-behavior-x: auto;
+    -webkit-overflow-scrolling: touch; /* инерция на iOS */
     touch-action: pan-x pan-y;
     /* Чтобы шапка не «дрожала» при появлении вертикального скролла */
     scrollbar-gutter: stable both-edges;
@@ -472,6 +504,8 @@ td.employee-cell {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     position: relative;
+    flex: 0 0 auto;            /* prevent shrinking in flex rows */
+    aspect-ratio: 1 / 1;       /* keep square on mobile */
 }
 
 .avatar-info-btn {
@@ -577,6 +611,10 @@ td.employee-cell {
     font-size: 0.75rem;
     font-weight: 500;
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+    white-space: nowrap;        /* keep single line inside pill */
+    line-height: 1.2;           /* stable height */
+    word-break: keep-all;       /* avoid breaking at hyphens */
+    hyphens: none;
 }
 
 .badge-active {
@@ -649,6 +687,16 @@ td.employee-cell {
     padding: 1.5rem;
 }
 
+/* Employee modal layout tweaks for mobile */
+.employee-modal-header { display: flex; align-items: center; gap: 0.75rem; }
+.employee-modal-name { font-size: 1.125rem; font-weight: 700; margin: 0; }
+.employee-modal-position { font-size: 0.875rem; color: #4b5563; margin: 2px 0 0; }
+
+@media (max-width: 480px) {
+    .employee-modal-header { gap: 0.625rem; }
+    .employee-modal-name { font-size: 1rem; }
+}
+
 .modal-close {
     padding: 0.5rem;
     border-radius: 50%;
@@ -717,8 +765,8 @@ td.employee-cell {
 
 .bottom-sheet-tab {
     flex: 1;
-    padding: 0.75rem;
-    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
     font-weight: 500;
     font-size: 0.875rem;
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -726,13 +774,17 @@ td.employee-cell {
     background-color: transparent;
     border: none;
     cursor: pointer;
-    color: #4b5563;
+    color: #6b7280;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .bottom-sheet-tab.active {
-    background-color: #cc6633;
-    color: white;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff; /* match Team: gray group with white active */
+    color: #111827;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .bottom-sheet-content {
@@ -742,11 +794,12 @@ td.employee-cell {
 }
 
 #clear-all-filters {
-    padding: 0.375rem 0.75rem;
+    /* Match Done button height */
+    padding: 0.25rem 0.75rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #dc2626;
-    background: transparent;
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1); /* match Team page */
     border: none;
     cursor: pointer;
     border-radius: 0.5rem;
@@ -754,12 +807,26 @@ td.employee-cell {
 
 #active-filters-count {
     padding: 0.25rem 0.5rem;
-    background-color: #f3f4f6;
-    color: #374151;
+    background-color: rgba(204, 102, 51, 0.1); /* orange like Team */
+    color: #cc6633;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 700;
     border-radius: 9999px;
 }
+
+/* Done button in bottom sheet header (match Team style) */
+.bottom-sheet-done {
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    background-color: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
+    border: none;
+    cursor: pointer;
+}
+
+/* removed per-tab badges to match Team */
 
 /* ========================================
    TOOLTIP

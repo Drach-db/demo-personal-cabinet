@@ -541,6 +541,7 @@ async function loadEmployeesForBatch(batch) {
     const cached = cacheGet(cacheKeyEmployees(batchId));
     if (cached) {
         batch.employees = cached;
+        autoApproveBatchEmployees(batch); // ensure completed batches are approved
         refreshExpanded(batchId);
         return;
     }
@@ -551,6 +552,7 @@ async function loadEmployeesForBatch(batch) {
         const ids = api.parseEmployeeIds(batch.employee_id);
         const emps = await api.getEmployeesByIds(ids);
         batch.employees = emps;
+        autoApproveBatchEmployees(batch); // ensure completed batches are approved
         cacheSet(cacheKeyEmployees(batchId), emps);
     } catch (e) {
         console.error('Failed to load employees for batch', batchId, e);
@@ -574,6 +576,16 @@ function refreshExpanded(batchId) {
 // ========================================
 // HELPER FUNCTIONS
 // ========================================
+function autoApproveBatchEmployees(batch) {
+    const stage = (batch && (batch.stage || batch.status) || '').toLowerCase();
+    if (stage !== 'completed' && stage !== 'done') return;
+    const emps = Array.isArray(batch.employees) ? batch.employees : [];
+    emps.forEach(emp => {
+        if (emp && emp.employee_id) {
+            state.employeeStatuses[emp.employee_id] = 'approved';
+        }
+    });
+}
 function getBatchStats() {
     const stats = { inProgress: 0, completed: 0, pending: 0, active: 0 };
     state.batches.forEach(batch => {
@@ -742,6 +754,12 @@ async function loadData() {
             // If employees not included (summary path) — lazy load later
             employees: Array.isArray(batch.employees) ? batch.employees : undefined
         }));
+        // Auto-approve employees for completed batches if employees are already attached
+        state.batches.forEach(b => {
+            if (Array.isArray(b.employees) && b.employees.length > 0) {
+                autoApproveBatchEmployees(b);
+            }
+        });
         state.loading = false;
     } catch (error) {
         console.error('❌ Error loading data:', error);
