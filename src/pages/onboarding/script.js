@@ -28,17 +28,17 @@ const state = {
 // ========================================
 const config = {
     statusColors: {
-        'completed': { color: '#22c55e', bg: '#22c55e20' },
-        'done': { color: '#22c55e', bg: '#22c55e20' },
-        'in progress': { color: '#3b82f6', bg: '#3b82f620' },
-        'pending': { color: '#eab308', bg: '#eab30820' },
-        'planned': { color: '#eab308', bg: '#eab30820' },
-        'cancelled': { color: '#ef4444', bg: '#ef444420' },
-        'preparation': { color: '#f59e0b', bg: '#f59e0b20' },
-        'met': { color: '#22c55e', bg: '#22c55e20' },
-        'overfilled': { color: '#3b82f6', bg: '#3b82f620' },
-        'underfilled': { color: '#eab308', bg: '#eab30820' },
-        'backup': { color: '#9333ea', bg: '#9333ea20' }
+        'completed':   { color: '#22c55e', bg: '#22c55e1A' },
+        'done':        { color: '#22c55e', bg: '#22c55e1A' },
+        'in progress': { color: '#3b82f6', bg: '#3b82f61A' },
+        'pending':     { color: '#eab308', bg: '#eab3081A' },
+        'planned':     { color: '#eab308', bg: '#eab3081A' },
+        'cancelled':   { color: '#ef4444', bg: '#ef44441A' },
+        'preparation': { color: '#f59e0b', bg: '#f59e0b1A' },
+        'met':         { color: '#22c55e', bg: '#22c55e1A' },
+        'overfilled':  { color: '#3b82f6', bg: '#3b82f61A' },
+        'underfilled': { color: '#eab308', bg: '#eab3081A' },
+        'backup':      { color: '#9333ea', bg: '#9333ea1A' }
     },
     
     avatarGradients: [
@@ -63,10 +63,10 @@ const config = {
     ],
     
     analyticsCards: [
+        { key: 'unreviewed', label: 'Unreviewed Staff', icon: 'userSearch', color: '#eab308' },
         { key: 'inProgress', label: 'In Progress', icon: 'clock', color: '#3b82f6' },
         { key: 'completed', label: 'Completed', icon: 'check-circle', color: '#22c55e' },
-        { key: 'pending', label: 'Pending', icon: 'alert-circle', color: '#eab308' },
-        { key: 'active', label: 'Active Batches', icon: 'activity', color: '#8b5cf6' }
+        { key: 'planned', label: 'Planned', icon: 'calendar', color: '#eab308' }
     ]
 };
 
@@ -78,6 +78,7 @@ const icons = {
     clock: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
     checkCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>',
     alertCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+    calendar: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>',
     activity: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>',
     chevronDown: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>',
     chevronUp: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>',
@@ -177,7 +178,8 @@ const templates = {
         `;
     },
 
-    employeeCard(employee) {
+    employeeCard(employee, options = {}) {
+        const { locked = false } = options;
         const statusButtons = state.employeeStatuses[employee.employee_id];
         const testUrl = employee.english_proficiency_test || '#';
         
@@ -232,25 +234,32 @@ const templates = {
                             <span class="label-short">Action:</span>
                         </span>
                         ${statusButtons ? `
-                            <div class="decision-status decision-${statusButtons}" 
-                                 onclick="handleEmployeeDecision('${employee.employee_id}', 'null')">
+                            <div class="decision-status decision-${statusButtons} ${locked ? 'decision-locked' : ''}"
+                                 ${locked ? 'title="Locked for completed batch"' : `onclick="handleEmployeeDecision('${employee.employee_id}', 'null')"`}>
                                 ${statusButtons === 'approved' ? icons.check : icons.x}
                                 <span>${statusButtons === 'approved' ? 'Approved' : 'Rejected'}</span>
                             </div>
-                        ` : `
-                            <div class="action-buttons">
-                                <button class="btn btn-approve" 
-                                        onclick="handleEmployeeDecision('${employee.employee_id}', 'approved')">
+                        ` : (
+                            locked ? `
+                                <div class="decision-status decision-approved decision-locked" title="Locked for completed batch">
                                     ${icons.check}
-                                    <span class="btn-text">Approve</span>
-                                </button>
-                                <button class="btn btn-reject" 
-                                        onclick="handleEmployeeDecision('${employee.employee_id}', 'rejected')">
-                                    ${icons.x}
-                                    <span class="btn-text">Reject</span>
-                                </button>
-                            </div>
-                        `}
+                                    <span>Approved</span>
+                                </div>
+                            ` : `
+                                <div class="action-buttons">
+                                    <button class="btn btn-approve" 
+                                            onclick="handleEmployeeDecision('${employee.employee_id}', 'approved')">
+                                        ${icons.check}
+                                        <span class="btn-text">Approve</span>
+                                    </button>
+                                    <button class="btn btn-reject" 
+                                            onclick="handleEmployeeDecision('${employee.employee_id}', 'rejected')">
+                                        ${icons.x}
+                                        <span class="btn-text">Reject</span>
+                                    </button>
+                                </div>
+                            `
+                        )}
                     </div>
                 </div>
             </div>
@@ -284,6 +293,10 @@ const templates = {
             `;
         }
 
+        // Determine if batch decisions should be locked (completed/done)
+        const stage = ((batch && (batch.stage || batch.status)) || '').toLowerCase();
+        const locked = stage === 'completed' || stage === 'done';
+
         return `
             <div class="batch-expanded">
                 <div class="employee-tabs">
@@ -315,14 +328,15 @@ const templates = {
                         state.activeTab === 'approved' ? 'Click "Approve" to confirm employees' : 
                         state.activeTab === 'rejected' ? 'Click "Reject" to decline employees' : 
                         'Employees will be assigned to this batch'
-                    ) : filteredEmployees.map(employee => templates.employeeCard(employee)).join('')}
+                    ) : filteredEmployees.map(employee => templates.employeeCard(employee, { locked })).join('')}
                 </div>
             </div>
         `;
     },
 
     batchCard(batch) {
-        const progress = utils.calculateProgress(batch.fact_fte, batch.planned_fte);
+        const dynamicFact = getDynamicFactFte(batch);
+        const progress = utils.calculateProgress(dynamicFact, batch.planned_fte);
         const progressColors = utils.getProgressColor(progress);
         const coreCount = utils.getEmployeeCount(batch.employees, 'Core');
         const backupCount = utils.getEmployeeCount(batch.employees, 'Backup');
@@ -339,33 +353,29 @@ const templates = {
                     </div>
                     <div class="batch-title">
                         <span class="batch-title-main">
-                            BATCH #${batch.batch_id}
-                            <span class="batch-title-desktop"> – ${batch.name_batch || 'Unnamed'} | </span>
+                            BATCH №${batch.batch_id} | 
                             <span class="batch-project">${batch.project || 'N/A'}</span>
                         </span>
-                        <div class="batch-title-sub batch-title-mobile">
-                            ${batch.name_batch || 'Unnamed'}
-                        </div>
                     </div>
                 </div>
 
                 <!-- Desktop Data -->
                 <div class="batch-data batch-data-desktop">
                     <div class="batch-data-grid batch-data-header">
+                        <div>Stage</div>
                         <div>Planned date:</div>
                         <div>Planned Employees:</div>
                         <div>Fact date:</div>
-                        <div>Fact Employees:</div>
-                        <div>Stage</div>
-                        <div>Quality</div>
+                        <div>Approved Staff</div>
+                        <div>Unreviewed Staff</div>
                     </div>
                     <div class="batch-data-grid">
+                        <div>${templates.badge(batch.stage || 'Unknown', batch.stage)}</div>
                         <div class="batch-data-value">${batch.planned_date || '—'}</div>
                         <div class="batch-data-value">${batch.planned_fte || 0}</div>
                         <div class="batch-data-value">${batch.fact_date || "—"}</div>
-                        <div class="batch-data-value">${batch.fact_fte || "—"}</div>
-                        <div>${templates.badge(batch.stage || 'Unknown', batch.stage)}</div>
-                        <div>${templates.badge(batch.quality || 'Unknown', batch.quality)}</div>
+                        <div class="batch-data-value">${(() => { const info = getApprovedInfo(batch); return `${info.count} of ${info.total} approved`; })()}</div>
+                        <div class="batch-data-value">${(() => { const info = getUnreviewedInfo(batch); return info.count; })()}</div>
                     </div>
                 </div>
 
@@ -378,9 +388,8 @@ const templates = {
                             <div class="batch-data-sub">${batch.planned_fte || 0} employees</div>
                         </div>
                         <div class="batch-data-item">
-                            <span class="batch-data-label">Actual</span>
-                            <div class="batch-data-value">${batch.fact_date || "—"}</div>
-                            <div class="batch-data-sub">${batch.fact_fte ? `${batch.fact_fte} employees` : "—"}</div>
+                            <span class="batch-data-label">Approved Staff</span>
+                            <div class="batch-data-value">${(() => { const info = getApprovedInfo(batch); return `${info.count} of ${info.total} approved`; })()}</div>
                         </div>
                     </div>
                 </div>
@@ -390,7 +399,7 @@ const templates = {
                     <div class="batch-mobile-tags">
                         <div class="batch-mobile-badges">
                             ${templates.badge(batch.stage || 'Unknown', batch.stage)}
-                            ${templates.badge(batch.quality || 'Unknown', batch.quality)}
+                            ${templates.badge(`Unreviewed Staff: ${getUnreviewedInfo(batch).count ?? '—'}`, 'pending')}
                         </div>
                         <span class="batch-mobile-percent" style="color: ${progressColors.text}">
                             ${progress}%
@@ -408,7 +417,11 @@ const templates = {
                 <div class="batch-footer">
                     <div class="batch-team-info">
                         ${icons.userSearch}
-                        <span>${coreCount} Core + ${backupCount} Backup | Eng: ${avgEnglish}%</span>
+                        <span>
+                            <span class="metric-strong">${coreCount}</span> Core + 
+                            <span class="metric-strong">${backupCount}</span> Backup | Eng: 
+                            <span class="metric-strong">${avgEnglish}%</span>
+                        </span>
                     </div>
                     
                     <button class="batch-view-btn ${isSelected ? 'active' : ''}" 
@@ -454,13 +467,17 @@ function renderAnalytics() {
         'clock': icons.clock,
         'check-circle': icons.checkCircle,
         'alert-circle': icons.alertCircle,
-        'activity': icons.activity
+        'calendar': icons.calendar,
+        'activity': icons.activity,
+        'userSearch': icons.userSearch
     };
 
     return `
         <div class="analytics-grid" id="analyticsGrid">
             ${config.analyticsCards.map((card, index) => {
-                const value = card.key === 'active' ? stats.inProgress : stats[card.key];
+                const value = (card.key === 'unreviewed')
+                    ? getTotalUnreviewedCount()
+                    : (card.key === 'active' ? stats.inProgress : stats[card.key]);
                 return `
                     <div class="analytics-card">
                         <div class="analytics-card-content">
@@ -587,7 +604,7 @@ function autoApproveBatchEmployees(batch) {
     });
 }
 function getBatchStats() {
-    const stats = { inProgress: 0, completed: 0, pending: 0, active: 0 };
+    const stats = { inProgress: 0, completed: 0, planned: 0, active: 0 };
     state.batches.forEach(batch => {
         const stage = (batch.stage || '').toLowerCase();
         if (stage === 'in progress') { 
@@ -595,8 +612,7 @@ function getBatchStats() {
             stats.active++; 
         }
         if (stage === 'completed') stats.completed++;
-        if (stage === 'pending') stats.pending++;
-        if (stage === 'planned') stats.pending++;
+        if (stage === 'planned' || stage === 'pending') stats.planned++;
     });
     return stats;
 }
@@ -610,6 +626,137 @@ function getFilteredEmployees(employees) {
             return employees.filter(e => state.employeeStatuses[e.employee_id] === 'rejected');
         default:
             return employees;
+    }
+}
+
+// Calculate dynamic fact FTE: base fact value or employees count minus local rejections
+function getDynamicFactFte(batch) {
+    if (!batch) return 0;
+    const base = (batch && Number.isFinite(Number(batch.fact_fte))) ? Number(batch.fact_fte) : (Array.isArray(batch.employees) ? batch.employees.length : 0);
+    const employees = Array.isArray(batch.employees) ? batch.employees : [];
+    const rejected = employees.reduce((acc, emp) => acc + (state.employeeStatuses[emp.employee_id] === 'rejected' ? 1 : 0), 0);
+    return Math.max(0, base - rejected);
+}
+
+// Total employees in batch from DB (prefer loaded list, else parse employee_id, else fact_fte/planned_fte)
+function getTotalEmployeesCount(batch) {
+    if (!batch) return 0;
+    if (Array.isArray(batch.employees)) return batch.employees.length;
+    try {
+        if (batch.employee_id) {
+            const ids = api.parseEmployeeIds(batch.employee_id);
+            if (Array.isArray(ids)) return ids.length;
+        }
+    } catch {}
+    const fact = Number(batch.fact_fte);
+    if (Number.isFinite(fact) && fact > 0) return fact;
+    const planned = Number(batch.planned_fte);
+    if (Number.isFinite(planned) && planned > 0) return planned;
+    return 0;
+}
+
+// Approved counts helper
+function getApprovedInfo(batch) {
+    if (!batch) return { count: 0, total: 0 };
+    const stage = ((batch.stage || batch.status) || '').toLowerCase();
+    const total = getTotalEmployeesCount(batch);
+    if (!Array.isArray(batch.employees)) {
+        // Employees not loaded yet: Completed/Done => everyone approved, otherwise 0
+        const count = (stage === 'completed' || stage === 'done') ? total : 0;
+        return { count, total };
+    }
+    const emps = batch.employees;
+    const count = emps.reduce((acc, e) => acc + (state.employeeStatuses[e.employee_id] === 'approved' ? 1 : 0), 0);
+    return { count, total };
+}
+
+// Unreviewed (neither approved nor rejected)
+function getUnreviewedInfo(batch) {
+    if (!batch) return { count: 0, total: 0 };
+    const stage = ((batch.stage || batch.status) || '').toLowerCase();
+    const total = getTotalEmployeesCount(batch);
+    if (!Array.isArray(batch.employees)) {
+        // Not loaded: Completed/Done => 0, else all need review
+        const count = (stage === 'completed' || stage === 'done') ? 0 : total;
+        return { count, total };
+    }
+    const emps = batch.employees;
+    const count = emps.reduce((acc, e) => {
+        const st = state.employeeStatuses[e.employee_id];
+        return acc + ((st !== 'approved' && st !== 'rejected') ? 1 : 0);
+    }, 0);
+    return { count, total };
+}
+
+// Sum of unreviewed employees across all batches
+function getTotalUnreviewedCount() {
+    try {
+        return state.batches.reduce((sum, b) => sum + (getUnreviewedInfo(b).count || 0), 0);
+    } catch {
+        return 0;
+    }
+}
+
+// Update only parts of the batch card to avoid hover re-trigger
+function updateBatchCardUI(batch) {
+    const card = document.querySelector(`[data-batch-id="${batch.id}"]`);
+    if (!card) return;
+
+    const fact = getDynamicFactFte(batch);
+    const approvedInfo = getApprovedInfo(batch);
+    const unreviewedInfo = getUnreviewedInfo(batch);
+    const progress = utils.calculateProgress(fact, batch.planned_fte);
+    const progressColors = utils.getProgressColor(progress);
+
+    // Desktop Approved (4th value + sub)
+    const desktopValues = card.querySelectorAll('.batch-data-desktop .batch-data-grid .batch-data-value');
+    if (desktopValues && desktopValues[3]) {
+        desktopValues[3].textContent = `${approvedInfo.count} of ${approvedInfo.total} approved`;
+    }
+
+    // Mobile Approved employees
+    const mobileApprovedVal = card.querySelector('.batch-data-mobile .batch-data-item:nth-child(2) .batch-data-value');
+    if (mobileApprovedVal) {
+        mobileApprovedVal.textContent = `${approvedInfo.count} of ${approvedInfo.total} approved`;
+    }
+
+    // Desktop Unreviewed (6th column)
+    const desktopCols = card.querySelectorAll('.batch-data-desktop .batch-data-grid > div');
+    if (desktopCols && desktopCols[5]) {
+        const valueEl = desktopCols[5].querySelector('.batch-data-value');
+        if (valueEl) valueEl.textContent = (unreviewedInfo.count ?? 0);
+    }
+
+    // Mobile badge: update unreviewed count
+    const mobileBadges = card.querySelector('.batch-mobile-badges');
+    if (mobileBadges) {
+        mobileBadges.innerHTML = `
+            ${templates.badge(batch.stage || 'Unknown', batch.stage)}
+            ${templates.badge(`Unreviewed Staff: ${unreviewedInfo.count ?? '—'}`, 'pending')}
+        `;
+    }
+
+    // Progress bars width
+    card.querySelectorAll('.progress-fill').forEach(el => {
+        el.style.width = `${progress}%`;
+    });
+
+    // Progress text (desktop and mobile percent)
+    const pText = card.querySelector('.batch-progress-text');
+    if (pText) {
+        pText.textContent = `${progress}%`;
+        pText.style.color = progressColors.text;
+    }
+    const mPercent = card.querySelector('.batch-mobile-percent');
+    if (mPercent) {
+        mPercent.textContent = `${progress}%`;
+        mPercent.style.color = progressColors.text;
+    }
+
+    // Expanded section
+    const expanded = card.querySelector('.batch-expanded');
+    if (expanded) {
+        expanded.outerHTML = templates.expandedSection(batch);
     }
 }
 
@@ -654,22 +801,34 @@ window.handleToggleBatch = function(event, batchId) {
 };
 
 window.handleEmployeeDecision = function(employeeId, status) {
+    // Prevent changing decisions in completed/done batches
+    const batchId = state.selectedCard;
+    let isLocked = false;
+    if (batchId) {
+        const batch = state.batches.find(b => b.id === batchId);
+        const stage = ((batch && (batch.stage || batch.status)) || '').toLowerCase();
+        isLocked = stage === 'completed' || stage === 'done';
+    }
+
+    if (isLocked) {
+        const current = state.employeeStatuses[employeeId];
+        // In locked batches, do not allow resetting or changing away from approved
+        if (status === 'null' || (current === 'approved' && status !== 'approved')) {
+            return; // ignore any attempt to cancel/override approval
+        }
+    }
+
     if (status === 'null') {
         delete state.employeeStatuses[employeeId];
     } else {
         state.employeeStatuses[employeeId] = status;
     }
     
-    // Перерисовываем только расширенную секцию
-    const batchId = state.selectedCard;
-    if (batchId) {
-        const batchElement = document.querySelector(`[data-batch-id="${batchId}"] .batch-expanded`);
-        if (batchElement) {
-            const batch = state.batches.find(b => b.id === batchId);
-            if (batch) {
-                batchElement.outerHTML = templates.expandedSection(batch);
-            }
-        }
+    // Обновляем только содержимое карточки, чтобы не триггерить hover-анимацию
+    const currentId = state.selectedCard;
+    if (currentId) {
+        const batch = state.batches.find(b => b.id === currentId);
+        if (batch) updateBatchCardUI(batch);
     }
 };
 

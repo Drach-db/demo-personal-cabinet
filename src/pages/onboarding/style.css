@@ -5,7 +5,7 @@
 /* ========================================
    ТИПОГРАФИКА - SAN FRANCISCO
    ======================================== */
-   :root {
+  :root {
     /* San Francisco - ЕДИНСТВЕННЫЙ шрифт */
     --font-sf: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     
@@ -42,7 +42,9 @@
     --color-text-warning: #eab308;
     --color-text-error: #ef4444;
     --color-text-purple: #8b5cf6;
-    --color-text-blue: #6366f1;
+    /* Unify blue across the page */
+    /* Even warmer blue (violet-600) for headings/links */
+    --color-text-blue: #7c3aed; /* violet-600 */
     --color-text-white: #ffffff;
     
     /* Цвета фона */
@@ -252,15 +254,17 @@
   }
   
   .batch-card.selected {
-    border: 2px solid #333;
+    /* Remove orange outline; keep subtle selection shadow */
+    border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: var(--shadow-selected);
   }
   
   @media (hover: hover) {
     .batch-card:hover {
+      /* Match Team hover: stronger lift and glow */
       transform: translateY(-4px);
-      box-shadow: var(--shadow-hover);
-      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(204, 102, 51, 0.2);
+      background: rgba(255, 255, 255, 0.9);
     }
   }
   
@@ -277,14 +281,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(124, 58, 237, 0.10);
     margin-right: 0.75rem;
   }
   
   .batch-icon svg {
     width: 1.25rem;
     height: 1.25rem;
-    color: #3b82f6;
+    color: var(--color-text-blue);
   }
   
   .batch-title {
@@ -296,7 +300,7 @@
   }
   
   .batch-project {
-    color: #3b82f6;
+    color: var(--color-text-blue);
   }
   
   /* Адаптивный заголовок */
@@ -308,12 +312,13 @@
     .batch-icon {
       width: 3rem;
       height: 3rem;
-      background: #3b82f6;
+      /* Keep the same subtle background as desktop for consistency */
+      background: rgba(124, 58, 237, 0.10);
       margin-right: 1rem;
     }
     
     .batch-icon svg {
-      color: white;
+      color: var(--color-text-blue);
     }
     
     .batch-title {
@@ -324,7 +329,7 @@
     
     .batch-title-main {
       font-size: var(--font-h1);
-      font-weight: var(--font-bold);
+      font-weight: var(--font-semibold);
       display: block;
     }
     
@@ -360,6 +365,16 @@
     font-family: var(--font-family);
     font-feature-settings: var(--font-numeric-settings);
     color: var(--color-text-primary);
+  }
+  
+  /* Subtext line under data values (desktop + mobile) */
+  .batch-data-sub {
+    font-size: var(--font-label);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-regular);
+    font-family: var(--font-family);
+    font-feature-settings: var(--font-numeric-settings);
+    margin-top: 2px;
   }
   
   @media (max-width: 784px) {
@@ -441,7 +456,7 @@
     font-size: var(--font-label);
     font-family: var(--font-family);
     font-feature-settings: var(--font-numeric-settings);
-    color: #3b82f6;
+    color: var(--color-text-secondary);
     font-weight: var(--font-medium);
     flex: 1;
     gap: 0.375rem;
@@ -450,6 +465,11 @@
   .batch-team-info svg {
     width: 0.875rem;
     height: 0.875rem;
+  }
+
+  /* Emphasize numbers inside team info */
+  .batch-team-info .metric-strong {
+    color: var(--color-text-blue);
   }
   
   .batch-view-btn {
@@ -490,14 +510,14 @@
   }
   
   /* Expanded Section */
-  .batch-expanded {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
-  }
+.batch-expanded {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
   
   @media (max-width: 480px) {
     .batch-expanded {
@@ -596,19 +616,22 @@
   }
   
   .employee-card {
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     padding: 0.75rem;
-    background: rgba(248, 247, 244, 0.6);
+    /* Warm neutral requested for employee cards */
+    background: rgba(167, 100, 46, 0.06); /* stone-400 @ 6% */
     border: 1px solid rgba(255, 255, 255, 0.4);
     position: relative;
     transition: var(--transition);
+    backdrop-filter: blur(10px);
   }
   
   @media (hover: hover) {
     .employee-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      background: rgba(255, 255, 255, 0.8);
+      /* No hover effect for employee cards inside batch */
+      transform: none;
+      box-shadow: none;
+      background: rgba(167, 100, 46, 0.06);
     }
   }
   
@@ -632,7 +655,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid white;
+    border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
   
@@ -774,56 +797,61 @@
     flex-shrink: 0;
   }
   
-  .btn-view {
-    background: #b85c2e;
-    border-color: #b85c2e;
-    color: white;
-    width: 7.5rem;
-  }
-  
-  .btn-view:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    background: var(--color-text-accent);
-  }
-  
+  /* Neutralize View/Download buttons to avoid rainbow */
+  .btn-view,
   .btn-download {
-    background: #9ca3af;
-    border-color: #6b7280;
-    color: white;
+    background: transparent;
+    /* Transparent gray with slightly darker warm border */
+    border-color: #d6d3d1; /* warm gray ~ stone-300 */
+    color: var(--color-text-secondary);
     width: 7.5rem;
   }
   
+  .btn-view:hover,
   .btn-download:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    background: #6b7280;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  /* Increase specificity inside employee cards to ensure color takes effect */
+  .employee-card .action-buttons .btn-view,
+  .employee-card .action-buttons .btn-download {
+    border-color: #d6d3d1;
+    color: var(--color-text-secondary);
+  }
+  .employee-card .action-buttons .btn-view:hover,
+  .employee-card .action-buttons .btn-download:hover {
+    background: transparent;
+    box-shadow: none;
   }
   
   .btn-approve {
-    background: var(--color-text-success);
-    border-color: var(--color-text-success);
-    color: white;
+    /* Muted style like stage badges */
+    background: rgba(34, 197, 94, 0.10);
+    border-color: rgba(34, 197, 94, 0.40);
+    color: #22c55e;
     width: 7.5rem;
   }
   
   .btn-approve:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-    background: #16a34a;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+    background: rgba(34, 197, 94, 0.15);
   }
   
   .btn-reject {
-    background: var(--color-text-error);
-    border-color: var(--color-text-error);
-    color: white;
+    /* Muted style like stage badges */
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.40);
+    color: #ef4444;
     width: 7.5rem;
   }
   
   .btn-reject:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-    background: #dc2626;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.15);
   }
   
   .decision-status {
@@ -841,20 +869,32 @@
     height: 2rem;
     cursor: pointer;
   }
-  
+
   .decision-status:hover {
     transform: scale(0.98);
     opacity: 0.9;
   }
+
+  /* Locked status (completed/done batches) */
+  .decision-status.decision-locked {
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.95;
+    transform: none;
+  }
   
   .decision-approved {
-    background: var(--color-text-success);
-    color: white;
+    /* Muted style, in line with buttons and badges */
+    background: rgba(34, 197, 94, 0.10);
+    border: 1px solid rgba(34, 197, 94, 0.40);
+    color: #22c55e;
   }
   
   .decision-rejected {
-    background: var(--color-text-error);
-    color: white;
+    /* Muted style, in line with buttons and badges */
+    background: rgba(239, 68, 68, 0.10);
+    border: 1px solid rgba(239, 68, 68, 0.40);
+    color: #ef4444;
   }
   
   @keyframes slideIn {
@@ -943,8 +983,8 @@
     }
     
     .employee-card {
-      background: white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      background: rgba(167, 100, 46, 0.06);
+      box-shadow: none;
     }
     
     .avatar {
@@ -1035,8 +1075,8 @@
     }
     
     .employee-card {
-      background: white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      background: rgba(167, 100, 46, 0.06);
+      box-shadow: none;
     }
     
     .avatar {
