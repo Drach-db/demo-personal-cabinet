@@ -59,7 +59,8 @@ const config = {
         { min: 70, bg: '#a7f3d0', text: '#65a30d' },
         { min: 50, bg: '#fde68a', text: '#ca8a04' },
         { min: 30, bg: '#fed7aa', text: '#ea580c' },
-        { min: 0, bg: '#fecaca', text: '#6b7280' }
+        // 0-29%: neutral gray (not red/pink)
+        { min: 0, bg: '#e5e7eb', text: '#6b7280' }
     ],
     
     analyticsCards: [
@@ -335,8 +336,9 @@ const templates = {
     },
 
     batchCard(batch) {
-        const dynamicFact = getDynamicFactFte(batch);
-        const progress = utils.calculateProgress(dynamicFact, batch.planned_fte);
+        // Progress should reflect approved staff only
+        const approved = getApprovedInfo(batch);
+        const progress = utils.calculateProgress(approved.count, approved.total);
         const progressColors = utils.getProgressColor(progress);
         const coreCount = utils.getEmployeeCount(batch.employees, 'Core');
         const backupCount = utils.getEmployeeCount(batch.employees, 'Backup');
@@ -697,21 +699,44 @@ function getTotalUnreviewedCount() {
     }
 }
 
+// Reviewed (approved or rejected)
+function getReviewedInfo(batch) {
+    if (!batch) return { count: 0, total: 0 };
+    const total = getTotalEmployeesCount(batch);
+    const stage = ((batch.stage || batch.status) || '').toLowerCase();
+    if (!Array.isArray(batch.employees)) {
+        const count = (stage === 'completed' || stage === 'done') ? total : 0;
+        return { count, total };
+    }
+    const emps = batch.employees;
+    const count = emps.reduce((acc, e) => {
+        const st = state.employeeStatuses[e.employee_id];
+        return acc + ((st === 'approved' || st === 'rejected') ? 1 : 0);
+    }, 0);
+    return { count, total };
+}
+
 // Update only parts of the batch card to avoid hover re-trigger
 function updateBatchCardUI(batch) {
     const card = document.querySelector(`[data-batch-id="${batch.id}"]`);
     if (!card) return;
 
-    const fact = getDynamicFactFte(batch);
     const approvedInfo = getApprovedInfo(batch);
     const unreviewedInfo = getUnreviewedInfo(batch);
-    const progress = utils.calculateProgress(fact, batch.planned_fte);
+    // Progress reflects approved only
+    const progress = utils.calculateProgress(approvedInfo.count, approvedInfo.total);
     const progressColors = utils.getProgressColor(progress);
 
-    // Desktop Approved (4th value + sub)
-    const desktopValues = card.querySelectorAll('.batch-data-desktop .batch-data-grid .batch-data-value');
-    if (desktopValues && desktopValues[3]) {
-        desktopValues[3].textContent = `${approvedInfo.count} of ${approvedInfo.total} approved`;
+    // Desktop grid: target the values row (second .batch-data-grid inside .batch-data-desktop)
+    const desktopGrids = card.querySelectorAll('.batch-data-desktop .batch-data-grid');
+    const valuesGrid = desktopGrids && desktopGrids[1];
+    if (valuesGrid) {
+        const values = valuesGrid.querySelectorAll('.batch-data-value');
+        // Column order: [Stage badge(not .batch-data-value)], Planned date(0), Planned employees(1), Fact date(2), Approved(3), Unreviewed(4)
+        // But since Stage is a badge without class, values[] indexes shift by 1: indexes 0..4 map to cols 2..6
+        // Approved is index 3, Unreviewed is index 4
+        if (values[3]) values[3].textContent = `${approvedInfo.count} of ${approvedInfo.total} approved`;
+        if (values[4]) values[4].textContent = (unreviewedInfo.count ?? 0);
     }
 
     // Mobile Approved employees
@@ -720,12 +745,7 @@ function updateBatchCardUI(batch) {
         mobileApprovedVal.textContent = `${approvedInfo.count} of ${approvedInfo.total} approved`;
     }
 
-    // Desktop Unreviewed (6th column)
-    const desktopCols = card.querySelectorAll('.batch-data-desktop .batch-data-grid > div');
-    if (desktopCols && desktopCols[5]) {
-        const valueEl = desktopCols[5].querySelector('.batch-data-value');
-        if (valueEl) valueEl.textContent = (unreviewedInfo.count ?? 0);
-    }
+    // Desktop Unreviewed is handled above via values[4]
 
     // Mobile badge: update unreviewed count
     const mobileBadges = card.querySelector('.batch-mobile-badges');
@@ -739,6 +759,7 @@ function updateBatchCardUI(batch) {
     // Progress bars width
     card.querySelectorAll('.progress-fill').forEach(el => {
         el.style.width = `${progress}%`;
+        el.style.backgroundColor = progressColors.bg;
     });
 
     // Progress text (desktop and mobile percent)
