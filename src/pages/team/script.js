@@ -790,7 +790,7 @@ function renderMobileEmployeeCard(employee) {
                     </div>
                     
                     <div style="flex: 1;">
-                        <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 4px;">${employee.full_name}</h3>
+            <h3 style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 4px;">${employee.full_name}</h3>
                         <p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">${employee.position}</p>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <span style="padding: 2px 8px; border-radius: 9999px; font-size: 12px; font-weight: 500; background-color: ${stageColor}20; color: ${stageColor};">

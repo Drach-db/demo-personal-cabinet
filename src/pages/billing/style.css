@@ -88,7 +88,7 @@
 .billing-section-header__text h2 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #111827;
+    color: #374151;
     letter-spacing: -0.025em;
     margin: 0;
 }
@@ -489,4 +489,4 @@
 .billing-text-danger { color: var(--billing-color-danger); }
 .billing-text-info { color: var(--billing-color-info); }
 .billing-text-gray { color: var(--billing-color-gray); }
-.billing-text-dark { color: #111827; }
+.billing-text-dark { color: #374151; }

@@ -5,21 +5,26 @@
         <!-- Logo Section -->
         <div class="navbar__header">
     <div class="navbar__logo">
-        <div class="navbar__logo-icon">
-            <span>M</span>
+        <div class="navbar__logo-icon" role="button" tabindex="0" aria-label="Toggle sidebar" id="navbarLogoToggle">
+            <!-- Base Claude-like symbol -->
+            <svg class="symbol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="5" width="16" height="14" rx="3"></rect>
+                <line x1="9" y1="5" x2="9" y2="19"></line>
+            </svg>
+            <!-- Hover arrows; shown depending on collapsed state via CSS -->
+            <svg class="arrow arrow--left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="9" y1="5" x2="9" y2="19"></line>
+                <polyline points="15 16 11 12 15 8"></polyline>
+            </svg>
+            <svg class="arrow arrow--right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="15" y1="5" x2="15" y2="19"></line>
+                <polyline points="9 8 13 12 9 16"></polyline>
+            </svg>
         </div>
         <div class="navbar__logo-text">
             <span class="navbar__brand">MarkeTel</span>
-            <!-- УДАЛИТЕ строку с navbar__tagline -->
         </div>
     </div>
-    
-    <!-- Desktop Collapse Button -->
-    <button type="button" class="navbar__collapse" id="navbarCollapse" aria-label="Collapse sidebar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-    </button>
 </div>
 
         <!-- Navigation Menu -->

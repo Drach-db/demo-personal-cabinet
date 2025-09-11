@@ -190,7 +190,7 @@ const components = {
         
         return `
             <div class="billing-table-grid billing-table-row" style="border-bottom: ${isLast ? 'none' : '1px solid rgba(0, 0, 0, 0.04)'};">
-                <div class="billing-text-center" style="font-size: 0.875rem; font-weight: 600; color: #111827;">
+                <div class="billing-text-center" style="font-size: 0.875rem; font-weight: 600; color: #374151;">
                     ${utils.formatters.period(item.start_date, item.end_date)}
                 </div>
 
@@ -202,11 +202,11 @@ const components = {
                     ${utils.formatters.number(item.planned_hours)} hrs
                 </div>
 
-                <div class="billing-text-center" style="font-size: 0.875rem; font-weight: 600; color: #111827;">
+                <div class="billing-text-center" style="font-size: 0.875rem; font-weight: 600; color: #374151;">
                     ${utils.formatters.number(item.actual_hours)} hrs
                 </div>
 
-                <div class="billing-text-center" style="font-size: 0.875rem; font-weight: 600; color: #111827;">
+                <div class="billing-text-center" style="font-size: 0.875rem; font-weight: 600; color: #374151;">
                     $${item.hourly_rate}
                 </div>
 
@@ -225,7 +225,7 @@ const components = {
                 </div>
 
                 <div class="billing-text-center billing-flex billing-flex-col billing-items-center">
-                    <div style="font-size: 1rem; font-weight: 700; color: #111827;">
+                    <div style="font-size: 1rem; font-weight: 700; color: #374151;">
                         ${utils.formatters.currency(total)}
                     </div>
                     <div style="font-size: 0.75rem; font-weight: 500; color: var(--billing-color-gray);">
@@ -405,7 +405,7 @@ function renderDashboard(currentMonthData) {
             <!-- Cost Breakdown Card -->
             <div class="billing-cost-breakdown-card">
                 <div class="billing-flex billing-items-center billing-gap-md" style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 0.9375rem; font-weight: 600; color: #111827; margin: 0;">
+                    <h3 style="font-size: 0.9375rem; font-weight: 600; color: #374151; margin: 0;">
                         Cost Breakdown
                     </h3>
                     <div class="billing-hide-mobile" style="margin-left: auto;">
@@ -416,7 +416,7 @@ function renderDashboard(currentMonthData) {
                 <!-- Team Members -->
                 <div style="padding: 0.75rem; border-radius: 0.75rem; margin-bottom: 1rem; background-color: rgba(var(--billing-color-primary-rgb), 0.05);">
                     <div class="billing-flex billing-justify-between billing-items-center" style="margin-bottom: 0.75rem;">
-                        <span style="font-size: 0.9375rem; font-weight: 600; color: #111827;">
+                        <span style="font-size: 0.9375rem; font-weight: 600; color: #374151;">
                             Team Members (${currentMonthData.teamMembers})
                         </span>
                         <span style="font-size: 1rem; font-weight: 700; color: var(--billing-color-primary);">
@@ -453,10 +453,10 @@ function renderDashboard(currentMonthData) {
                 <!-- Total -->
                 <div style="border-top: 1px solid rgba(0, 0, 0, 0.1); padding-top: 1rem;">
                     <div class="billing-flex billing-justify-between billing-items-center" style="margin-bottom: 0.75rem;">
-                        <span style="font-size: 0.9375rem; font-weight: 700; color: #111827;">
+                        <span style="font-size: 0.9375rem; font-weight: 700; color: #374151;">
                             Total This Month
                         </span>
-                        <span style="font-size: 1.125rem; font-weight: 700; color: #111827;">
+                        <span style="font-size: 1.125rem; font-weight: 700; color: #374151;">
                             ${utils.formatters.currency(currentMonthData.currentTotal)}
                         </span>
                     </div>
@@ -536,7 +536,7 @@ function renderHistory() {
                         <div style="width: 3.5rem; height: 3.5rem; border-radius: 1rem; margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; background-color: rgba(var(--billing-color-gray-rgb), 0.1);">
                             ${createIcon('fileText', 28)}
                         </div>
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.5rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
                             No billing records found
                         </h3>
                         <p style="font-size: 0.875rem; color: var(--billing-color-gray);">

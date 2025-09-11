@@ -681,7 +681,7 @@ import '../../components/header/header.js';
                 const count = status[key].length;
                 html += h('div', '', '', h('div', 'flex items-center gap-2 mb-2', '',
                     h('span', '', `width:12px;height:12px;border-radius:50%;background:${colors[key]};`, '') +
-                    h('span', '', 'font-size:13px;font-weight:600;', `${key[0].toUpperCase()}${key.slice(1)} (${count})`)) +
+                    h('span', '', 'font-size:13px;font-weight:600;color:#374151;', `${key[0].toUpperCase()}${key.slice(1)} (${count})`)) +
                     h('div', 'subtitle', '', count ? status[key].map(m => `${m.name} (${(STATUS_CONFIG[m.status] || STATUS_CONFIG.active)[1].replace(' ⚠️', '')})`).join(', ') : 'None'));
             });
             html += '</div></div>';
@@ -900,7 +900,7 @@ import '../../components/header/header.js';
                     const count = status[key].length;
                     html += h('div', 'status-col', '', h('div', 'flex items-center gap-2 mb-2', '',
                         h('span', '', 'width:12px;height:12px;border-radius:50%;background:' + colors[key] + ';', '') +
-                        h('span', '', 'font-size:13px;font-weight:600;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
+                        h('span', '', 'font-size:13px;font-weight:600;color:#374151;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
                         h('div', 'subtitle', '', count ? status[key].map(m => m.name).join(', ') : 'None'));
                 });
                 html += '</div></div>';
@@ -1203,7 +1203,7 @@ import '../../components/header/header.js';
                     const count = status[key].length;
                     newContent += h('div', 'status-col', '', h('div', 'flex items-center gap-2 mb-2', '',
                         h('span', '', 'width:12px;height:12px;border-radius:50%;background:' + colors[key] + ';', '') +
-                        h('span', '', 'font-size:13px;font-weight:600;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
+                        h('span', '', 'font-size:13px;font-weight:600;color:#374151;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
                         h('div', 'subtitle', '', count ? status[key].map(m => m.name).join(', ') : 'None'));
                 });
                 newContent += '</div></div>';

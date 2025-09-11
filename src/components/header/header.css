@@ -15,28 +15,20 @@
     /* Inherit from brand */
     --primary-cream: #f0eee7;
     --accent-orange: #cc6633;
-    --deep-gray: #111827;
+    --deep-gray: #374151;
     --medium-gray: #6b7280;
     --light-gray: #d1d5db;
 }
 
 .header {
-    /* НЕПРОЗРАЧНЫЙ ФОН */
-    background: var(--header-bg);
-    /* Убираем backdrop-filter для производительности */
-    
-    /* Правильный z-index */
+    /* Совпадает с верхней шапкой навбара один в один */
+    background: var(--navbar-top-bg, var(--header-bg));
     z-index: var(--header-z-index);
-    
-    /* Граница и тень для визуального отделения */
-    border-bottom: 1px solid var(--header-border);
-    box-shadow: var(--header-shadow);
-    
-    /* Фиксированное позиционирование */
+    border-bottom: 1px solid var(--navbar-top-border, var(--header-border));
+    /* Тень убираем, чтобы не отличался тон */
+    box-shadow: none;
     position: sticky;
     top: 0;
-    
-    /* Убираем любые margins */
     margin: 0;
 }
 

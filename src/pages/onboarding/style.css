@@ -34,7 +34,7 @@
     --font-extrabold: 800;
     
     /* Цвета текста */
-    --color-text-primary: #111827;
+    --color-text-primary: #374151;
     --color-text-secondary: #6b7280;
     --color-text-muted: #9ca3af;
     --color-text-accent: #cc6633;
@@ -171,7 +171,7 @@
 
   .analytics-card-info { flex: 1; min-width: 0; }
   .analytics-card-title { font-size: 0.875rem; font-weight: 500; color: #6b7280; margin: 0 0 0.25rem 0; }
-  .analytics-card-value { font-size: 1.875rem; font-weight: 700; color: #111827; margin: 0; }
+  .analytics-card-value { font-size: 1.875rem; font-weight: 700; color: #374151; margin: 0; }
   .analytics-card-icon-container { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   
   /* Мобильная версия аналитики */

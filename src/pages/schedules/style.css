@@ -56,6 +56,12 @@
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* Analytics unified accent control */
+.analytics-card { --accent: #374151; --accent-fill: rgba(55,65,81,0.65); }
+.analytics-card .analytics-title { color: var(--accent); }
+.analytics-card .analytics-value { color: var(--accent); }
+.analytics-card .progress-fill { background-color: var(--accent); }
+
 /* Mobile Analytics Carousel */
 .mobile-carousel {
     display: flex;
@@ -102,21 +108,22 @@
     padding: 0.5rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: none;
+    border: 1px solid transparent; /* чтобы не дергалось при hover */
     cursor: pointer;
     color: #cc6633;
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 @media (min-width: 785px) {
     .nav-button:hover {
-        background-color: #cc6633;
-        color: white;
+        background: rgba(204, 102, 51, 0.10); /* согласовано с Onboarding muted */
+        border-color: rgba(204, 102, 51, 0.40);
+        color: #cc6633;
     }
 
     .nav-button:hover svg {
-        stroke: white;
+        stroke: #cc6633;
     }
 }
 
@@ -133,19 +140,19 @@
 .view-tab {
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
-    background-color: transparent;
-    border: none;
+    background: transparent;
+    border: none; /* не отделяем табы рамкой, сохраняем единый сегмент */
     cursor: pointer;
     font-size: 0.875rem;
     font-weight: 500;
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #374151;
-    transition: all 0.2s;
+    color: #6b7280; /* вторичный серый */
+    transition: color 0.2s, background-color 0.2s;
 }
 
 .view-tab.active {
-    background-color: #cc6633;
-    color: white;
+    background: rgba(204, 102, 51, 0.10); /* только цвет, без эффекта */
+    color: #cc6633;
 }
 
 /* ========================================
@@ -580,6 +587,21 @@ td.employee-cell {
 }
 
 /* ========================================
+   AVATAR STAGE DOT (match Team page)
+   ======================================== */
+.avatar { position: relative; display: flex; align-items: center; justify-content: center; border-radius: 9999px; }
+.employee-status-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: none; /* match Team: no white ring */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================
    LOCAL CALENDAR OVERLAY
    ======================================== */
 .calendar-overlay {
@@ -603,49 +625,24 @@ td.employee-cell {
 /* ========================================
    BADGES
    ======================================== */
+/* Match Team page tag style */
 .badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.125rem 0.5rem;
+    padding: 0.25rem 0.75rem; /* as .tag on Team */
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 500;
-    font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
-    white-space: nowrap;        /* keep single line inside pill */
-    line-height: 1.2;           /* stable height */
-    word-break: keep-all;       /* avoid breaking at hyphens */
-    hyphens: none;
+    white-space: nowrap;
+    line-height: 1.2;
 }
 
-.badge-active {
-    background-color: #dcfce7;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-}
-
-.badge-terminated {
-    background-color: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
-}
-
-.badge-onboarding {
-    background-color: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fde68a;
-}
-
-.badge-project {
-    background-color: #dbeafe;
-    color: #1e40af;
-    border: 1px solid #bfdbfe;
-}
-
-.badge-backup {
-    background-color: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fde68a;
-}
+/* Colors like Team: bg = color 20% alpha, text = solid color, no border */
+.badge-active { background-color: #22c55e20; color: #22c55e; }
+.badge-terminated { background-color: #ef444420; color: #ef4444; }
+.badge-onboarding { background-color: #eab30820; color: #eab308; }
+.badge-project { background-color: #3b82f620; color: #3b82f6; }
+.badge-backup { background-color: #6366f120; color: #6366f1; }
 
 /* ========================================
    MODALS
@@ -783,7 +780,7 @@ td.employee-cell {
 
 .bottom-sheet-tab.active {
     background-color: #ffffff; /* match Team: gray group with white active */
-    color: #111827;
+    color: #374151;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -940,7 +937,7 @@ td.employee-cell {
 .empty-state-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #1f2937;
+    color: #374151;
     margin-bottom: 0.5rem;
 }
 

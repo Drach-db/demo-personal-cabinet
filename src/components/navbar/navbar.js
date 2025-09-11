@@ -69,9 +69,14 @@ class UnifiedNavbar {
             el.textContent = count > 99 ? '99+' : String(count);
             el.style.display = '';
             el.setAttribute('aria-label', `${count} unread`);
+            el.classList.remove('badge--empty');
+            el.classList.add('badge--filled');
         } else {
-            el.style.display = 'none';
-            el.removeAttribute('aria-label');
+            el.textContent = '0';
+            el.style.display = '';
+            el.setAttribute('aria-label', '0 unread');
+            el.classList.remove('badge--filled');
+            el.classList.add('badge--empty');
         }
     }
 
@@ -134,7 +139,22 @@ class UnifiedNavbar {
         // Collapse button - только для десктопа
         if (this.elements.collapse) {
             this.elements.collapse.addEventListener('click', () => {
-                if (!this.isMobile) {
+                if (!this.isMobile) this.toggleCollapse();
+            });
+        }
+        // Logo toggle (Claude-like icon) — desktop only
+        const logoToggle = document.getElementById('navbarLogoToggle');
+        if (logoToggle) {
+            logoToggle.addEventListener('click', (e) => {
+                if (this.isMobile) return;
+                e.stopPropagation();
+                this.toggleCollapse();
+            });
+            logoToggle.addEventListener('keydown', (e) => {
+                if (this.isMobile) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
                     this.toggleCollapse();
                 }
             });

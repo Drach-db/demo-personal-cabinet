@@ -71,7 +71,7 @@ body {
 .analytics-card-value {
     font-size: 1.875rem;
     font-weight: bold;
-    color: #111827;
+    color: #374151;
 }
 
 .analytics-card-icon-container {
@@ -467,7 +467,7 @@ body {
 
 .employee-name {
     font-weight: 600;
-    color: #111827;
+    color: #374151;
     font-size: 16px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -550,7 +550,7 @@ body {
 
 .details-section-title {
     font-weight: 600;
-    color: #111827;
+    color: #374151;
     font-size: 14px;
     margin-bottom: 12px;
     display: flex;
@@ -654,7 +654,7 @@ body {
 .timeline-event-label {
     font-size: 12px;
     font-weight: 500;
-    color: #111827;
+    color: #374151;
     margin-bottom: 4px;
     text-align: center;
     position: relative;
@@ -1037,7 +1037,7 @@ body {
 
 .filter-tab.active {
     background-color: white;
-    color: #111827;
+    color: #374151;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -1143,7 +1143,7 @@ body {
     font-weight: 600;
     font-size: 14px;
     font-variant-numeric: tabular-nums;
-    color: #111827;
+    color: #374151;
 }
 
 /* ========================================

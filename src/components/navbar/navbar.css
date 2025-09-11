@@ -4,14 +4,18 @@
 
 /* CSS Variables for easy customization */
 :root {
-    --navbar-bg: #243132;
+    /* Light, warm matte theme aligned with calendar panel */
+    --navbar-bg: rgba(248, 247, 244, 0.92);
     --navbar-width: 260px;
     --navbar-collapsed-width: 72px;
-    --navbar-text: rgba(255, 255, 255, 0.8);
-    --navbar-text-active: #ffffff;
-    --navbar-accent: #cc6633;
-    --navbar-border: rgba(255, 255, 255, 0.08);
-    --navbar-hover: rgba(255, 255, 255, 0.05);
+    --navbar-text: #374151;
+    --navbar-text-active: #cc6633;
+    --navbar-accent: #cc6633; /* brand orange */
+    --navbar-border: rgba(220, 215, 205, 0.40);
+    --navbar-hover: rgba(204, 102, 51, 0.06);
+    /* Top bar (brand) aligns with header component */
+    --navbar-top-bg: var(--header-bg, #fcf6ee);
+    --navbar-top-border: var(--header-border, rgba(204, 102, 51, 0.15));
     --navbar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --navbar-z-index: 1000;
     --header-height: 60px;
@@ -52,8 +56,8 @@
     z-index: var(--navbar-z-index);
     display: flex;
     flex-direction: column;
-    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+    overflow: visible; /* prevent badge clipping during animation */
     cursor: w-resize;
     margin: 0;
     padding: 0;
@@ -85,7 +89,7 @@ html.navbar-pre-collapsed .navbar__container {
   }
   .app-navbar.mobile-open .navbar__container { box-shadow: 4px 0 24px rgba(0,0,0,0.2); }
   .navbar__menu { flex: 1; overflow-y: auto; padding: 16px 12px; }
-  .navbar__user { margin-top: auto; padding: 16px; border-top: 1px solid var(--navbar-border); background-color: rgba(0,0,0,0.2); flex-shrink: 0; }
+  .navbar__user { margin-top: auto; padding: 16px; border-top: 1px solid var(--navbar-top-border); background-color: var(--navbar-top-bg); flex-shrink: 0; }
 }
  
 /* ========================================
@@ -96,16 +100,19 @@ html.navbar-pre-collapsed .navbar__container {
     height: 60px;
     padding: 0 12px;
     margin: 0;
-    border-bottom: 1px solid var(--navbar-border);
+    border-bottom: 1px solid var(--navbar-top-border);
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    background-color: transparent;
+    background-color: var(--navbar-top-bg);
     flex-shrink: 0;
     cursor: inherit;
     position: relative;
     box-sizing: border-box;
 }
+
+/* Vertical separator between navbar top and page header */
+.navbar__header::after { display: none; }
 
 .navbar--collapsed .navbar__header {
     padding: 0 12px;
@@ -114,7 +121,7 @@ html.navbar-pre-collapsed .navbar__container {
 /* Logo section - АБСОЛЮТНОЕ ПОЗИЦИОНИРОВАНИЕ */
 .navbar__logo {
     position: absolute;
-    left: 18px;
+    left: 26px; /* align with menu icons (12px container pad + 16px link pad - half icon diff) */
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -128,32 +135,33 @@ html.navbar-pre-collapsed .navbar__container {
 
 /* В свернутом состоянии логотип НЕ ДВИГАЕТСЯ */
 .navbar--collapsed .navbar__logo {
-    left: 18px;
+    left: 26px;
 }
 
 .navbar__logo-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, var(--navbar-accent) 0%, #e67e4d 100%);
-    border-radius: 12px;
-    overflow: hidden; /* prevent bleed during early paint */
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(204, 102, 51, 0.25);
+    box-shadow: none;
     position: relative;
     margin: 0;
+    cursor: pointer;
 }
 
-.navbar__logo-icon span {
-    font-size: 20px;
-    font-weight: 700;
-    color: white;
-    position: relative;
-    z-index: 1;
-    line-height: 1;
-}
+.navbar__logo-icon svg { width: 20px; height: 20px; color: var(--navbar-text); }
+.navbar__logo-icon .arrow { display: none; position: absolute; }
+
+/* On hover swap to arrow; direction depends on collapsed state */
+.navbar:not(.navbar--collapsed) .navbar__header:hover .navbar__logo-icon .symbol { display: none; }
+.navbar:not(.navbar--collapsed) .navbar__header:hover .navbar__logo-icon .arrow--left { display: block; }
+
+.navbar.navbar--collapsed .navbar__header:hover .navbar__logo-icon .symbol { display: none; }
+.navbar.navbar--collapsed .navbar__header:hover .navbar__logo-icon .arrow--right { display: block; }
 
 .navbar__logo-text {
     display: flex;
@@ -195,8 +203,8 @@ html.navbar-pre-collapsed .navbar__logo-text {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: transparent;
+    border: 1px solid var(--navbar-border);
     border-radius: 8px;
     cursor: pointer;
     transition: all var(--navbar-transition);
@@ -205,20 +213,16 @@ html.navbar-pre-collapsed .navbar__logo-text {
 }
 
 .navbar__collapse:hover {
-    background-color: var(--navbar-accent);
-    border-color: var(--navbar-accent);
-    transform: scale(1.05);
-    box-shadow: 0 0 0 2px rgba(204, 102, 51, 0.2), 0 4px 12px rgba(204, 102, 51, 0.3);
+    background-color: var(--navbar-hover);
+    border-color: var(--navbar-border);
 }
 
-.navbar__collapse:hover svg {
-    color: white;
-}
+.navbar__collapse:hover svg { color: var(--navbar-accent); }
 
 .navbar__collapse svg {
     width: 16px;
     height: 16px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--navbar-text);
     transition: color 0.2s ease;
     pointer-events: none;
 }
@@ -238,9 +242,9 @@ html.navbar-pre-collapsed .navbar__logo-text {
     flex: 1;
     padding: 24px 12px;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: hidden; /* default */
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
     cursor: inherit;
     min-height: 0;
 }
@@ -254,13 +258,17 @@ html.navbar-pre-collapsed .navbar__logo-text {
 }
 
 .navbar__menu::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
     border-radius: 3px;
 }
 
 .navbar__menu::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.12);
 }
+
+/* When collapsed, allow horizontal overflow so the Today badge isn't clipped during expansion */
+.navbar--collapsed .navbar__menu { overflow-x: visible; }
+.navbar--collapsed .navbar__link-badge { position: relative; z-index: 2; }
 
 /* Navigation links */
 .navbar__link {
@@ -281,14 +289,17 @@ html.navbar-pre-collapsed .navbar__logo-text {
     overflow: hidden;
 }
 
+/* When collapsed, allow badges to overflow without clipping */
+.navbar--collapsed .navbar__link { overflow: visible; }
+
 .navbar__link:hover {
-    color: rgba(255, 255, 255, 0.95);
-    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--navbar-text);
+    background-color: var(--navbar-hover);
 }
 
 .navbar__link.active {
     color: var(--navbar-accent);
-    background-color: rgba(204, 102, 51, 0.15);
+    background-color: rgba(204, 102, 51, 0.10);
 }
 
 /* Активная линия слева */
@@ -335,14 +346,22 @@ html.navbar-pre-collapsed .navbar__logo-text {
 
 /* Badge (для Onboarding) */
 .navbar__link-badge {
-    background-color: #ef4444;
-    color: white;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     padding: 2px 8px;
     border-radius: 10px;
     min-width: 20px;
     text-align: center;
+}
+.navbar__link-badge.badge--empty {
+    background: transparent;
+    border: 1px solid #d6d3d1;
+    color: #9ca3af;
+}
+.navbar__link-badge.badge--filled {
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
 }
 
 /* Скрываем текст и badge когда свернуто */
@@ -423,9 +442,9 @@ html.navbar-pre-collapsed .navbar__logo-text {
     border-right: 4px solid #1a1a1a;
 }
 
+/* Hide tooltips entirely when collapsed to avoid overflow artifacts */
 .navbar--collapsed .navbar__link:hover .navbar__link-tooltip {
-    opacity: 1;
-    visibility: visible;
+    display: none !important;
 }
 
 /* ========================================
@@ -439,8 +458,8 @@ html.navbar-pre-collapsed .navbar__logo-text {
     height: 76px;
     min-height: 76px;
     padding: 14px 12px;
-    border-top: 1px solid var(--navbar-border);
-    background-color: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid var(--navbar-top-border);
+    background-color: var(--navbar-top-bg);
     flex-shrink: 0;
     box-sizing: border-box;
 }
@@ -534,7 +553,8 @@ html.navbar-pre-collapsed .navbar__logo-text {
 .navbar__user-avatar {
     width: 36px;
     height: 36px;
-    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    background: linear-gradient(135deg, #7b8794 0%, #4b5563 100%);
+    border: 1px solid var(--navbar-border);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -573,7 +593,7 @@ html.navbar-pre-collapsed .navbar__logo-text {
     display: block;
     font-size: 14px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--navbar-text);
     margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
@@ -583,7 +603,7 @@ html.navbar-pre-collapsed .navbar__logo-text {
 .navbar__user-role {
     display: block;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
+    color: #6b7280;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

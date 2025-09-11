@@ -56,6 +56,22 @@ const COLORS = {
     }
 };
 
+// Unified, matte typography palette
+const THEME = {
+    textPrimary: '#374151',   // warm dark gray for headings and primary text
+    textSecondary: '#6b7280'  // medium gray for secondary captions
+};
+
+// Slightly darker accents for analytics values (non-glossy)
+function getDarkerAccent(color) {
+    switch (color) {
+        case '#f59e0b': return '#b45309'; // amber 700
+        case '#3b82f6': return '#1d4ed8'; // blue 700
+        case '#22c55e': return '#166534'; // green 800
+        default: return THEME.textPrimary;
+    }
+}
+
 // ========================================
 // SHIFT CALENDAR CLASS
 // ========================================
@@ -283,6 +299,21 @@ class ShiftCalendar {
         return isLate || isEarlyLeave;
     }
 
+    // Special employment status for a given employee/day
+    // Returns one of: 'not_hired' | 'onboarding' | 'terminated' | null
+    getSpecialStatus(record, date) {
+        if (!record) return null;
+        const interviewDate = record.interview_date ? this.formatDate(record.interview_date) : null;
+        const startDate = record.start_date ? this.formatDate(record.start_date) : null;
+        const endDate = record.end_date ? this.formatDate(record.end_date) : null;
+
+        if (interviewDate && date < interviewDate) return 'not_hired';
+        if (interviewDate && startDate && date >= interviewDate && date < startDate) return 'onboarding';
+        // From the termination date and later
+        if (endDate && date >= endDate) return 'terminated';
+        return null;
+    }
+
     toDateStr(d) {
         return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
     }
@@ -369,18 +400,46 @@ class ShiftCalendar {
         if (!this.cache.employeesInMonth || this.cache.employeesKey !== key) {
             const monthStart = new Date(this.state.currentYear, this.state.currentMonth, 1);
             const monthEnd = new Date(this.state.currentYear, this.state.currentMonth + 1, 0);
-            
-            this.cache.employeesInMonth = this.employeesData.filter(emp => {
-                const startDate = emp.start_date ? this.formatDate(emp.start_date) : 
-                                 emp.interview_date ? this.formatDate(emp.interview_date) : null;
+            const monthStartStr = this.toDateStr(monthStart);
+            const monthEndStr = this.toDateStr(monthEnd);
+
+            // Helper: check if employee has any shift within the month window
+            const hasShiftsInMonth = (empId) => this.shiftsData.some(s => {
+                if (s.employee_id !== empId) return false;
+                const d = s.start_shift_date;
+                return d >= monthStartStr && d <= monthEndStr;
+            });
+
+            // Build candidate employees set from current API payload + any cached months (to avoid API omissions)
+            const byId = new Map();
+            (this.employeesData || []).forEach(e => byId.set(e.employee_id, e));
+            for (const entry of this.monthCache.values()) {
+                const arr = entry && entry.employees ? entry.employees : [];
+                arr.forEach(e => { if (!byId.has(e.employee_id)) byId.set(e.employee_id, e); });
+            }
+            const candidates = Array.from(byId.values());
+
+            this.cache.employeesInMonth = candidates.filter(emp => {
+                const interviewDate = emp.interview_date ? this.formatDate(emp.interview_date) : null;
+                const startDate = emp.start_date ? this.formatDate(emp.start_date) : null;
                 const endDate = emp.end_date ? this.formatDate(emp.end_date) : null;
-                
-                if (!startDate) return false;
-                
-                const startedBeforeOrDuringMonth = startDate <= monthEnd;
-                const stillWorkingOrEndedAfterMonthStart = !endDate || endDate >= monthStart;
-                
-                return startedBeforeOrDuringMonth && stillWorkingOrEndedAfterMonthStart;
+
+                // If has any shifts inside month — include regardless of dates
+                if (hasShiftsInMonth(emp.employee_id)) return true;
+
+                // Normalize employee interval to month boundaries:
+                // - start at the 1st day of interview/start month (prefer interview_date if present)
+                // - end at the last day of end_date month (inclusive); open-ended if no end_date
+                const startAnchor = interviewDate || startDate;
+                if (!startAnchor) return false; // no interval info
+                const normalizedStart = new Date(startAnchor.getFullYear(), startAnchor.getMonth(), 1);
+                const normalizedEnd = endDate ? new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0)
+                                              : new Date(8640000000000000);
+
+                // Compare by month end: include if monthEnd is within [normalizedStart .. normalizedEnd]
+                if (monthEnd >= normalizedStart && monthEnd <= normalizedEnd) return true;
+
+                return false;
             });
             this.cache.employeesKey = key;
         }
@@ -598,39 +657,52 @@ class ShiftCalendar {
         const formattedCost = this.formatCurrency(data.cost);
         const formattedHours = `${this.formatInt(data.hours)}h`;
         const value = isMobile ? formattedHours : `${formattedCost} / ${formattedHours}`;
-        
+        const acc = this.getAnalyticAccent ? this.getAnalyticAccent(data.color) : [THEME.textPrimary, 'rgba(55,65,81,0.55)'];
+        const accent = acc[0];
+        const accentFill = acc[1];
+
         return `
-            <div class="analytics-card" style="background-color: ${data.color}15; border-color: ${data.color}20;">
-                <div class="flex items-center gap-3" style="margin-bottom: 0.75rem;">
+            <div class="analytics-card" style="--accent: ${accent}; --accent-fill: ${accentFill}; background-color: ${data.color}10; border-color: ${data.color}20;">
+                <div class="flex items-center gap-3" style="margin-bottom: 0.25rem;">
                     <div style="width: 2rem; height: 2rem; border-radius: 0.5rem; 
-                                background-color: ${data.color}15; border: 1px solid ${data.color}30;
+                                background-color: ${data.color}10; border: 1px solid ${data.color}25;
                                 display: flex; align-items: center; justify-content: center;">
                         <div style="color: ${data.color};">${ICONS[data.icon]}</div>
                     </div>
                     <div>
-                        <h3 style="font-size: ${isMobile ? '1.125rem' : '0.875rem'}; font-weight: 600; color: #111827;">
+                        <h3 class="analytics-title" style="margin:0; font-size: ${isMobile ? '1.125rem' : '0.875rem'}; font-weight: 600;">
                             ${title}
                         </h3>
-                        <p style="font-size: 0.75rem; color: #4b5563;">${data.subtitle}</p>
+                        <p style="margin:2px 0 0; font-size: 0.75rem; color: #6b7280;">${data.subtitle}</p>
                     </div>
                 </div>
-                <div style="font-size: 1.25rem; font-weight: 700; color: ${data.color}; margin-bottom: 0.5rem;">
+                <div class="analytics-value" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">
                     ${value}
                 </div>
                 <div class="flex items-center justify-between" style="margin-bottom: 0.75rem;">
-                    ${!isMobile ? `<div style="font-size: 0.75rem; color: #6b7280;">@ $15/hr</div>` : ''}
-                    <div style="font-size: 0.75rem; font-weight: 500; color: ${data.color};">
+                    ${!isMobile ? `<div style=\"font-size: 0.75rem; color: #6b7280;\">@ $15/hr</div>` : ''}
+                    <div style="font-size: 0.75rem; font-weight: 600; color: #6b7280;">
                         ${data.percentage}%
                     </div>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" 
-                         style="background-color: ${data.hours === 0 ? `${data.color}40` : data.color};
+                         style="background-color: ${data.hours === 0 ? accentFill : accent};
                                 width: ${data.hours === 0 ? '100%' : `${Math.min(data.percentage, 100)}%`};">
                     </div>
                 </div>
             </div>
         `;
+    }
+
+    // Return [accent, accentFill] – mid‑tone, matte; no glossy colors
+    getAnalyticAccent(base) {
+        switch (base) {
+            case '#f59e0b': return ['#d97706', 'rgba(217,119,6,0.55)'];
+            case '#3b82f6': return ['#2563eb', 'rgba(37,99,235,0.55)'];
+            case '#22c55e': return ['#16a34a', 'rgba(22,163,74,0.55)'];
+            default: return [THEME.textPrimary, 'rgba(55,65,81,0.55)'];
+        }
     }
 
     renderMainContent() {
@@ -694,7 +766,7 @@ class ShiftCalendar {
                         </div>
                     </div>
                     <div style="text-align: center; margin: 8px 0 0;">
-                        <h2 style="font-size: 1.25rem; font-weight: 700;">
+                        <h2 style="font-size: 1.25rem; font-weight: 600; color:#374151;">
                             ${this.getMonthName(this.state.currentMonth)} ${this.state.currentYear}
                         </h2>
                     </div>
@@ -741,14 +813,14 @@ class ShiftCalendar {
                     
                     <div class="flex justify-between items-center" 
                          style="border-radius: 0.75rem; padding: 1rem 1.5rem; 
-                                background-color: #f9fafb; border: 1px solid #e5e7eb;">
+                                background-color: rgba(248,247,244,0.92); border: 1px solid rgba(220,215,205,0.4);">
                         <div class="flex gap-2">
                             <button type="button" class="nav-button" id="prev-month" ${this.state.isMonthLoading ? 'disabled' : ''}>${ICONS.chevronLeft}</button>
                             <button type="button" class="nav-button" id="next-month" ${this.state.isMonthLoading ? 'disabled' : ''}>${ICONS.chevronRight}</button>
                             <button type="button" class="nav-button" id="today-button" ${this.state.isMonthLoading ? 'disabled' : ''} style="padding: 0.5rem 1rem;">Today</button>
                         </div>
                         
-                        <h2 style="font-size: 1.5rem; font-weight: 700;">
+                        <h2 style="font-size: 1.5rem; font-weight: 600; color:#374151;">
                             ${this.getMonthName(this.state.currentMonth)} ${this.state.currentYear}
                         </h2>
                         
@@ -958,17 +1030,18 @@ class ShiftCalendar {
                     <th class="sticky-cell" style="width: ${employeeColWidth}px; min-width: ${employeeColWidth}px; max-width: ${employeeColWidth}px;"></th>
                     ${days.map((day, index) => `
                         <th style="width: ${cellWidth}px; min-width: ${cellWidth - 20}px; 
-                                  color: ${this.isToday(day) ? COLORS.BRAND : '#111827'}; position: relative;">
+                                  color: ${this.isToday(day) ? COLORS.BRAND : '#374151'}; position: relative;
+                                  background-color: rgba(248,247,244,0.92); border-left: 1px solid rgba(220,215,205,0.35);">
                             ${this.isToday(day) ? '<div class="today-indicator"></div>' : ''}
                             <div class="flex flex-col items-center justify-center" style="height: 100%; position: relative; z-index: 1;">
                                 <div class="flex items-center gap-1" style="font-size: ${this.isMobile ? '1.125rem' : '1.875rem'};">
-                                    <span style="font-weight: 700;">${day.getDate()}</span>
+                                    <span style="font-weight: 600;">${day.getDate()}</span>
                                     <div class="flex flex-col" style="font-size: 0.75rem;">
-                                        <span style="font-weight: 700; color: #374151;">
+                                        <span style="font-weight: 600; color: #374151;">
                                             ${this.getDayName(day)}
                                         </span>
                                         ${!this.isMobile ? `
-                                            <span style="font-weight: 400; color: #9ca3af;">
+                                            <span style="font-weight: 500; color: #9ca3af;">
                                                 ${this.getMonthName(day.getMonth()).slice(0, 3)}
                                             </span>
                                         ` : ''}
@@ -1046,7 +1119,7 @@ class ShiftCalendar {
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                         ${avatar}
                         <div style="flex: 1; overflow: hidden; text-align: left;">
-                            <div style="font-size: 1rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;">
+                            <div style="font-size: 1rem; font-weight: 600; color:${THEME.textPrimary}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;">
                                 ${employee.full_name}
                             </div>
                             <div style="font-size: 0.875rem; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;">
@@ -1082,20 +1155,32 @@ class ShiftCalendar {
         };
         
         const sizeConfig = sizes[size];
-        
+        const stageColor = this.getStageColor && this.getStageColor(employee.stage) || '#6b7280';
+
         return `
             <div class="avatar" 
                  style="width: ${sizeConfig.container}; height: ${sizeConfig.container}; 
-                        background: ${avatarColor.bg};"
+                        background: ${avatarColor.bg}; position: relative;"
                  data-employee-id="${employee.employee_id}">
                 <span style="font-size: ${sizeConfig.text}; font-weight: 700; color: ${avatarColor.text};">
                     ${initials}
                 </span>
+                <div class="employee-status-dot" style="background-color: ${stageColor};"></div>
                 ${showInfoButton ? `
                     <div class="avatar-info-btn">i</div>
                 ` : ''}
             </div>
         `;
+    }
+
+    getStageColor(stage) {
+        const map = {
+            active: '#22c55e',
+            onboarding: '#eab308',
+            terminated: '#ef4444'
+        };
+        if (!stage) return '#6b7280';
+        return map[String(stage).toLowerCase()] || '#6b7280';
     }
 
     renderDayCell(employee, day, scheduleType, isChildRow = false) {
@@ -1126,11 +1211,43 @@ class ShiftCalendar {
         const cellWidth = this.isMobile ? CONSTANTS.MOBILE_CELL_WIDTH : CONSTANTS.CELL_WIDTH;
         const cellHeight = isChildRow ? (this.isMobile ? '54px' : '70px') : (this.isMobile ? '64px' : '80px');
 
+        // If no shifts, check employment special status for this date
+        let specialStatus = null;
+        if (displayShifts.length === 0) {
+            specialStatus = this.getSpecialStatus(employee, day);
+        }
+
+        // Terminated days in Actual view: show only FACT shifts; baseline after end_date should not mask termination
+        if (scheduleType === 'Actual') {
+            const statusForDay = this.getSpecialStatus(employee, day);
+            if (statusForDay === 'terminated') {
+                displayShifts = actualShifts;
+                if (displayShifts.length === 0) specialStatus = 'terminated'; else specialStatus = null;
+            }
+        }
+
+        const renderSpecialBadge = (code) => {
+            if (!code) return '';
+            const fullLabel = code === 'not_hired' ? 'Not Hired' : code === 'terminated' ? 'Terminated' : code === 'onboarding' ? 'Onboarding' : code;
+            const label = fullLabel;
+            const isOnboarding = code === 'onboarding';
+            const cellStyle = `background-image: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(156,163,175,0.08) 6px, rgba(156,163,175,0.08) 7px); background-color: #fafafa; border-radius: 6px;`;
+            const pillBg = isOnboarding ? '#fef3c7' : '#e5e7eb';
+            const pillText = isOnboarding ? '#92400e' : '#4b5563';
+            const fontSize = this.isMobile ? '10.5px' : '10px';
+            const padX = this.isMobile ? '6px' : '5px';
+            const wrapStyle = this.isMobile
+                ? 'white-space:normal; line-height:1.1; max-height:2.4em; overflow:hidden; word-break:break-word;'
+                : 'white-space:nowrap; line-height:1; overflow:hidden; text-overflow:clip;';
+            const pill = `<span style="display:inline-block; max-width:100%; padding:2px ${padX}; border-radius:9999px; background:${pillBg}; color:${pillText}; font-weight:700; font-size:${fontSize}; ${wrapStyle} text-align:center;">${label}</span>`;
+            return `<div class="special-cell" style="${cellStyle}; width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:2px;">${pill}</div>`;
+        };
+
         return `
             <td style="width: ${cellWidth}px; min-width: ${cellWidth}px; max-width: ${cellWidth}px;
                        background-color: ${isChildRow ? COLORS.BACKGROUND.childRow : 'transparent'};
                        height: ${cellHeight}; min-height: ${cellHeight}; max-height: ${cellHeight};
-                       padding: ${isChildRow ? '0.125rem' : '0.25rem'} 0.5rem; text-align: center; position: relative;">
+                       padding: ${isChildRow ? '0.125rem' : '0.25rem'} ${this.isMobile ? '0.25rem' : '0.5rem'}; text-align: center; position: relative;">
                 ${this.isToday(day) ? '<div class="today-indicator"></div>' : ''}
                 <div class="flex flex-col gap-1 items-center justify-center" style="width: 100%; height: 100%; position: relative; z-index: 1;">
                     ${displayShifts.length > 0 ? displayShifts.map((shift, idx) => {
@@ -1138,9 +1255,8 @@ class ShiftCalendar {
                         if (shift.schedule_type === 'fact schedule' && baselineShifts.length > 0) {
                             baselineShift = baselineShifts[0];
                         }
-                        
                         return this.renderShiftCell(shift, baselineShift, employee, isChildRow);
-                    }).join('') : ''}
+                    }).join('') : renderSpecialBadge(specialStatus)}
                 </div>
             </td>
         `;
@@ -1166,13 +1282,24 @@ class ShiftCalendar {
             }
         }
         
-        let bgColor = '#86efac'; // green-300
+        // Visual style aligned with Onboarding approve/reject (muted fills + border)
+        let bgColor = '#86efac';
+        let borderColor = 'transparent';
+        let textColor = THEME.textPrimary;
         if (shift.schedule_type === 'baseline schedule') {
-            bgColor = isPastShift ? '#9ca3af' : '#86efac';
+            // keep baseline neutral/softer
+            bgColor = isPastShift ? '#e5e7eb' : '#dcfce7';
+            textColor = THEME.textPrimary;
         } else if (shift.day_status === 'completed') {
-            bgColor = '#15803d'; // green-700
+            // success: muted/darker green like approve, but less "salad"
+            bgColor = 'rgba(22, 163, 74, 0.15)';   // darker, warmer green fill
+            borderColor = 'rgba(22, 163, 74, 0.45)';
+            textColor = '#166534';                 // dark green text
         } else if (shift.day_status === 'missed') {
-            bgColor = '#fca5a5'; // red-300
+            // danger: muted red like reject
+            bgColor = 'rgba(239, 68, 68, 0.10)';
+            borderColor = 'rgba(239, 68, 68, 0.40)';
+            textColor = '#ef4444';
         }
 
         const timeText = shift.start_shift_time && shift.end_shift_time 
@@ -1192,7 +1319,7 @@ class ShiftCalendar {
         return `
             <div class="shift-cell ${hasIssue ? 'has-issue' : ''}"
                  style="height: ${dimensions.height}; width: ${dimensions.width}; 
-                        background-color: ${bgColor};"
+                        background-color: ${bgColor}; border: 1px solid ${borderColor}; color: ${textColor};"
                  ${hasIssue ? `
                     data-shift='${JSON.stringify(shift)}'
                     data-baseline='${baselineShift ? JSON.stringify(baselineShift) : ''}'
@@ -1209,7 +1336,7 @@ class ShiftCalendar {
                         ICONS.alertTriangle
                     ) : ''}
                 </div>
-                <div class="shift-time">
+                <div class="shift-time" style="color: ${textColor};">
                     ${this.isMobile && timeText.includes('-') ? 
                         timeText.split('-').map(t => `<div>${t}</div>`).join('') : 
                         timeText
@@ -1422,7 +1549,7 @@ class ShiftCalendar {
         if (showHeader) {
             html += `
                 <div style="margin-bottom: 0.75rem;">
-                    <h4 style="font-weight: 700; color: #111827; font-size: ${isCompact ? '1rem' : '1.25rem'};">
+                    <h4 style="font-weight: 700; color: ${THEME.textPrimary}; font-size: ${isCompact ? '1rem' : '1.25rem'};">
                         ${employee?.full_name}
                     </h4>
                     <p style="color: #4b5563; font-size: ${isCompact ? '0.875rem' : '1rem'};">
@@ -1585,7 +1712,7 @@ class ShiftCalendar {
         return `
             <div style="display: flex; flex-direction: column; gap: 1rem;">
                 <div>
-                    <h4 style="font-weight: 700; color: #111827; margin-bottom: 0.5rem;">Plan layer:</h4>
+                    <h4 style="font-weight: 700; color: ${THEME.textPrimary}; margin-bottom: 0.5rem;">Plan layer:</h4>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <div style="width: 1rem; height: 1rem; background-color: #9ca3af; border-radius: 50%;"></div>
@@ -1599,7 +1726,7 @@ class ShiftCalendar {
                 </div>
 
                 <div>
-                    <h4 style="font-weight: 700; color: #111827; margin-bottom: 0.5rem;">Actual layer:</h4>
+                    <h4 style="font-weight: 700; color: ${THEME.textPrimary}; margin-bottom: 0.5rem;">Actual layer:</h4>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <div style="width: 1rem; height: 1rem; background-color: #15803d; border-radius: 50%;"></div>
@@ -1617,7 +1744,7 @@ class ShiftCalendar {
                 </div>
 
                 <div>
-                    <h4 style="font-weight: 700; color: #111827; margin-bottom: 0.5rem;">Special indicators:</h4>
+                    <h4 style="font-weight: 700; color: ${THEME.textPrimary}; margin-bottom: 0.5rem;">Special indicators:</h4>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <div style="width: 2.25rem; height: 1.5rem; background-color: #eab308; 
@@ -1646,7 +1773,7 @@ class ShiftCalendar {
                 </div>
 
                 <div>
-                    <h4 style="font-weight: 700; color: #111827; margin-bottom: 0.5rem;">Labels:</h4>
+                    <h4 style="font-weight: 700; color: ${THEME.textPrimary}; margin-bottom: 0.5rem;">Labels:</h4>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <span class="badge badge-active">Active</span>
