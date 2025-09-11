@@ -664,27 +664,8 @@ import '../../components/header/header.js';
             
             html += '</div></div>';
             
-            // Latest Activity
-            html += '<div class="card p-5">';
-            html += '<div class="flex items-center gap-3 mb-4">' + component('iconBox', {icon: 'camera', color: 'var(--primary)'}) + '<h3 class="title">LATEST ACTIVITY</h3></div>';
-            html += '<div class="latest-activity-row flex gap-3 overflow-x" style="align-items:center;padding:4px 0 12px 0;">';
-            
-            const screenshots = generateScreenshots().slice(0, state.loadedScreenshots);
-            const hasMore = generateScreenshots().length > state.loadedScreenshots;
-            
-            screenshots.forEach(s => {
-                html += renderScreenshotCard(s, { showMember: true });
-            });
-            
-            if (hasMore) {
-                html += h('button', 'btn', 'background:var(--primary);color:white;min-width:clamp(6.5rem, 9vw, 7.5rem);height:clamp(8.75rem, 12vw, 10rem);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0.5rem;font-size:clamp(0.625rem, 1vw, 0.6875rem);', 
-                    '<div style="font-size:clamp(0.875rem, 1.5vw, 1rem);margin-bottom:0.25rem;">→</div><div>Show More</div><div style="font-size:clamp(0.5rem, 1vw, 0.625rem);opacity:0.8;">' + (generateScreenshots().length - state.loadedScreenshots) + ' more</div>');
-            }
-            
-            html += '</div>';
-            // Mobile-visible scrollbar bar under the row
-            html += '<div class="today-mobile-scrollbar" aria-hidden="true"><div class="thumb"></div></div>';
-            html += '</div>';
+            // Latest Activity (island placeholder)
+            html += '<div id="latest-activity-island"></div>';
             
             // Status & Notifications
             html += '<div class="card"><div class="grid grid-2 divide-x">';
@@ -721,7 +702,7 @@ import '../../components/header/header.js';
                 html += h('div', 'notification', `background:${n.color}0d;`,
                     h('div', 'dot', `background:${n.color};`, '') +
                     h('div', 'flex-1', `padding-right:${!n.read ? '36px' : '0'};`, h('div', '', 'font-size:13px;', n.msg) + h('div', 'subtitle', '', n.time)) +
-                    (!n.read ? h('button', 'btn', `position:absolute;top:12px;right:12px;width:24px;height:24px;background:white;border:1px solid ${n.color}40;color:${n.color};padding:0;font-size:12px;`, '✓') : ''));
+                    (!n.read ? h('button', 'btn', `position:absolute;top:12px;right:12px;width:24px;height:24px;background:white;border:1px solid ${n.color}40;color:${n.color};padding:0;font-size:12px;`, '✓').replace('<button', `<button data-id="${n.id}"`) : ''));
             });
             html += '</div></div></div></div>';
             
@@ -889,24 +870,8 @@ import '../../components/header/header.js';
             }
             html += '</div>';
             
-            // Mobile Latest Activity - БЕЗ МОДАЛЬНЫХ ФУНКЦИЙ
-            html += '<div class="card p-5">';
-            html += '<div class="flex items-center gap-3 mb-4">' + component('iconBox', {icon: 'camera', color: 'var(--primary)'}) + '<h3 class="title">LATEST ACTIVITY</h3></div>';
-            html += '<div class="latest-activity-row flex gap-3 overflow-x" style="align-items:center;padding:4px 0 12px 0;">';
-            
-            const screenshots = generateScreenshots().slice(0, state.loadedScreenshots);
-            const hasMore = generateScreenshots().length > state.loadedScreenshots;
-            
-            screenshots.forEach((s, i) => {
-                html += '<div class="mobile-screenshot" data-index="' + i + '">' + renderScreenshotCard(s, { showMember: true }) + '</div>';
-            });
-            
-            if (hasMore) {
-                html += h('button', 'btn', 'background:var(--primary);color:white;min-width:160px;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0.5rem;font-size:0.6875rem;', 
-                    '<div style="font-size:1rem;margin-bottom:0.25rem;">→</div><div>Show More</div><div style="font-size:0.625rem;opacity:0.8;">' + (generateScreenshots().length - state.loadedScreenshots) + ' more</div>');
-            }
-            
-            html += '</div><div class="today-mobile-scrollbar" aria-hidden="true"><div class="thumb"></div></div></div>';
+            // Mobile Latest Activity (island placeholder)
+            html += '<div id="latest-activity-island"></div>';
             
             // Mobile Status/Notifications with tabs
             html += '<div class="card">';
@@ -949,12 +914,12 @@ import '../../components/header/header.js';
                         '', tab.charAt(0).toUpperCase() + tab.slice(1) + ' (' + count + ')').replace('<button', `<button data-type="${tab}"`);
                 });
                 html += '</div>';
-                html += '<div style="overflow-y: auto; height: 185px;">';
+                html += '<div class="alerts-scroll" style="overflow-y: auto; height: 185px;">';
                 state.notifs.filter(n => state.tab === 'unread' ? !n.read : n.read).forEach(n => {
                     html += h('div', 'notification', 'background:' + n.color + '0d;',
                         h('div', 'dot', 'background:' + n.color + ';', '') +
                         h('div', 'flex-1', 'padding-right:' + (!n.read ? '2.25rem' : '0') + ';', h('div', '', 'font-size:0.8125rem;', n.msg) + h('div', 'subtitle', '', n.time)) +
-                        (!n.read ? h('button', 'btn', 'position:absolute;top:0.75rem;right:0.75rem;width:1.5rem;height:1.5rem;background:white;border:1px solid ' + n.color + '40;color:' + n.color + ';padding:0;font-size:0.75rem;', '✓') : ''));
+                        (!n.read ? h('button', 'btn', 'position:absolute;top:0.75rem;right:0.75rem;width:1.5rem;height:1.5rem;background:white;border:1px solid ' + n.color + '40;color:' + n.color + ';padding:0;font-size:0.75rem;', '✓').replace('<button', '<button data-id="' + n.id + '"') : ''));
                 });
                 html += '</div></div>';
             }
@@ -1147,6 +1112,12 @@ import '../../components/header/header.js';
             if (latestActivity) {
                 positions.latestActivity = latestActivity.scrollLeft;
             }
+
+            // Mobile Alerts scroll (inside ATTENTION tab on mobile)
+            const alertsScroller = document.querySelector('.alerts-scroll');
+            if (alertsScroller) {
+                positions.alertsScrollTop = alertsScroller.scrollTop;
+            }
             
             // Timeline scroll positions
             const headerScroll = document.querySelector('.timeline-hours-scroll');
@@ -1178,6 +1149,14 @@ import '../../components/header/header.js';
                     const latestActivity = document.querySelector('.latest-activity-row');
                     if (latestActivity) {
                         latestActivity.scrollLeft = positions.latestActivity;
+                    }
+                }
+
+                // Restore mobile alerts scroll
+                if (positions.alertsScrollTop !== undefined) {
+                    const alertsScroller = document.querySelector('.alerts-scroll');
+                    if (alertsScroller) {
+                        alertsScroller.scrollTop = positions.alertsScrollTop;
                     }
                 }
                 
@@ -1239,12 +1218,12 @@ import '../../components/header/header.js';
                         .replace('<button', `<button data-type="${tab}"`);
                 });
                 newContent += '</div>';
-                newContent += '<div style="overflow-y: auto; height: 185px;">';
+                newContent += '<div class="alerts-scroll" style="overflow-y: auto; height: 185px;">';
                 state.notifs.filter(n => state.tab === 'unread' ? !n.read : n.read).forEach(n => {
                     newContent += h('div', 'notification', 'background:' + n.color + '0d;',
                         h('div', 'dot', 'background:' + n.color + ';', '') +
                         h('div', 'flex-1', 'padding-right:' + (!n.read ? '2.25rem' : '0') + ';', h('div', '', 'font-size:0.8125rem;', n.msg) + h('div', 'subtitle', '', n.time)) +
-                        (!n.read ? h('button', 'btn', 'position:absolute;top:0.75rem;right:0.75rem;width:1.5rem;height:1.5rem;background:white;border:1px solid ' + n.color + '40;color:' + n.color + ';padding:0;font-size:0.75rem;', '✓') : ''));
+                        (!n.read ? h('button', 'btn', 'position:absolute;top:0.75rem;right:0.75rem;width:1.5rem;height:1.5rem;background:white;border:1px solid ' + n.color + '40;color:' + n.color + ';padding:0;font-size:0.75rem;', '✓').replace('<button', '<button data-id="' + n.id + '"') : ''));
                 });
                 newContent += '</div></div>';
             }
@@ -1300,7 +1279,7 @@ import '../../components/header/header.js';
                     html += h('div', 'notification', `background:${n.color}0d;`,
                         h('div', 'dot', `background:${n.color};`, '') +
                         h('div', 'flex-1', `padding-right:${!n.read ? '36px' : '0'};`, h('div', '', 'font-size:13px;', n.msg) + h('div', 'subtitle', '', n.time)) +
-                        (!n.read ? h('button', 'btn', `position:absolute;top:12px;right:12px;width:24px;height:24px;background:white;border:1px solid ${n.color}40;color:${n.color};padding:0;font-size:12px;`, '✓') : ''));
+                        (!n.read ? h('button', 'btn', `position:absolute;top:12px;right:12px;width:24px;height:24px;background:white;border:1px solid ${n.color}40;color:${n.color};padding:0;font-size:12px;`, '✓').replace('<button', `<button data-id="${n.id}"`) : ''));
                 });
                 list.innerHTML = html;
             }
@@ -1431,10 +1410,60 @@ const handleClick = e => {
                 const saved = saveScrollPositions();
 
                 if (text.includes('Close')) { state.expanded = state.activeHour = state.activeMember = null; rerenderPreservingScroll(); return; }
-                if (text.includes('Show More')) { state.loadedScreenshots += 20; rerenderPreservingScroll(); return; }
+                if (text.includes('Show More')) {
+                    if (e.target.closest('#latest-activity-island')) { appendMoreLatestActivity(20); return; }
+                    state.loadedScreenshots += 20; rerenderPreservingScroll(); return;
+                }
                 if (text.includes('Unread')) { state.tab = 'unread'; if (isTabBtn) { if (isMobile()) { updateMobileTabsContent(); restoreScrollPositions(saved); } else { updateDesktopAttentionTabs(); restoreScrollPositions(saved); } } else { rerenderPreservingScroll(); } return; }
                 if (text.includes('Read')) { state.tab = 'read'; if (isTabBtn) { if (isMobile()) { updateMobileTabsContent(); restoreScrollPositions(saved); } else { updateDesktopAttentionTabs(); restoreScrollPositions(saved); } } else { rerenderPreservingScroll(); } return; }
-                if (text === '✓') { const notif = state.notifs.find(n => !n.read); if (notif) notif.read = true; rerenderPreservingScroll(); return; }
+                if (text === '✓') {
+                    const btn = e.target.closest('button');
+                    const id = btn && btn.dataset.id;
+                    // Mobile anchoring to minimize jump when removing bottom item
+                    let anchorId = null, anchorOffset = 0;
+                    if (isMobile()) {
+                        const scroller = document.querySelector('.alerts-scroll');
+                        const notifEl = btn && btn.closest('.notification');
+                        if (scroller && notifEl) {
+                            const next = notifEl.nextElementSibling;
+                            anchorOffset = notifEl.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+                            anchorId = next && next.classList && next.classList.contains('notification') ? next.dataset.id : null;
+                        }
+                    }
+
+                    let notif = null;
+                    if (id) notif = state.notifs.find(n => n.id === id);
+                    if (!notif) notif = state.notifs.find(n => !n.read);
+                    if (notif) notif.read = true;
+
+                    if (isMobile()) {
+                        updateMobileTabsContent();
+                        setTimeout(() => {
+                            const sc = document.querySelector('.alerts-scroll');
+                            if (!sc) return;
+                            if (anchorId) {
+                                const el = sc.querySelector('.notification[data-id="' + anchorId + '"]');
+                                if (el) sc.scrollTop = el.offsetTop - anchorOffset;
+                            } else {
+                                sc.scrollTop = sc.scrollHeight; // keep bottom pinned
+                            }
+                        }, 0);
+                    } else {
+                        updateDesktopAttentionTabs();
+                    }
+
+                    // Update navbar badge immediately
+                    try {
+                        const unread = state.notifs.filter(n => !n.read).length;
+                        localStorage.setItem('today-unread-count', String(unread));
+                        const badge = document.getElementById('navbar-today-badge') || document.querySelector('.navbar__link[data-nav="today"] .navbar__link-badge');
+                        if (badge) {
+                            if (unread > 0) { badge.textContent = unread > 99 ? '99+' : String(unread); badge.style.display = ''; }
+                            else { badge.style.display = 'none'; }
+                        }
+                    } catch (_) {}
+                    return;
+                }
             }
             
             // Клики на точки метрик
@@ -1606,31 +1635,30 @@ const handleClick = e => {
             
             html += '</div>';
             
-            // Preserve Latest Activity DOM to avoid flicker/losing scroll when not changing it
-            const preserveLatestActivityDom = () => {
-                const row = document.querySelector('.latest-activity-row');
-                const track = document.querySelector('.today-mobile-scrollbar');
-                if (!row) return null;
-                return { row, track, scrollLeft: row.scrollLeft };
+            // Preserve island node across rerenders
+            const preserveIsland = () => {
+                const island = document.getElementById('latest-activity-island');
+                if (!island || !island.firstElementChild) return null;
+                const node = island.firstElementChild; // whole card node
+                const row = node.querySelector('.latest-activity-row');
+                const scrollLeft = row ? row.scrollLeft : 0;
+                return { node, scrollLeft };
             };
-            const restoreLatestActivityDom = (preserved) => {
-                if (!preserved) return;
-                const newRow = document.querySelector('.latest-activity-row');
-                if (newRow && preserved.row) {
-                    newRow.replaceWith(preserved.row);
-                    try { preserved.row.scrollLeft = preserved.scrollLeft || 0; } catch (_) {}
-                }
-                const newTrack = document.querySelector('.today-mobile-scrollbar');
-                if (newTrack && preserved.track) {
-                    newTrack.replaceWith(preserved.track);
-                }
-            };
-
-            const preservedLA = preserveLatestActivityDom();
+            const preserved = preserveIsland();
             document.getElementById('app').innerHTML = html;
-            restoreLatestActivityDom(preservedLA);
-            // Ensure visible scrollbar under Latest Activity is initialized
-            setTimeout(() => { try { setupMobileActivityScrollbar(); } catch (e) {} }, 0);
+            // Restore or mount island immediately after render (no flicker)
+            {
+                const container = document.getElementById('latest-activity-island');
+                if (container) {
+                    if (preserved && preserved.node) {
+                        container.appendChild(preserved.node);
+                        const row = preserved.node.querySelector('.latest-activity-row');
+                        if (row) row.scrollLeft = preserved.scrollLeft || 0;
+                    } else {
+                        renderLatestActivityIsland();
+                    }
+                }
+            }
 
             // Синхронизация скролла для мобильного таймлайна
             if (mobile) {
@@ -1710,10 +1738,8 @@ const handleClick = e => {
             }
         };
 
-        // Visible mobile scrollbar for Latest Activity
-        function setupMobileActivityScrollbar() {
-            const row = document.querySelector('.latest-activity-row');
-            const track = document.querySelector('.today-mobile-scrollbar');
+        // Visible scrollbar for Latest Activity (scoped to island)
+        function setupLatestActivityScrollbar(row, track) {
             const thumb = track && track.querySelector('.thumb');
             if (!row || !track || !thumb) return;
 
@@ -1721,7 +1747,6 @@ const handleClick = e => {
                 const total = row.scrollWidth || 1;
                 const visible = row.clientWidth || 1;
                 const maxScroll = Math.max(1, total - visible);
-                // Hide if no overflow
                 track.style.display = total > visible ? '' : 'none';
 
                 const trackWidth = track.clientWidth || visible;
@@ -1734,11 +1759,82 @@ const handleClick = e => {
             };
 
             update();
-            row.removeEventListener('scroll', row.__todayMobileBarHandler || (()=>{}));
+            row.removeEventListener('scroll', row.__laTrackHandler || (()=>{}));
             const onScroll = () => requestAnimationFrame(update);
             row.addEventListener('scroll', onScroll, { passive: true });
-            row.__todayMobileBarHandler = onScroll;
+            row.__laTrackHandler = onScroll;
             window.addEventListener('resize', () => requestAnimationFrame(update), { passive: true });
+        }
+
+        function renderLatestActivityIsland() {
+            const container = document.getElementById('latest-activity-island');
+            if (!container) return;
+            const mobile = isMobile();
+            const all = generateScreenshots();
+            const shots = all.slice(0, state.loadedScreenshots);
+            const hasMore = all.length > state.loadedScreenshots;
+
+            let html = '';
+            html += '<div class="card p-5">';
+            html += '<div class="flex items-center gap-3 mb-4">' + component('iconBox', {icon: 'camera', color: 'var(--primary)'}) + '<h3 class="title">LATEST ACTIVITY</h3></div>';
+            html += '<div class="latest-activity-row flex gap-3 overflow-x" style="align-items:center;padding:4px 0 12px 0;">';
+            if (mobile) {
+                shots.forEach((s, i) => {
+                    html += '<div class="mobile-screenshot" data-index="' + i + '">' + renderScreenshotCard(s, { showMember: true }) + '</div>';
+                });
+            } else {
+                shots.forEach(s => { html += renderScreenshotCard(s, { showMember: true }); });
+            }
+            if (hasMore) {
+                const btnStyle = mobile
+                    ? 'background:var(--primary);color:white;min-width:160px;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0.5rem;font-size:0.6875rem;'
+                    : 'background:var(--primary);color:white;min-width:clamp(6.5rem, 9vw, 7.5rem);height:clamp(8.75rem, 12vw, 10rem);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:0.5rem;font-size:clamp(0.625rem, 1vw, 0.6875rem);';
+                html += h('button', 'btn', btnStyle, '<div style="font-size:1rem;margin-bottom:0.25rem;">→</div><div data-la-showmore>Show More</div><div style="font-size:0.625rem;opacity:0.8;">' + (all.length - state.loadedScreenshots) + ' more</div>');
+            }
+            html += '</div>';
+            html += '<div class="today-mobile-scrollbar" aria-hidden="true"><div class="thumb"></div></div>';
+            html += '</div>';
+            container.innerHTML = html;
+
+            const row = container.querySelector('.latest-activity-row');
+            const track = container.querySelector('.today-mobile-scrollbar');
+            setupLatestActivityScrollbar(row, track);
+        }
+
+        function appendMoreLatestActivity(count = 20) {
+            const container = document.getElementById('latest-activity-island');
+            if (!container) return;
+            const row = container.querySelector('.latest-activity-row');
+            const track = container.querySelector('.today-mobile-scrollbar');
+            if (!row) return;
+            const all = generateScreenshots();
+            const from = state.loadedScreenshots;
+            const to = Math.min(all.length, state.loadedScreenshots + count);
+            if (to <= from) return;
+            const mobile = isMobile();
+            for (let i = from; i < to; i++) {
+                const s = all[i];
+                if (mobile) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'mobile-screenshot';
+                    wrap.setAttribute('data-index', String(i));
+                    wrap.innerHTML = renderScreenshotCard(s, { showMember: true });
+                    row.appendChild(wrap);
+                } else {
+                    const div = document.createElement('div');
+                    div.innerHTML = renderScreenshotCard(s, { showMember: true });
+                    row.appendChild(div.firstElementChild);
+                }
+            }
+            state.loadedScreenshots = to;
+            const btn = row.querySelector('button.btn');
+            if (state.loadedScreenshots >= all.length) {
+                if (btn) btn.remove();
+            } else if (btn) {
+                const info = btn.querySelector('div[style*="opacity"]');
+                if (info) info.textContent = (all.length - state.loadedScreenshots) + ' more';
+            }
+            setupLatestActivityScrollbar(row, track);
         }
         
         // ИНИЦИАЛИЗАЦИЯ
