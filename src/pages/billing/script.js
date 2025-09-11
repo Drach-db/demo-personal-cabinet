@@ -190,7 +190,7 @@ const components = {
         
         return `
             <div class="billing-table-grid billing-table-row" style="border-bottom: ${isLast ? 'none' : '1px solid rgba(0, 0, 0, 0.04)'};">
-                <div style="font-size: 0.875rem; font-weight: 600; color: #111827;">
+                <div class="billing-text-center" style="font-size: 0.875rem; font-weight: 600; color: #111827;">
                     ${utils.formatters.period(item.start_date, item.end_date)}
                 </div>
 
@@ -515,10 +515,15 @@ function renderHistory() {
 
         <!-- Table Container -->
         <div class="billing-table-scroll">
+            <!-- Horizontal Scroll Hint (mobile/tablet) -->
+            <div class="billing-scroll-hint">
+                <span style="font-size: 1rem;">↔</span>
+                <span>Scroll horizontally</span>
+            </div>
             <!-- Column Headers -->
             <div class="billing-table-grid billing-table-header">
-                ${['Billing Period', 'Type', 'Planned', 'Actual', 'Rate', 'Invoice', 'Report', 'Status', 'Total', 'Created'].map((header, i) => `
-                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--billing-color-gray); text-transform: uppercase; letter-spacing: 0.05em; text-align: ${i === 0 ? 'left' : 'center'};">
+                ${['Billing Period', 'Type', 'Planned', 'Actual', 'Rate', 'Invoice', 'Report', 'Status', 'Total', 'Created'].map((header) => `
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--billing-color-gray); text-transform: uppercase; letter-spacing: 0.05em; text-align: center;">
                         ${header}
                     </div>
                 `).join('')}

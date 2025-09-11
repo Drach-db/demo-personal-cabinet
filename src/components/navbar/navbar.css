@@ -367,31 +367,21 @@ html.navbar-pre-collapsed .navbar__logo-text {
 .navbar__link { position: relative; }
 #navbar-today-badge {
     position: absolute;
-    right: 16px;
+    right: 12px;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) scale(1);
+    transition: transform var(--navbar-transition), opacity 0.2s ease;
+    pointer-events: none; /* не мешает клику по ссылке */
+    z-index: 2;
 }
 .navbar--collapsed #navbar-today-badge {
+    /* Оставляем бейдж видимым, но компактно сдвигаем и уменьшаем */
     opacity: 1 !important;
     visibility: visible !important;
     width: auto !important;
     overflow: visible !important;
-    position: absolute;
-    right: 8px;          /* прижимаем к правому краю, вне иконки */
-    top: 6px;            /* над иконкой, не перекрывая её */
-    transform: none;
-    min-width: 16px;     /* компактная круглая плашка */
-    height: 16px;
-    padding: 0;
-    border-radius: 9999px;
-    font-size: 10px;
-    line-height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none; /* не мешает клику по ссылке */
-    z-index: 2;
-    box-shadow: 0 0 0 2px rgba(0,0,0,0.45); /* тонкое обрамление под цвет sidebar */
+    transform: translateY(-170%) scale(0.78);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.35);
 }
 
 /* В свернутом состоянии НЕ центрируем иконки */

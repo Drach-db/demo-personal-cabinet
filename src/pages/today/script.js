@@ -125,6 +125,8 @@ import '../../components/header/header.js';
         // Helper: Calculate costs
         const calculateCosts = () => {
             const {members} = getTeamData();
+
+            // (reverted) — remove notification expand toggle
             const hourlyRate = 15;
             
             const factHours = calculateFactHours(members);
@@ -270,7 +272,7 @@ import '../../components/header/header.js';
                 openCardAtHour(memberName, hour);
             }
             
-            render();
+            rerenderPreservingScroll();
             
             if (state.expanded === memberName) {
                 scrollToScreenshots(memberName);
@@ -358,7 +360,7 @@ import '../../components/header/header.js';
             } else {
                 openCard(memberName);
             }
-            render();
+            rerenderPreservingScroll();
             if (state.expanded === memberName) {
                 scrollToScreenshots(memberName);
                 scrollToActiveScreenshot(memberName);
@@ -665,7 +667,7 @@ import '../../components/header/header.js';
             // Latest Activity
             html += '<div class="card p-5">';
             html += '<div class="flex items-center gap-3 mb-4">' + component('iconBox', {icon: 'camera', color: 'var(--primary)'}) + '<h3 class="title">LATEST ACTIVITY</h3></div>';
-            html += '<div class="flex gap-3 overflow-x" style="align-items:center;padding:4px 0 12px 0;">';
+            html += '<div class="latest-activity-row flex gap-3 overflow-x" style="align-items:center;padding:4px 0 12px 0;">';
             
             const screenshots = generateScreenshots().slice(0, state.loadedScreenshots);
             const hasMore = generateScreenshots().length > state.loadedScreenshots;
@@ -679,7 +681,10 @@ import '../../components/header/header.js';
                     '<div style="font-size:clamp(0.875rem, 1.5vw, 1rem);margin-bottom:0.25rem;">→</div><div>Show More</div><div style="font-size:clamp(0.5rem, 1vw, 0.625rem);opacity:0.8;">' + (generateScreenshots().length - state.loadedScreenshots) + ' more</div>');
             }
             
-            html += '</div></div>';
+            html += '</div>';
+            // Mobile-visible scrollbar bar under the row
+            html += '<div class="today-mobile-scrollbar" aria-hidden="true"><div class="thumb"></div></div>';
+            html += '</div>';
             
             // Status & Notifications
             html += '<div class="card"><div class="grid grid-2 divide-x">';
@@ -689,8 +694,8 @@ import '../../components/header/header.js';
             html += component('metric', {value: members.length, label: 'Total'});
             html += '</div>';
             
-            html += '<div class="grid grid-3 gap-4">';
-            ['active', 'available', 'problems'].forEach(key => {
+            html += '<div class="grid grid-3 gap-4 now-status-grid">';
+            ['active', 'problems', 'available'].forEach(key => {
                 const colors = {active: 'var(--success)', available: 'var(--info)', problems: 'var(--danger)'};
                 const count = status[key].length;
                 html += h('div', '', '', h('div', 'flex items-center gap-2 mb-2', '',
@@ -706,8 +711,8 @@ import '../../components/header/header.js';
             ['unread', 'read'].forEach(tab => {
                 const count = state.notifs.filter(n => tab === 'unread' ? !n.read : n.read).length;
                 const active = state.tab === tab;
-                html += h('button', 'btn', `background:${active ? (tab === 'unread' ? 'var(--danger)' : 'var(--success)') : '#e5e7eb'};color:${active ? 'white' : 'var(--gray)'};`,
-                    `${tab[0].toUpperCase()}${tab.slice(1)} (${count})`);
+                html += h('button', `btn today-tab-btn${active ? ' is-active' : ''}`,
+                    ``, `${tab[0].toUpperCase()}${tab.slice(1)} (${count})`).replace('<button', `<button data-type="${tab}"`);
             });
             html += '</div>';
             
@@ -887,7 +892,7 @@ import '../../components/header/header.js';
             // Mobile Latest Activity - БЕЗ МОДАЛЬНЫХ ФУНКЦИЙ
             html += '<div class="card p-5">';
             html += '<div class="flex items-center gap-3 mb-4">' + component('iconBox', {icon: 'camera', color: 'var(--primary)'}) + '<h3 class="title">LATEST ACTIVITY</h3></div>';
-            html += '<div class="flex gap-3 overflow-x" style="align-items:center;padding:4px 0 12px 0;">';
+            html += '<div class="latest-activity-row flex gap-3 overflow-x" style="align-items:center;padding:4px 0 12px 0;">';
             
             const screenshots = generateScreenshots().slice(0, state.loadedScreenshots);
             const hasMore = generateScreenshots().length > state.loadedScreenshots;
@@ -901,7 +906,7 @@ import '../../components/header/header.js';
                     '<div style="font-size:1rem;margin-bottom:0.25rem;">→</div><div>Show More</div><div style="font-size:0.625rem;opacity:0.8;">' + (generateScreenshots().length - state.loadedScreenshots) + ' more</div>');
             }
             
-            html += '</div></div>';
+            html += '</div><div class="today-mobile-scrollbar" aria-hidden="true"><div class="thumb"></div></div></div>';
             
             // Mobile Status/Notifications with tabs
             html += '<div class="card">';
@@ -923,13 +928,14 @@ import '../../components/header/header.js';
             
             if (state.mobileTab === 'status') {
                 html += '<div class="p-5">';
-                html += '<div class="grid grid-3 gap-4" style="height: 227px;">';
-                ['active', 'available', 'problems'].forEach(key => {
+                // Same visual as desktop, but allow horizontal scroll when tight
+                html += '<div class="status-scroll-row" style="height: 227px;">';
+                ['active', 'problems', 'available'].forEach(key => {
                     const colors = {active: 'var(--success)', available: 'var(--info)', problems: 'var(--danger)'};
                     const count = status[key].length;
-                    html += h('div', '', '', h('div', 'flex items-center gap-2 mb-2', '',
-                        h('span', '', 'width:0.75rem;height:0.75rem;border-radius:50%;background:' + colors[key] + ';', '') +
-                        h('span', '', 'font-size:0.8125rem;font-weight:600;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
+                    html += h('div', 'status-col', '', h('div', 'flex items-center gap-2 mb-2', '',
+                        h('span', '', 'width:12px;height:12px;border-radius:50%;background:' + colors[key] + ';', '') +
+                        h('span', '', 'font-size:13px;font-weight:600;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
                         h('div', 'subtitle', '', count ? status[key].map(m => m.name).join(', ') : 'None'));
                 });
                 html += '</div></div>';
@@ -939,8 +945,8 @@ import '../../components/header/header.js';
                 ['unread', 'read'].forEach(tab => {
                     const count = state.notifs.filter(n => tab === 'unread' ? !n.read : n.read).length;
                     const active = state.tab === tab;
-                    html += h('button', 'btn', 'background:' + (active ? (tab === 'unread' ? 'var(--danger)' : 'var(--success)') : '#e5e7eb') + ';color:' + (active ? 'white' : 'var(--gray)') + ';',
-                        tab.charAt(0).toUpperCase() + tab.slice(1) + ' (' + count + ')');
+                    html += h('button', `btn today-tab-btn${active ? ' is-active' : ''}`,
+                        '', tab.charAt(0).toUpperCase() + tab.slice(1) + ' (' + count + ')').replace('<button', `<button data-type="${tab}"`);
                 });
                 html += '</div>';
                 html += '<div style="overflow-y: auto; height: 185px;">';
@@ -1136,8 +1142,8 @@ import '../../components/header/header.js';
                 positions.metrics = metricsContainer.scrollLeft;
             }
             
-            // Latest Activity scroll
-            const latestActivity = document.querySelector('.card .flex.overflow-x');
+            // Latest Activity scroll (explicit row)
+            const latestActivity = document.querySelector('.latest-activity-row');
             if (latestActivity) {
                 positions.latestActivity = latestActivity.scrollLeft;
             }
@@ -1169,7 +1175,7 @@ import '../../components/header/header.js';
                 
                 // Restore latest activity scroll
                 if (positions.latestActivity !== undefined) {
-                    const latestActivity = document.querySelector('.card .flex.overflow-x');
+                    const latestActivity = document.querySelector('.latest-activity-row');
                     if (latestActivity) {
                         latestActivity.scrollLeft = positions.latestActivity;
                     }
@@ -1191,25 +1197,34 @@ import '../../components/header/header.js';
                 }
             }, 0);
         };
+
+        // Re-render preserving scroll positions (Latest Activity, metrics, timeline)
+        const rerenderPreservingScroll = () => {
+            const saved = saveScrollPositions();
+            render();
+            restoreScrollPositions(saved);
+        };
         
         // Mobile Tabs Content Update (без полного перерендера)
         const updateMobileTabsContent = () => {
             const {status} = getTeamData();
-            const tabContentContainer = document.querySelector('.mobile-tabs').nextElementSibling.children[0];
+            // Target the wrapper, not its first child, to avoid nested padding wrappers
+            const tabContentWrapper = document.querySelector('.mobile-tabs').nextElementSibling;
             
-            if (!tabContentContainer) return;
+            if (!tabContentWrapper) return;
             
             let newContent = '';
             
             if (state.mobileTab === 'status') {
                 newContent = '<div class="p-5">';
-                newContent += '<div class="grid grid-3 gap-4" style="height: 227px;">';
-                ['active', 'available', 'problems'].forEach(key => {
+                // Mirror desktop visuals; enable horizontal scroll when tight
+                newContent += '<div class="status-scroll-row" style="height: 227px;">';
+                ['active', 'problems', 'available'].forEach(key => {
                     const colors = {active: 'var(--success)', available: 'var(--info)', problems: 'var(--danger)'};
                     const count = status[key].length;
-                    newContent += h('div', '', '', h('div', 'flex items-center gap-2 mb-2', '',
-                        h('span', '', 'width:0.75rem;height:0.75rem;border-radius:50%;background:' + colors[key] + ';', '') +
-                        h('span', '', 'font-size:0.8125rem;font-weight:600;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
+                    newContent += h('div', 'status-col', '', h('div', 'flex items-center gap-2 mb-2', '',
+                        h('span', '', 'width:12px;height:12px;border-radius:50%;background:' + colors[key] + ';', '') +
+                        h('span', '', 'font-size:13px;font-weight:600;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
                         h('div', 'subtitle', '', count ? status[key].map(m => m.name).join(', ') : 'None'));
                 });
                 newContent += '</div></div>';
@@ -1219,8 +1234,9 @@ import '../../components/header/header.js';
                 ['unread', 'read'].forEach(tab => {
                     const count = state.notifs.filter(n => tab === 'unread' ? !n.read : n.read).length;
                     const active = state.tab === tab;
-                    newContent += h('button', 'btn', 'background:' + (active ? (tab === 'unread' ? 'var(--danger)' : 'var(--success)') : '#e5e7eb') + ';color:' + (active ? 'white' : 'var(--gray)') + ';',
-                        tab.charAt(0).toUpperCase() + tab.slice(1) + ' (' + count + ')');
+                    newContent += h('button', `btn today-tab-btn${active ? ' is-active' : ''}`,
+                        '', tab.charAt(0).toUpperCase() + tab.slice(1) + ' (' + count + ')')
+                        .replace('<button', `<button data-type="${tab}"`);
                 });
                 newContent += '</div>';
                 newContent += '<div style="overflow-y: auto; height: 185px;">';
@@ -1233,7 +1249,7 @@ import '../../components/header/header.js';
                 newContent += '</div></div>';
             }
             
-            tabContentContainer.innerHTML = newContent;
+            tabContentWrapper.innerHTML = newContent;
             
             // Обновляем активные табы
             const tabs = document.querySelectorAll('.mobile-tab');
@@ -1257,6 +1273,38 @@ import '../../components/header/header.js';
                     alertsTab.innerHTML = 'Alerts';
                 }
             }
+        };
+
+        // Desktop 'ATTENTION NEEDED' partial update (без перерендеринга страницы)
+        const updateDesktopAttentionTabs = () => {
+            const rootTitle = Array.from(document.querySelectorAll('.title')).find(el => el.textContent && el.textContent.includes('ATTENTION NEEDED'));
+            if (!rootTitle) return false;
+            const cardRoot = rootTitle.closest('.p-5');
+            if (!cardRoot) return false;
+
+            // Update tab buttons
+            const btnBar = cardRoot.querySelector('.flex.gap-2.mb-4');
+            if (btnBar) {
+                btnBar.innerHTML = ['unread', 'read'].map(tab => {
+                    const count = state.notifs.filter(n => tab === 'unread' ? !n.read : n.read).length;
+                    const active = state.tab === tab;
+                    return `<button class="btn today-tab-btn${active ? ' is-active' : ''}" data-type="${tab}">${tab.charAt(0).toUpperCase()}${tab.slice(1)} (${count})</button>`;
+                }).join('');
+            }
+
+            // Update list
+            const list = cardRoot.querySelector('.overflow-y');
+            if (list) {
+                let html = '';
+                state.notifs.filter(n => state.tab === 'unread' ? !n.read : n.read).forEach(n => {
+                    html += h('div', 'notification', `background:${n.color}0d;`,
+                        h('div', 'dot', `background:${n.color};`, '') +
+                        h('div', 'flex-1', `padding-right:${!n.read ? '36px' : '0'};`, h('div', '', 'font-size:13px;', n.msg) + h('div', 'subtitle', '', n.time)) +
+                        (!n.read ? h('button', 'btn', `position:absolute;top:12px;right:12px;width:24px;height:24px;background:white;border:1px solid ${n.color}40;color:${n.color};padding:0;font-size:12px;`, '✓') : ''));
+                });
+                list.innerHTML = html;
+            }
+            return true;
         };
 
         // Event Handler
@@ -1379,13 +1427,14 @@ const handleClick = e => {
             
             if (e.target.matches('.btn')) {
                 const text = e.target.textContent;
-                if (text.includes('Close')) { state.expanded = state.activeHour = state.activeMember = null; }
-                else if (text.includes('Show More')) state.loadedScreenshots += 20;
-                else if (text.includes('Unread')) state.tab = 'unread';
-                else if (text.includes('Read')) state.tab = 'read';
-                else if (text === '✓') { const notif = state.notifs.find(n => !n.read); if (notif) notif.read = true; }
-                render();
-                return;
+                const isTabBtn = e.target.classList.contains('today-tab-btn');
+                const saved = saveScrollPositions();
+
+                if (text.includes('Close')) { state.expanded = state.activeHour = state.activeMember = null; rerenderPreservingScroll(); return; }
+                if (text.includes('Show More')) { state.loadedScreenshots += 20; rerenderPreservingScroll(); return; }
+                if (text.includes('Unread')) { state.tab = 'unread'; if (isTabBtn) { if (isMobile()) { updateMobileTabsContent(); restoreScrollPositions(saved); } else { updateDesktopAttentionTabs(); restoreScrollPositions(saved); } } else { rerenderPreservingScroll(); } return; }
+                if (text.includes('Read')) { state.tab = 'read'; if (isTabBtn) { if (isMobile()) { updateMobileTabsContent(); restoreScrollPositions(saved); } else { updateDesktopAttentionTabs(); restoreScrollPositions(saved); } } else { rerenderPreservingScroll(); } return; }
+                if (text === '✓') { const notif = state.notifs.find(n => !n.read); if (notif) notif.read = true; rerenderPreservingScroll(); return; }
             }
             
             // Клики на точки метрик
@@ -1466,7 +1515,7 @@ const handleClick = e => {
                         
                         openCardAtHour(screenshot.member, hours);
                         state.screenshot = minuteIndex;
-                        render();
+                        rerenderPreservingScroll();
                         
                         // Mobile scroll to employee card
                         setTimeout(() => {
@@ -1514,7 +1563,7 @@ const handleClick = e => {
                         
                         openCardAtHour(screenshot.member, hours);
                         state.screenshot = minuteIndex;
-                        render();
+                        rerenderPreservingScroll();
                         scrollToScreenshots(screenshot.member);
                         scrollToActiveScreenshot(screenshot.member);
                     }
@@ -1557,8 +1606,32 @@ const handleClick = e => {
             
             html += '</div>';
             
+            // Preserve Latest Activity DOM to avoid flicker/losing scroll when not changing it
+            const preserveLatestActivityDom = () => {
+                const row = document.querySelector('.latest-activity-row');
+                const track = document.querySelector('.today-mobile-scrollbar');
+                if (!row) return null;
+                return { row, track, scrollLeft: row.scrollLeft };
+            };
+            const restoreLatestActivityDom = (preserved) => {
+                if (!preserved) return;
+                const newRow = document.querySelector('.latest-activity-row');
+                if (newRow && preserved.row) {
+                    newRow.replaceWith(preserved.row);
+                    try { preserved.row.scrollLeft = preserved.scrollLeft || 0; } catch (_) {}
+                }
+                const newTrack = document.querySelector('.today-mobile-scrollbar');
+                if (newTrack && preserved.track) {
+                    newTrack.replaceWith(preserved.track);
+                }
+            };
+
+            const preservedLA = preserveLatestActivityDom();
             document.getElementById('app').innerHTML = html;
-            
+            restoreLatestActivityDom(preservedLA);
+            // Ensure visible scrollbar under Latest Activity is initialized
+            setTimeout(() => { try { setupMobileActivityScrollbar(); } catch (e) {} }, 0);
+
             // Синхронизация скролла для мобильного таймлайна
             if (mobile) {
                 setTimeout(() => {
@@ -1566,19 +1639,41 @@ const handleClick = e => {
                     const dataScrolls = document.querySelectorAll('.timeline-data-scroll');
                     
                     if (headerScroll && dataScrolls.length) {
-                        // Автоматический скролл к текущему времени (3:30 PM = час 15)
-                        const currentHour = 15; // 3:30 PM
-                        const timelineWidth = 1400; // минимальная ширина таймлайна
-                        const hourWidth = timelineWidth / 24; // ширина одного часа
-                        const targetPosition = currentHour * hourWidth; // позиция текущего часа
-                        const screenWidth = window.innerWidth;
-                        const scrollPosition = Math.max(0, targetPosition - (screenWidth / 2)); // центрируем
-                        
-                        // Применяем скролл ко всем контейнерам
-                        headerScroll.scrollLeft = scrollPosition;
-                        dataScrolls.forEach(container => {
-                            container.scrollLeft = scrollPosition;
-                        });
+                        // Точное центрирование: считаем позицию по фактическим пикселям часа+минут
+                        const calcCenterPos = () => {
+                            const refScroll = dataScrolls[0];
+                            const refFlex = refScroll && refScroll.querySelector('.flex');
+                            if (!refScroll || !refFlex || !refFlex.children.length) return null;
+
+                            // Artifact requirement: center fixed 'current' time at 3:30 PM
+                            const hour = 15; // 3 PM
+                            const minute = 30; // :30
+                            const hourEl = refFlex.children[Math.min(23, Math.max(0, hour))];
+                            if (!hourEl) return null;
+
+                            const hourRect = hourEl.getBoundingClientRect();
+                            const scrollRect = refScroll.getBoundingClientRect();
+                            const left = hourRect.left - scrollRect.left + refScroll.scrollLeft;
+                            const hourWidth = hourRect.width || (refScroll.scrollWidth / 24);
+                            const minuteOffset = hourWidth * (minute / 60);
+
+                            const targetX = left + minuteOffset; // X‑координата «сейчас» внутри скролла
+                            const viewport = refScroll.clientWidth;
+                            const maxScroll = Math.max(0, refScroll.scrollWidth - viewport);
+                            return Math.max(0, Math.min(maxScroll, Math.round(targetX - viewport / 2)));
+                        };
+
+                        const applyPos = () => {
+                            const pos = calcCenterPos();
+                            if (pos == null) return;
+                            headerScroll.scrollLeft = pos;
+                            dataScrolls.forEach(c => { c.scrollLeft = pos; });
+                        };
+
+                        // Несколько проходов для стабильной геометрии
+                        applyPos();
+                        setTimeout(applyPos, 60);
+                        setTimeout(applyPos, 180);
                         
                         // Настройка синхронизации скролла
                         headerScroll.addEventListener('scroll', () => {
@@ -1604,6 +1699,7 @@ const handleClick = e => {
                         metricsContainer.addEventListener('scroll', handleMetricScroll);
                         updateMetricDots();
                     }
+                    // latest-activity scrollbar already initialized above
                 }, 0);
             }
             
@@ -1613,6 +1709,37 @@ const handleClick = e => {
                 }, 0);
             }
         };
+
+        // Visible mobile scrollbar for Latest Activity
+        function setupMobileActivityScrollbar() {
+            const row = document.querySelector('.latest-activity-row');
+            const track = document.querySelector('.today-mobile-scrollbar');
+            const thumb = track && track.querySelector('.thumb');
+            if (!row || !track || !thumb) return;
+
+            const update = () => {
+                const total = row.scrollWidth || 1;
+                const visible = row.clientWidth || 1;
+                const maxScroll = Math.max(1, total - visible);
+                // Hide if no overflow
+                track.style.display = total > visible ? '' : 'none';
+
+                const trackWidth = track.clientWidth || visible;
+                const minThumbPx = 32;
+                const widthPx = Math.max(minThumbPx, (visible / total) * trackWidth);
+                const widthPct = (widthPx / trackWidth) * 100;
+                const leftPct = (row.scrollLeft / maxScroll) * (100 - widthPct);
+                thumb.style.width = widthPct + '%';
+                thumb.style.left = leftPct + '%';
+            };
+
+            update();
+            row.removeEventListener('scroll', row.__todayMobileBarHandler || (()=>{}));
+            const onScroll = () => requestAnimationFrame(update);
+            row.addEventListener('scroll', onScroll, { passive: true });
+            row.__todayMobileBarHandler = onScroll;
+            window.addEventListener('resize', () => requestAnimationFrame(update), { passive: true });
+        }
         
         // ИНИЦИАЛИЗАЦИЯ
         if (window.closeMobileModal) {

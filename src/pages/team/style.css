@@ -901,7 +901,7 @@ body {
     }
 
     .employee-card-mobile.expanded {
-        border: 2px solid #cc6633;
+        /* Removed orange outline on expand for mobile to match desktop */
         box-shadow: 0 4px 12px rgba(204, 102, 51, 0.15);
     }
 }

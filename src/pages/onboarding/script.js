@@ -236,13 +236,13 @@ const templates = {
                         </span>
                         ${statusButtons ? `
                             <div class="decision-status decision-${statusButtons} ${locked ? 'decision-locked' : ''}"
-                                 ${locked ? 'title="Locked for completed batch"' : `onclick="handleEmployeeDecision('${employee.employee_id}', 'null')"`}>
+                                 ${locked ? 'title="Locked for completed group"' : `onclick="handleEmployeeDecision('${employee.employee_id}', 'null')"`}>
                                 ${statusButtons === 'approved' ? icons.check : icons.x}
                                 <span>${statusButtons === 'approved' ? 'Approved' : 'Rejected'}</span>
                             </div>
                         ` : (
                             locked ? `
-                                <div class="decision-status decision-approved decision-locked" title="Locked for completed batch">
+                                <div class="decision-status decision-approved decision-locked" title="Locked for completed group">
                                     ${icons.check}
                                     <span>Approved</span>
                                 </div>
@@ -288,7 +288,7 @@ const templates = {
                     ${templates.noData(
                         icons.userSearch,
                         'No team members assigned yet',
-                        'Team members will be assigned to this batch'
+                        'Team members will be assigned to this group'
                     )}
                 </div>
             `;
@@ -305,6 +305,16 @@ const templates = {
                             onclick="handleTabChange('all')">
                         All
                         <span class="tab-count">${batch.employees.length}</span>
+                    </button>
+                    <button class="employee-tab ${state.activeTab === 'unreviewed' ? 'active' : ''}" 
+                            onclick="handleTabChange('unreviewed')">
+                        Unreviewed
+                        <span class="tab-count">
+                            ${batch.employees.filter(e => {
+                                const st = state.employeeStatuses[e.employee_id];
+                                return st !== 'approved' && st !== 'rejected';
+                            }).length}
+                        </span>
                     </button>
                     <button class="employee-tab ${state.activeTab === 'approved' ? 'active' : ''}" 
                             onclick="handleTabChange('approved')">
@@ -328,7 +338,7 @@ const templates = {
                         `No ${state.activeTab === 'all' ? '' : state.activeTab} employees`,
                         state.activeTab === 'approved' ? 'Click "Approve" to confirm employees' : 
                         state.activeTab === 'rejected' ? 'Click "Reject" to decline employees' : 
-                        'Employees will be assigned to this batch'
+                        (state.activeTab === 'unreviewed' ? 'All employees are reviewed' : 'Employees will be assigned to this group')
                     ) : filteredEmployees.map(employee => templates.employeeCard(employee, { locked })).join('')}
                 </div>
             </div>
@@ -355,7 +365,7 @@ const templates = {
                     </div>
                     <div class="batch-title">
                         <span class="batch-title-main">
-                            BATCH №${batch.batch_id} | 
+                            GROUP №${batch.batch_id} | 
                             <span class="batch-project">${batch.project || 'N/A'}</span>
                         </span>
                     </div>
@@ -622,6 +632,11 @@ function getBatchStats() {
 function getFilteredEmployees(employees) {
     if (!employees) return [];
     switch(state.activeTab) {
+        case 'unreviewed':
+            return employees.filter(e => {
+                const st = state.employeeStatuses[e.employee_id];
+                return st !== 'approved' && st !== 'rejected';
+            });
         case 'approved':
             return employees.filter(e => state.employeeStatuses[e.employee_id] === 'approved');
         case 'rejected':
