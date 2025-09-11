@@ -150,3 +150,14 @@ body {
 .modal-arrow.left{left:8px}
 .modal-arrow.right{right:8px}
 @media (orientation:portrait){.modal-dialog{width:96vw;max-height:92vh}.modal-media{width:96vw;max-height:86vh}}
+
+/* Mobile: place modal close button above the media (top-right of viewport) */
+@media (max-width: 1023px){
+  .modal-close{
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    right: 10px;
+    width: 44px; height: 44px;
+    z-index: 10000; /* above dialog and arrows */
+  }
+}
