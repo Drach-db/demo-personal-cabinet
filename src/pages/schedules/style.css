@@ -576,14 +576,15 @@ td.employee-cell {
 /* Today Indicator */
 .today-indicator {
     position: absolute !important;
-    left: -1px !important;
+    left: -1px !important; /* sit right over the left border of the today column */
     top: 0 !important;
     bottom: 0 !important;
-    width: 3px;
-    background-color: #cc6633;
-    z-index: 15;
+    width: 2px; /* crisp matte line */
+    background-color: rgba(204, 102, 51, 0.9);
+    z-index: 22; /* above cell content, below sticky header corner (50) */
     height: 100%;
-    box-shadow: 0 0 4px rgba(204, 102, 51, 0.3);
+    box-shadow: none;
+    pointer-events: none;
 }
 
 /* ========================================
@@ -643,6 +644,8 @@ td.employee-cell {
 .badge-onboarding { background-color: #eab30820; color: #eab308; }
 .badge-project { background-color: #3b82f620; color: #3b82f6; }
 .badge-backup { background-color: #6366f120; color: #6366f1; }
+/* New: Not Hired (matte warm gray) */
+.badge-nothired { background-color: #6b728020; color: #6b7280; }
 
 /* ========================================
    MODALS
@@ -831,7 +834,7 @@ td.employee-cell {
 .tooltip {
     position: fixed;
     pointer-events: none;
-    z-index: 50;
+    z-index: 3000; /* above header/navbar (2000+) but below modals (9999) */
     background-color: white;
     border-radius: 0.75rem;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
@@ -846,6 +849,31 @@ td.employee-cell {
     width: 380px;
     padding: 1.25rem;
 }
+
+/* Legend: Stages block layout */
+.legend-stages {
+    display: grid;
+    grid-auto-rows: min-content;
+    row-gap: 0.625rem;
+}
+.legend-stage-row {
+    display: grid;
+    grid-template-columns: 120px 1fr; /* fixed label column for tidy alignment */
+    column-gap: 0.875rem;
+    align-items: center; /* center pill vs multi-line description */
+    min-height: 32px;
+}
+.legend-stage-desc {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+/* ========================================
+   CALENDAR MINI SCROLLBAR (under header)
+   ======================================== */
+/* mini-scrollbar removed */
 
 /* ========================================
    MOBILE RESPONSIVE

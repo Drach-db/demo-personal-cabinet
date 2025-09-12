@@ -12,6 +12,8 @@ import '../../components/header/header.js';
             lunch: ['#3b82f6', 'Lunch'], missed: ['#dc2626', 'Overtime'], future: ['#f3f4f6', 'Future'],
             off: ['#f3f4f6', 'Off']
         };
+        // Единый цвет вертикальных линий сетки часов (слегка заметные, но читаемые)
+        const GRID_LINE_COLOR = 'rgba(17, 24, 39, 0.16)';
         
         const MOCK_DATA = {
             schedule: [{ 
@@ -741,8 +743,8 @@ import '../../components/header/header.js';
                     text = i === 0 ? '12 AM' : i === 6 ? '6 AM' : i === 12 ? '12 PM' : i === 18 ? '6 PM' : i < 12 ? `${i}` : `${i-12}`;
                 }
                 
-                html += h('div', 'text-center', `font-size:${isMajor||isNow?'clamp(0.5rem, 1vw, 0.625rem)':'clamp(0.4375rem, 0.8vw, 0.5625rem)'};font-weight:${isMajor||isNow?700:500};padding:0.1875rem 0.0625rem;color:${isNow?'white':isMajor?'var(--dark)':'var(--gray)'};${isNow?'background:var(--primary);border-radius:0.375rem;box-shadow:0 0.125rem 0.5rem rgba(204,102,51,0.3);':''}transition:all 0.2s;position:relative;white-space:nowrap;line-height:1;`, 
-                    text + (isNow ? '<div style="position:absolute;top:-0.75rem;left:50%;transform:translateX(-50%);font-size:0.5rem;font-weight:700;color:var(--primary);background:white;padding:0.0625rem 0.25rem;border-radius:0.1875rem;white-space:nowrap;box-shadow:0 0.0625rem 0.1875rem rgba(0,0,0,0.1);">NOW</div>' : ''));
+                html += h('div', 'text-center', `font-size:${isMajor||isNow?'clamp(0.5rem, 1vw, 0.625rem)':'clamp(0.4375rem, 0.8vw, 0.5625rem)'};font-weight:${isMajor||isNow?700:500};padding:0.1875rem 0.0625rem;color:${isNow?'white':isMajor?'var(--dark)':'var(--gray)'};${isNow?'background:var(--primary);border-radius:0.375rem;box-shadow:0 0.125rem 0.5rem rgba(204,102,51,0.3);':''}transition:all 0.2s;position:relative;white-space:nowrap;line-height:1;border-left:${i ? '1px solid ' + GRID_LINE_COLOR : 'none'};`, 
+                     text + (isNow ? '<div style="position:absolute;top:-0.75rem;left:50%;transform:translateX(-50%);font-size:0.5rem;font-weight:700;color:var(--primary);background:white;padding:0.0625rem 0.25rem;border-radius:0.1875rem;white-space:nowrap;box-shadow:0 0.0625rem 0.1875rem rgba(0,0,0,0.1);">NOW</div>' : ''));
             }
             
             html += '</div>';
@@ -766,7 +768,7 @@ import '../../components/header/header.js';
                         }
                     }
                     
-                    html += h('div', 'timeline-row', `opacity:${segments.every(s => ['off'].includes(s.status)) ? 0.5 : 1};border-left:${hour ? '0.5px solid white' : 'none'};`,
+                    html += h('div', 'timeline-row', `opacity:${segments.every(s => ['off'].includes(s.status)) ? 0.5 : 1};border-left:${hour ? ('1px solid ' + GRID_LINE_COLOR) : 'none'};`,
                         segments.map(seg => h('div', '', `background:${(STATUS_CONFIG[seg.status] || STATUS_CONFIG.active)[0]};width:${seg.width}%;height:100%;`, '')).join(''));
                 }
                 
@@ -955,7 +957,7 @@ import '../../components/header/header.js';
                     text = i === 0 ? '12 AM' : i === 6 ? '6 AM' : i === 12 ? '12 PM' : i === 18 ? '6 PM' : i < 12 ? `${i}` : `${i-12}`;
                 }
                 
-                html += h('div', 'text-center', `font-size:${isMajor||isNow?'clamp(0.6875rem, 1.2vw, 0.75rem)':'clamp(0.5625rem, 1vw, 0.625rem)'};font-weight:${isMajor||isNow?700:500};padding:0.375rem 0.125rem;color:${isNow?'white':isMajor?'var(--dark)':'var(--gray)'};${isNow?'background:var(--primary);border-radius:0.375rem;box-shadow:0 0.125rem 0.5rem rgba(204,102,51,0.3);':''}transition:all 0.2s;position:relative;white-space:nowrap;line-height:1;`, text);
+                html += h('div', 'text-center', `font-size:${isMajor||isNow?'clamp(0.6875rem, 1.2vw, 0.75rem)':'clamp(0.5625rem, 1vw, 0.625rem)'};font-weight:${isMajor||isNow?700:500};padding:0.375rem 0.125rem;color:${isNow?'white':isMajor?'var(--dark)':'var(--gray)'};${isNow?'background:var(--primary);border-radius:0.375rem;box-shadow:0 0.125rem 0.5rem rgba(204,102,51,0.3);':''}transition:all 0.2s;position:relative;white-space:nowrap;line-height:1;border-left:${i ? '1px solid ' + GRID_LINE_COLOR : 'none'};`, text);
             }
             
             html += '</div></div>';
@@ -980,7 +982,7 @@ import '../../components/header/header.js';
                         }
                     }
                     
-                    html += h('div', 'timeline-row', 'opacity:' + (segments.every(s => ['off'].includes(s.status)) ? 0.5 : 1) + ';border-left:' + (hour ? '0.5px solid white' : 'none') + ';flex:1;cursor:pointer;transition:all 0.3s;display:flex;',
+                    html += h('div', 'timeline-row', 'opacity:' + (segments.every(s => ['off'].includes(s.status)) ? 0.5 : 1) + ';border-left:' + (hour ? ('1px solid ' + GRID_LINE_COLOR) : 'none') + ';flex:1;cursor:pointer;transition:all 0.3s;display:flex;',
                         segments.map(seg => h('div', '', 'background:' + (STATUS_CONFIG[seg.status] || STATUS_CONFIG.active)[0] + ';width:' + seg.width + '%;height:100%;', '')).join(''));
                 }
                 
@@ -1032,68 +1034,10 @@ import '../../components/header/header.js';
         }
         
         const applyTimelineHoverEffects = (members) => {
-            document.querySelectorAll('.timeline-row').forEach((cell, i) => {
-                const hour = i % 24, member = members[Math.floor(i / 24)];
-                if (!member) return;
-                
-                const hasActivity = Array.from({length: 60}, (_, j) => member.timeline[hour * 60 + j]).some(s => !['off', 'not-started', 'future'].includes(s));
-                if (!hasActivity) return;
-                
-                const isActive = (state.activeHour === hour && state.activeMember === member.name);
-                
-                const createOverlay = (isHover = false) => {
-                    const existingOverlay = document.getElementById(`overlay-${i}`);
-                    if (existingOverlay) existingOverlay.remove();
-                    
-                    const color = (STATUS_CONFIG[member.timeline[hour * 60]] || STATUS_CONFIG.active)[0];
-                    const rect = cell.getBoundingClientRect();
-                    const containerRect = cell.parentNode.getBoundingClientRect();
-                    
-                    const overlay = document.createElement('div');
-                    overlay.id = `overlay-${i}`;
-                    overlay.className = 'timeline-overlay';
-                    overlay.innerHTML = cell.innerHTML;
-                    
-                    const scaledWidth = rect.width * 1.8;
-                    const leftOffset = rect.left - containerRect.left - (scaledWidth - rect.width) / 2;
-                    
-                    overlay.style.cssText = `
-                        position: absolute;
-                        left: ${leftOffset}px;
-                        top: 0;
-                        width: ${scaledWidth}px;
-                        height: 100%;
-                        z-index: ${isHover ? 35 : 25};
-                        box-shadow: 0 ${isHover?0.375:0.25}rem ${isHover?1:0.75}rem ${color}${isHover?80:60}, 0 0 0 ${isHover?0.1875:0.125}rem rgba(255,255,255,0.9);
-                        border-radius: 0.25rem;
-                        transition: all 0.2s ease;
-                        cursor: pointer;
-                        display: flex;
-                    `;
-                    
-                    const label = document.createElement('div');
-                    label.textContent = hour === 0 ? '12 AM' : hour === 12 ? '12 PM' : hour < 12 ? `${hour} AM` : `${hour-12} PM`;
-                    label.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:clamp(0.625rem, 1.2vw, 0.6875rem);font-weight:700;z-index:40;pointer-events:none;text-shadow:0 0.0625rem 0.125rem rgba(0,0,0,0.3);white-space:nowrap;';
-                    overlay.appendChild(label);
-                    
-                    overlay.onclick = (e) => {
-                        e.stopPropagation();
-                        handleTimelineInteraction(member.name, hour);
-                    };
-                    
-                    overlay.onmouseleave = () => {
-                        if (!isActive) overlay.remove();
-                    };
-                    
-                    cell.parentNode.style.position = 'relative';
-                    cell.parentNode.appendChild(overlay);
-                };
-                
-                if (isActive) createOverlay();
-                
-                cell.onmouseenter = () => {
-                    if (!isActive) createOverlay(true);
-                };
+            // Hover overlays are fully disabled to keep grid lines continuous.
+            document.querySelectorAll('.timeline-row').forEach((cell) => {
+                cell.onmouseenter = null;
+                cell.onmouseleave = null;
             });
         };
 

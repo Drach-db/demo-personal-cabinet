@@ -32,7 +32,8 @@ const ICONS = {
 // CONSTANTS
 // ========================================
 const CONSTANTS = {
-    CURRENT_DATE: new Date(),
+    // Fix "today" to September 22 of the current year for demo/UX consistency
+    CURRENT_DATE: new Date(new Date().getFullYear(), 8, 22),
     CELL_WIDTH: 100,
     EMPLOYEE_COL_WIDTH: 300,
     MOBILE_CELL_WIDTH: 70,
@@ -323,7 +324,15 @@ class ShiftCalendar {
     }
 
     isPast(d) {
-        return d < CONSTANTS.CURRENT_DATE;
+        // Compare by calendar day only (ignore time) to avoid treating "today" as past
+        if (!d) return false;
+        const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const today = new Date(
+            CONSTANTS.CURRENT_DATE.getFullYear(),
+            CONSTANTS.CURRENT_DATE.getMonth(),
+            CONSTANTS.CURRENT_DATE.getDate()
+        );
+        return day < today;
     }
 
     getAvatarColor(name) {
@@ -461,18 +470,16 @@ class ShiftCalendar {
                 return matchesSearch && matchesProject && matchesStage && matchesPosition;
             })
             .sort((a, b) => {
-                const statusOrder = { 'Active': 0, 'Onboarding': 1, 'Terminated': 2 };
-                const statusDiff = statusOrder[a.stage] - statusOrder[b.stage];
-                if (statusDiff !== 0) return statusDiff;
-                
-                const positionOrder = (pos) => {
-                    if (pos.includes('CTO')) return 0;
-                    if (pos.includes('Senior')) return 1;
-                    return 2;
-                };
-                const positionDiff = positionOrder(a.position) - positionOrder(b.position);
-                if (positionDiff !== 0) return positionDiff;
-                
+                // 1) By project name
+                const projA = (a.project || '').toString();
+                const projB = (b.project || '').toString();
+                const projDiff = projA.localeCompare(projB);
+                if (projDiff !== 0) return projDiff;
+                // 2) Within project: non-backup first, then backup
+                const aBackup = String(a.staffing_type || '').toLowerCase() === 'backup';
+                const bBackup = String(b.staffing_type || '').toLowerCase() === 'backup';
+                if (aBackup !== bBackup) return aBackup ? 1 : -1;
+                // 3) Alphabetically by full name
                 return a.full_name.localeCompare(b.full_name);
             });
     }
@@ -568,7 +575,8 @@ class ShiftCalendar {
                 subtitle: 'Monthly', 
                 hours: plannedHours, 
                 cost: plannedHours * 15, 
-                color: '#f59e0b', 
+                // Align with Billing: warning (amber)
+                color: '#eab308', 
                 icon: 'calendar', 
                 percentage: 100 
             },
@@ -660,12 +668,26 @@ class ShiftCalendar {
         const acc = this.getAnalyticAccent ? this.getAnalyticAccent(data.color) : [THEME.textPrimary, 'rgba(55,65,81,0.55)'];
         const accent = acc[0];
         const accentFill = acc[1];
+        
+        // Use Billing-like background/border opacities via rgba
+        const toRgb = (hex) => {
+            const v = hex.replace('#','');
+            const r = parseInt(v.slice(0,2), 16);
+            const g = parseInt(v.slice(2,4), 16);
+            const b = parseInt(v.slice(4,6), 16);
+            return `${r}, ${g}, ${b}`;
+        };
+        const rgb = toRgb(data.color);
+        const cardBg = `rgba(${rgb}, 0.05)`;      // matches billing card bg alpha
+        const cardBorder = `rgba(${rgb}, 0.20)`;  // matches billing card border alpha
+        const iconBg = `rgba(${rgb}, 0.10)`;      // icon tile bg
+        const iconBorder = `rgba(${rgb}, 0.25)`;  // icon tile border
 
         return `
-            <div class="analytics-card" style="--accent: ${accent}; --accent-fill: ${accentFill}; background-color: ${data.color}10; border-color: ${data.color}20;">
+            <div class="analytics-card" style="--accent: ${accent}; --accent-fill: ${accentFill}; background-color: ${cardBg}; border-color: ${cardBorder};">
                 <div class="flex items-center gap-3" style="margin-bottom: 0.25rem;">
                     <div style="width: 2rem; height: 2rem; border-radius: 0.5rem; 
-                                background-color: ${data.color}10; border: 1px solid ${data.color}25;
+                                background-color: ${iconBg}; border: 1px solid ${iconBorder};
                                 display: flex; align-items: center; justify-content: center;">
                         <div style="color: ${data.color};">${ICONS[data.icon]}</div>
                     </div>
@@ -695,12 +717,12 @@ class ShiftCalendar {
         `;
     }
 
-    // Return [accent, accentFill] – mid‑tone, matte; no glossy colors
+    // Return [accent, accentFill] – match Billing palette directly
     getAnalyticAccent(base) {
         switch (base) {
-            case '#f59e0b': return ['#d97706', 'rgba(217,119,6,0.55)'];
-            case '#3b82f6': return ['#2563eb', 'rgba(37,99,235,0.55)'];
-            case '#22c55e': return ['#16a34a', 'rgba(22,163,74,0.55)'];
+            case '#eab308': return ['#eab308', 'rgba(234,179,8,0.55)'];   // warning
+            case '#3b82f6': return ['#3b82f6', 'rgba(59,130,246,0.55)']; // info
+            case '#22c55e': return ['#22c55e', 'rgba(34,197,94,0.55)'];  // success
             default: return [THEME.textPrimary, 'rgba(55,65,81,0.55)'];
         }
     }
@@ -903,11 +925,8 @@ class ShiftCalendar {
     }
 
     renderLegend() {
-        const currentTime = new Date().toLocaleTimeString('en-US', { 
-            hour: 'numeric', 
-            minute: '2-digit',
-            hour12: true 
-        });
+        // Fixed demo time for consistency
+        const currentTime = '3:30 PM';
 
         return `
             <div style="padding: 0.5rem 0; margin-top: 8px;">
@@ -999,7 +1018,9 @@ class ShiftCalendar {
         if (this.isMobile) {
             this.setupCarouselScroll();
         }
+        // (removed) mini horizontal scrollbar interactions
     }
+
 
     renderEmptyState() {
         return `
@@ -1031,7 +1052,7 @@ class ShiftCalendar {
                     ${days.map((day, index) => `
                         <th style="width: ${cellWidth}px; min-width: ${cellWidth - 20}px; 
                                   color: ${this.isToday(day) ? COLORS.BRAND : '#374151'}; position: relative;
-                                  background-color: rgba(248,247,244,0.92); border-left: 1px solid rgba(220,215,205,0.35);">
+                                  background-color: rgba(248,247,244,0.92);">
                             ${this.isToday(day) ? '<div class="today-indicator"></div>' : ''}
                             <div class="flex flex-col items-center justify-center" style="height: 100%; position: relative; z-index: 1;">
                                 <div class="flex items-center gap-1" style="font-size: ${this.isMobile ? '1.125rem' : '1.875rem'};">
@@ -1255,14 +1276,14 @@ class ShiftCalendar {
                         if (shift.schedule_type === 'fact schedule' && baselineShifts.length > 0) {
                             baselineShift = baselineShifts[0];
                         }
-                        return this.renderShiftCell(shift, baselineShift, employee, isChildRow);
+                        return this.renderShiftCell(shift, baselineShift, employee, isChildRow, scheduleType);
                     }).join('') : renderSpecialBadge(specialStatus)}
                 </div>
             </td>
         `;
     }
 
-    renderShiftCell(shift, baselineShift, employee, isChildRow) {
+    renderShiftCell(shift, baselineShift, employee, isChildRow, viewType = 'Actual') {
         const isPastShift = this.isPast(this.formatDate(shift.start_shift_date));
         
         let statusCode = null;
@@ -1270,6 +1291,8 @@ class ShiftCalendar {
         
         if (shift.day_status === 'missed' || shift.day_status === 'cancelled') {
             statusCode = shift.absence_reason || shift.day_status;
+        } else if (shift.schedule_type === 'fact schedule' && (!baselineShift || !baselineShift.start_shift_time || !baselineShift.end_shift_time) && shift.start_shift_time && shift.end_shift_time) {
+            statusCode = 'extra';
         }
         
         if (shift.day_status === 'completed' && baselineShift && 
@@ -1287,8 +1310,22 @@ class ShiftCalendar {
         let borderColor = 'transparent';
         let textColor = THEME.textPrimary;
         if (shift.schedule_type === 'baseline schedule') {
-            // keep baseline neutral/softer
-            bgColor = isPastShift ? '#e5e7eb' : '#dcfce7';
+            // Baseline rendering differs between Actual view and Baseline (Plan) view
+            if (isPastShift) {
+                // Past plan stays neutral gray
+                bgColor = '#e5e7eb';
+                borderColor = 'transparent';
+            } else {
+                if (String(viewType).toLowerCase() === 'baseline') {
+                    // Plan view: future plan = paler green, no border
+                    bgColor = 'rgba(22, 163, 74, 0.10)';
+                    borderColor = 'transparent';
+                } else {
+                    // Actual view: future plan = light green with subtle green border
+                    bgColor = '#dcfce7';
+                    borderColor = 'rgba(22, 163, 74, 0.35)';
+                }
+            }
             textColor = THEME.textPrimary;
         } else if (shift.day_status === 'completed') {
             // success: muted/darker green like approve, but less "salad"
@@ -1300,6 +1337,12 @@ class ShiftCalendar {
             bgColor = 'rgba(239, 68, 68, 0.10)';
             borderColor = 'rgba(239, 68, 68, 0.40)';
             textColor = '#ef4444';
+        } else if (shift.day_status === 'cancelled') {
+            // cancelled: keep normal actual shift styling (same as completed),
+            // only the top ribbon shows CANC in red
+            bgColor = 'rgba(22, 163, 74, 0.15)';
+            borderColor = 'rgba(22, 163, 74, 0.45)';
+            textColor = '#166534';
         }
 
         const timeText = shift.start_shift_time && shift.end_shift_time 
@@ -1316,6 +1359,8 @@ class ShiftCalendar {
             ? (isChildRow ? '0.625rem' : '0.75rem')
             : (isChildRow ? '0.875rem' : '1rem');
 
+        const bookmarkColor = (statusCode ? (statusCode === 'extra' ? '#22c55e' : '#ef4444') : (showDiscrepancy ? '#eab308' : 'rgba(255, 255, 255, 0.15)'));
+
         return `
             <div class="shift-cell ${hasIssue ? 'has-issue' : ''}"
                  style="height: ${dimensions.height}; width: ${dimensions.width}; 
@@ -1327,12 +1372,13 @@ class ShiftCalendar {
                  ` : ''}>
                 <div class="shift-bookmark" 
                      style="height: ${bookmarkHeight}; 
-                            background-color: ${hasIssue ? (statusCode ? '#ef4444' : '#eab308') : 'rgba(255, 255, 255, 0.15)'}; 
+                            background-color: ${bookmarkColor}; 
                             border-bottom: 1px solid ${hasIssue ? 'transparent' : 'rgba(255, 255, 255, 0.3)'};">
                     ${hasIssue ? (
                         statusCode === 'sick' ? '<span style="font-size: 0.75rem; font-weight: 700;">SICK</span>' :
                         statusCode === 'cancelled' ? '<span style="font-size: 0.75rem; font-weight: 700;">CANC</span>' :
                         statusCode === 'missed' ? '<span style="font-size: 0.75rem; font-weight: 700;">MISS</span>' :
+                        statusCode === 'extra' ? '<span style="font-size: 0.75rem; font-weight: 700;">EXTRA</span>' :
                         ICONS.alertTriangle
                     ) : ''}
                 </div>
@@ -1531,7 +1577,11 @@ class ShiftCalendar {
         };
 
         const discrepancies = baselineShift ? calculateDiscrepancies(baselineShift, shift) : null;
-        const isAbsence = shift.day_status === 'missed' || shift.day_status === 'cancelled';
+        const isMissed = shift.day_status === 'missed';
+        const isCancelled = shift.day_status === 'cancelled';
+        const isAbsence = isMissed || isCancelled;
+        const isExtra = (!baselineShift || !baselineShift.start_shift_time || !baselineShift.end_shift_time)
+            && !!(shift.start_shift_time && shift.end_shift_time) && !isAbsence;
         const hasDiscrepancy = discrepancies && (discrepancies.late > 0 || discrepancies.earlyLeave > 0);
 
         const formatShiftDate = (dateStr) => {
@@ -1562,23 +1612,34 @@ class ShiftCalendar {
         // Status indicator
         html += '<div style="margin-bottom: 0.75rem;">';
         if (isAbsence) {
+            // MISSED and CANCELLED — use red palette in tooltip
+            const palette = { bg:'#fee2e2', border:'#fecaca', text:'#991b1b', reason:'#dc2626', label: isMissed ? 'MISSED SHIFT' : 'CANCELLED SHIFT' };
             html += `
-                <div style="display: flex; align-items: center; gap: 0.5rem; 
-                           padding: ${isCompact ? '0.5rem' : '0.75rem'}; 
-                           background-color: #fee2e2; border: 1px solid #fecaca; 
-                           border-radius: 0.5rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem; 
+                            padding:${isCompact ? '0.5rem' : '0.75rem'}; 
+                            background-color:${palette.bg}; border:1px solid ${palette.border}; 
+                            border-radius:0.5rem;">
                     ${ICONS.alertTriangle}
                     <div>
-                        <span style="font-weight: 700; color: #991b1b; 
-                                    font-size: ${isCompact ? '0.875rem' : '1rem'};">
-                            MISSED SHIFT
-                        </span>
+                        <span style="font-weight:700;color:${palette.text};font-size:${isCompact ? '0.875rem' : '1rem'};">${palette.label}</span>
                         ${shift.absence_reason ? `
-                            <div style="color: #dc2626; font-size: ${isCompact ? '0.75rem' : '0.875rem'};">
+                            <div style="color:${palette.reason};font-size:${isCompact ? '0.75rem' : '0.875rem'};">
                                 Reason: ${shift.absence_reason.toUpperCase()}
                             </div>
                         ` : ''}
                     </div>
+                </div>
+            `;
+        } else if (isExtra) {
+            // Extra shift indicator
+            html += `
+                <div style="display:flex;align-items:center;gap:0.5rem; 
+                            padding:${isCompact ? '0.5rem' : '0.75rem'}; 
+                            background-color:#dcfce7; border:1px solid #bbf7d0; border-radius:0.5rem;">
+                    ${ICONS.checkCircle}
+                    <span style="font-weight:700;color:#166534;font-size:${isCompact ? '0.875rem' : '1rem'};">
+                        EXTRA SHIFT
+                    </span>
                 </div>
             `;
         } else if (hasDiscrepancy) {
@@ -1687,11 +1748,11 @@ class ShiftCalendar {
                             ` : ''}
                         </ul>
                         
-                        <div style="display: flex; justify-content: space-between; align-items: center; 
-                                   margin-top: ${isCompact ? '0.5rem' : '0.75rem'}; 
-                                   padding-top: 0.5rem; border-top: 1px solid #f3f4f6;">
-                            <span style="font-weight: 500; color: #374151;">
-                                Total${isCompact ? '' : ' underwork'}:
+                        <div style="display:flex;justify-content:space-between;align-items:center; 
+                                   margin-top:${isCompact ? '0.5rem' : '0.75rem'}; 
+                                   padding-top:0.5rem;border-top:1px solid #f3f4f6;">
+                            <span style="font-weight:500;color:#374151;">
+                                Total${hasDiscrepancy ? ' underwork' : ''}:
                             </span>
                             <span style="font-weight: 700; color: ${
                                 discrepancies.totalUndework >= 30 ? '#dc2626' : '#f59e0b'
@@ -1709,83 +1770,112 @@ class ShiftCalendar {
     }
 
     createLegendContent() {
+        // Warm, matte, restrained tones: soft backgrounds + subtle borders
+        const pill = (bg, text, label) => `
+            <span style="display:inline-flex;align-items:center;gap:0.375rem;padding:0.25rem 0.625rem;border-radius:9999px;font-size:0.75rem;font-weight:600;background:${bg.bg};color:${bg.fg};border:1px solid ${bg.border};">
+              ${label}
+            </span>`;
+        const tone = (hex) => {
+            const v = hex.replace('#','');
+            const r = parseInt(v.slice(0,2),16), g = parseInt(v.slice(2,4),16), b = parseInt(v.slice(4,6),16);
+            return {
+                bg: `rgba(${r},${g},${b},0.10)`,
+                border: `rgba(${r},${g},${b},0.20)`,
+                fg: `rgb(${r},${g},${b})`
+            };
+        };
+
+        const amber = tone('#eab308');
+        const blue = tone('#3b82f6');
+        const green = tone('#22c55e');
+        const red = tone('#ef4444');
+        const gray = tone('#6b7280');
+
         return `
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display:flex;flex-direction:column;gap:1rem;">
                 <div>
-                    <h4 style="font-weight: 700; color: ${THEME.textPrimary}; margin-bottom: 0.5rem;">Plan layer:</h4>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <div style="width: 1rem; height: 1rem; background-color: #9ca3af; border-radius: 50%;"></div>
-                            <span style="font-size: 0.875rem;">Past Planned</span>
+                    <h4 style="font-weight:700;color:${THEME.textPrimary};margin-bottom:0.5rem;">Plan layer:</h4>
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <div style="width:1rem;height:1rem;border-radius:0.25rem;background:rgba(156,163,175,0.35);"></div>
+                            <span style="font-size:0.875rem;color:#374151;">Past Planned</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <div style="width: 1rem; height: 1rem; background-color: #86efac; border-radius: 50%;"></div>
-                            <span style="font-size: 0.875rem;">Planned Future</span>
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <div style="width:1rem;height:1rem;border-radius:0.25rem;background:rgba(34,197,94,0.25);"></div>
+                            <span style="font-size:0.875rem;color:#374151;">Planned Future</span>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <h4 style="font-weight: 700; color: ${THEME.textPrimary}; margin-bottom: 0.5rem;">Actual layer:</h4>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <div style="width: 1rem; height: 1rem; background-color: #15803d; border-radius: 50%;"></div>
-                            <span style="font-size: 0.875rem;">Completed</span>
+                    <h4 style="font-weight:700;color:${THEME.textPrimary};margin-bottom:0.5rem;">Actual layer:</h4>
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <div style="width:1rem;height:1rem;border-radius:0.25rem;background:rgba(21,128,61,0.85);"></div>
+                            <span style="font-size:0.875rem;color:#374151;">Completed</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <div style="width: 1rem; height: 1rem; background-color: #4ade80; border-radius: 50%;"></div>
-                            <span style="font-size: 0.875rem;">Scheduled</span>
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <div style="width:1rem;height:1rem;border-radius:0.25rem;background:rgba(74,222,128,0.65);"></div>
+                            <span style="font-size:0.875rem;color:#374151;">Scheduled</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <div style="width: 1rem; height: 1rem; background-color: #fca5a5; border-radius: 50%;"></div>
-                            <span style="font-size: 0.875rem;">Absence</span>
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <div style="width:1rem;height:1rem;border-radius:0.25rem;background:rgba(239,68,68,0.35);"></div>
+                            <span style="font-size:0.875rem;color:#374151;">Absence</span>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <h4 style="font-weight: 700; color: ${THEME.textPrimary}; margin-bottom: 0.5rem;">Special indicators:</h4>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <div style="width: 2.25rem; height: 1.5rem; background-color: #eab308; 
-                                       border-radius: 0.125rem; display: flex; align-items: center; 
-                                       justify-content: center;">
+                    <h4 style="font-weight:700;color:${THEME.textPrimary};margin-bottom:0.5rem;">Stages:</h4>
+                    <div class="legend-stages">
+                        <div class="legend-stage-row">
+                            <div>${pill(green, 'white', 'Active')}</div>
+                            <span class="legend-stage-desc">Currently employed</span>
+                        </div>
+                        <div class="legend-stage-row">
+                            <div>${pill(amber, 'white', 'Onboarding')}</div>
+                            <span class="legend-stage-desc">From interview/start until fully onboarded</span>
+                        </div>
+                        <div class="legend-stage-row">
+                            <div>${pill(red, 'white', 'Terminated')}</div>
+                            <span class="legend-stage-desc">Employment ended</span>
+                        </div>
+                        <div class="legend-stage-row">
+                            <div>${pill(gray, 'white', 'Not Hired')}</div>
+                            <span class="legend-stage-desc">Before interview/offer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="font-weight:700;color:${THEME.textPrimary};margin-bottom:0.5rem;">Labels:</h4>
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span class="badge badge-project">Project</span>
+                            <span style="font-size:0.875rem;color:#6b7280;">Project</span>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span class="badge badge-backup">Backup</span>
+                            <span style="font-size:0.875rem;color:#6b7280;">Non-billable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="font-weight:700;color:${THEME.textPrimary};margin-bottom:0.5rem;">Special indicators:</h4>
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <div style="width:2.25rem;height:1.5rem;border-radius:0.25rem;background:${amber.bg};border:1px solid ${amber.border};display:flex;align-items:center;justify-content:center;color:${amber.fg}">
                                 ${ICONS.alertTriangle}
                             </div>
                             <div>
-                                <div style="font-size: 0.875rem; font-weight: 500;">
-                                    Time Discrepancy (10+ min)
-                                </div>
-                                <div style="font-size: 0.75rem; color: #6b7280;">
-                                    Late arrival or early departure
-                                </div>
+                                <div style="font-size:0.875rem;font-weight:500;color:#374151;">Time Discrepancy (10+ min)</div>
+                                <div style="font-size:0.75rem;color:#6b7280;">Late arrival or early departure</div>
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <div style="width: 2.25rem; height: 1.5rem; background-color: #ef4444; 
-                                       border-radius: 0.125rem; display: flex; align-items: center; 
-                                       justify-content: center;">
-                                <span style="font-size: 0.875rem; font-weight: 700; color: white;">SICK</span>
-                            </div>
-                            <span style="font-size: 0.875rem;">Sick / Cancel / Missed</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 style="font-weight: 700; color: ${THEME.textPrimary}; margin-bottom: 0.5rem;">Labels:</h4>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span class="badge badge-active">Active</span>
-                            <span style="font-size: 0.875rem; color: #6b7280;">Stage</span>
-                        </div>
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span class="badge badge-project">Project</span>
-                            <span style="font-size: 0.875rem; color: #6b7280;">Project</span>
-                        </div>
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span class="badge badge-backup">Backup</span>
-                            <span style="font-size: 0.875rem; color: #6b7280;">Non-billable</span>
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <div style="width:2.25rem;height:1.5rem;border-radius:0.25rem;background:${red.bg};border:1px solid ${red.border};display:flex;align-items:center;justify-content:center;color:${red.fg};font-weight:700;font-size:0.8rem;">SICK</div>
+                            <span style="font-size:0.875rem;color:#374151;">Sick / Cancel / Missed</span>
                         </div>
                     </div>
                 </div>
@@ -2139,29 +2229,39 @@ class ShiftCalendar {
         if (!legendButton) return;
 
         legendButton.addEventListener('mouseenter', (e) => {
+            const existing = document.querySelector('.legend-tooltip');
+            if (existing) existing.remove();
             const tooltip = document.createElement('div');
             tooltip.className = 'legend-tooltip tooltip';
             tooltip.innerHTML = this.createLegendContent();
             
-            const rect = e.target.getBoundingClientRect();
-            const tooltipWidth = 380;
-            const tooltipHeight = 320;
-            const margin = 20;
-            
-            // Calculate horizontal position (center below button)
-            let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
-            
-            // Ensure tooltip doesn't go off screen
-            if (left < margin) {
-                left = margin;
-            } else if (left + tooltipWidth > window.innerWidth - margin) {
-                left = window.innerWidth - tooltipWidth - margin;
-            }
-            
-            tooltip.style.left = `${left}px`;
-            tooltip.style.top = `${rect.bottom + 10}px`;
-            
+            // Add to DOM first to measure
             document.body.appendChild(tooltip);
+
+            const tooltipWidth = 380; // matches .legend-tooltip
+            const margin = 20;
+            const maxHeight = Math.max(160, window.innerHeight - margin * 2);
+            const measuredHeight = Math.min(tooltip.offsetHeight || 0, maxHeight);
+
+            // Blend between viewport center and anchor position (closer to the question icon)
+            const rect = e.target.getBoundingClientRect();
+            const centerLeft = Math.round((window.innerWidth - tooltipWidth) / 2);
+            const centerTop = Math.round((window.innerHeight - measuredHeight) / 2);
+            const anchorLeft = Math.round(rect.left + rect.width / 2 - tooltipWidth / 2);
+            const anchorTop = Math.round(rect.bottom + 12); // prefer below the icon
+            const weight = 0.3; // 30% pull toward the icon
+
+            let left = Math.round(centerLeft * (1 - weight) + anchorLeft * weight);
+            let top = Math.round(centerTop * (1 - weight) + anchorTop * weight);
+
+            // Clamp to viewport
+            left = Math.max(margin, Math.min(window.innerWidth - tooltipWidth - margin, left));
+            top = Math.max(margin, Math.min(window.innerHeight - measuredHeight - margin, top));
+
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+            tooltip.style.maxHeight = `${maxHeight}px`;
+            tooltip.style.overflowY = 'auto';
         });
 
         legendButton.addEventListener('mouseleave', () => {
@@ -2322,12 +2422,16 @@ class ShiftCalendar {
     }
 
     setViewMode(mode) {
+        // Preserve current horizontal scroll when switching views
+        const scroller = document.getElementById('calendar-scroll');
+        const savedScroll = scroller ? scroller.scrollLeft : null;
         this.state.viewMode = mode;
         this.updateCalendarContent();
-        if (this.state.currentMonth === CONSTANTS.CURRENT_DATE.getMonth() && 
-            this.state.currentYear === CONSTANTS.CURRENT_DATE.getFullYear()) {
-            setTimeout(() => this.centerTodayInCalendar(), 100);
-        }
+        // Restore previous scroll position (do not auto-center to today)
+        requestAnimationFrame(() => {
+            const sc = document.getElementById('calendar-scroll');
+            if (sc && savedScroll !== null) sc.scrollLeft = savedScroll;
+        });
     }
 
     toggleFilterDropdown(type) {
