@@ -387,7 +387,7 @@
 }
 
 .calendar-table thead {
-    background-color: #faf9f6;
+    background-color: #faf9f6; /* solid, not transparent */
 }
 
 .calendar-table thead tr {
@@ -399,7 +399,7 @@
     position: sticky !important;
     top: 0;
     z-index: 25 !important; /* ниже угловой шапки, выше тела */
-    background-color: #faf9f6;
+    background-color: #faf9f6 !important; /* force solid background */
 }
 
 .calendar-table th {
@@ -581,7 +581,7 @@ td.employee-cell {
     bottom: 0 !important;
     width: 2px; /* crisp matte line */
     background-color: rgba(204, 102, 51, 0.9);
-    z-index: 22; /* above cell content, below sticky header corner (50) */
+    z-index: 10; /* below sticky name column (20), above normal cells */
     height: 100%;
     box-shadow: none;
     pointer-events: none;

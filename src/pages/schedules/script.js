@@ -204,13 +204,25 @@ class ShiftCalendar {
                 const employees = monthData.employees || [];
                 const rawShifts = monthData.shifts || [];
                 // Normalize to canonical names (per schema)
+                const normalizeDate = (v) => {
+                    if (!v) return null;
+                    const str = String(v);
+                    return str.length >= 10 ? str.slice(0,10) : str; // YYYY-MM-DD from possible ISO strings
+                };
+                const toCanonType = (v) => {
+                    const t = String(v || '').toLowerCase();
+                    if (t.includes('fact') || t.includes('actual')) return 'fact schedule';
+                    if (t.includes('baseline') || t.includes('plan')) return 'baseline schedule';
+                    return String(v || '');
+                };
                 const shifts = rawShifts.map(s => ({
                     ...s,
-                    start_shift_date: s.start_shift_date || s.shift_date || s.date || s.day || null,
+                    start_shift_date: normalizeDate(s.start_shift_date || s.shift_date || s.date || s.day),
                     start_shift_time: s.start_shift_time || s.start_time || null,
                     end_shift_time: s.end_shift_time || s.end_time || null,
                     day_status: s.day_status || s.status || null,
-                    absence_reason: s.absence_reason || s.reason || null
+                    absence_reason: s.absence_reason || s.reason || null,
+                    schedule_type: toCanonType(s.schedule_type || s.type)
                 }));
                 this.monthCache.set(key, { employees, shifts });
                 this.employeesData = employees;
@@ -470,9 +482,14 @@ class ShiftCalendar {
                 return matchesSearch && matchesProject && matchesStage && matchesPosition;
             })
             .sort((a, b) => {
-                // 1) By project name
+                // 0) Pin project "Customer support" to top
+                const PIN = 'customer support';
                 const projA = (a.project || '').toString();
                 const projB = (b.project || '').toString();
+                const aPinned = projA.toLowerCase() === PIN;
+                const bPinned = projB.toLowerCase() === PIN;
+                if (aPinned !== bPinned) return aPinned ? -1 : 1;
+                // 1) By project name
                 const projDiff = projA.localeCompare(projB);
                 if (projDiff !== 0) return projDiff;
                 // 2) Within project: non-backup first, then backup
@@ -2325,9 +2342,11 @@ class ShiftCalendar {
         const headerHeight = this.isMobile ? 60 : 88;
         // Row heights must match renderDayCell values
         const mainRow = this.isMobile ? 64 : 80;
-        const childRow = this.isMobile ? 54 : 70;
+        const childRow = this.isMobile ? 54 : 70; // kept for reference
 
-        const perEmployeeBlock = this.state.viewMode === 'All' ? (mainRow + childRow) : mainRow;
+        // Keep container height consistent across views (Plan/Actual/All)
+        // Use only the main row height as the baseline; All will scroll more if needed
+        const perEmployeeBlock = mainRow;
         const VISIBLE_EMPLOYEES = 7;
         const target = headerHeight + perEmployeeBlock * VISIBLE_EMPLOYEES;
 
@@ -2422,21 +2441,28 @@ class ShiftCalendar {
     }
 
     setViewMode(mode) {
-        // Preserve current horizontal scroll when switching views
+        // Preserve current scroll position (both axes) when switching views
         const scroller = document.getElementById('calendar-scroll');
-        const savedScroll = scroller ? scroller.scrollLeft : null;
+        const savedLeft = scroller ? scroller.scrollLeft : null;
+        const savedTop = scroller ? scroller.scrollTop : null;
         this.state.viewMode = mode;
         this.updateCalendarContent();
         // Restore previous scroll position (do not auto-center to today)
         requestAnimationFrame(() => {
             const sc = document.getElementById('calendar-scroll');
-            if (sc && savedScroll !== null) sc.scrollLeft = savedScroll;
+            if (!sc) return;
+            if (savedLeft !== null) sc.scrollLeft = savedLeft;
+            if (savedTop !== null) sc.scrollTop = savedTop;
         });
     }
 
     toggleFilterDropdown(type) {
         const dropdownKey = `show${type.charAt(0).toUpperCase() + type.slice(1)}Dropdown`;
-        
+        // Preserve scroll before re-render
+        const scroller = document.getElementById('calendar-scroll');
+        const savedLeft = scroller ? scroller.scrollLeft : null;
+        const savedTop = scroller ? scroller.scrollTop : null;
+
         // Close all other dropdowns
         ['showProjectDropdown', 'showStageDropdown', 'showPositionDropdown'].forEach(key => {
             if (key !== dropdownKey) {
@@ -2446,6 +2472,13 @@ class ShiftCalendar {
         
         this.state[dropdownKey] = !this.state[dropdownKey];
         this.updateCalendarContent();
+        // Restore scroll
+        requestAnimationFrame(() => {
+            const sc = document.getElementById('calendar-scroll');
+            if (!sc) return;
+            if (savedLeft !== null) sc.scrollLeft = savedLeft;
+            if (savedTop !== null) sc.scrollTop = savedTop;
+        });
     }
 
     closeAllDropdowns() {
