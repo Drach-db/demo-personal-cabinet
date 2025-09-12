@@ -204,11 +204,7 @@ class ShiftCalendar {
                 const employees = monthData.employees || [];
                 const rawShifts = monthData.shifts || [];
                 // Normalize to canonical names (per schema)
-                const normalizeDate = (v) => {
-                    if (!v) return null;
-                    const str = String(v);
-                    return str.length >= 10 ? str.slice(0,10) : str; // YYYY-MM-DD from possible ISO strings
-                };
+                const normalizeDate = (v) => this.canonicalDate(v);
                 const toCanonType = (v) => {
                     const t = String(v || '').toLowerCase();
                     if (t.includes('fact') || t.includes('actual')) return 'fact schedule';
@@ -276,12 +272,33 @@ class ShiftCalendar {
         `;
     }
 
-    // ========================================
-    // UTILITY FUNCTIONS
-    // ========================================
+// ========================================
+// UTILITY FUNCTIONS
+// ========================================
+    // Canonicalize date-like value to YYYY-MM-DD (zero-padded)
+    canonicalDate(v) {
+        if (!v) return null;
+        const s = String(v);
+        // Try to extract y-m-d parts
+        const m = s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (m) {
+            const y = Number(m[1]);
+            const mo = String(Number(m[2])).padStart(2, '0');
+            const d = String(Number(m[3])).padStart(2, '0');
+            return `${y}-${mo}-${d}`;
+        }
+        // Fallback: parse as Date
+        const d = new Date(s);
+        if (!isNaN(d)) {
+            return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+        }
+        // Last resort: trim first 10 chars
+        return s.slice(0, 10);
+    }
     formatDate(dateStr) {
         if (!dateStr) return null;
-        const [year, month, day] = dateStr.split('-').map(Number);
+        const canon = this.canonicalDate(dateStr);
+        const [year, month, day] = canon.split('-').map(Number);
         return new Date(year, month - 1, day);
     }
 
@@ -401,9 +418,12 @@ class ShiftCalendar {
 
     getShiftsForEmployeeAndDate(employeeId, date) {
         const dateStr = this.toDateStr(date);
-        return this.shiftsData.filter(shift => 
-            shift.employee_id === employeeId && shift.start_shift_date === dateStr
-        );
+        const id = String(employeeId);
+        return this.shiftsData.filter(shift => {
+            const sid = String(shift.employee_id);
+            const sdate = this.canonicalDate(shift.start_shift_date);
+            return sid === id && sdate === dateStr;
+        });
     }
 
     // Computed values
@@ -1253,6 +1273,10 @@ class ShiftCalendar {
         let specialStatus = null;
         if (displayShifts.length === 0) {
             specialStatus = this.getSpecialStatus(employee, day);
+            // In Plan view we never show 'terminated' badges; keep cells empty instead
+            if (scheduleType === 'Baseline' && specialStatus === 'terminated') {
+                specialStatus = null;
+            }
         }
 
         // Terminated days in Actual view: show only FACT shifts; baseline after end_date should not mask termination
@@ -1266,19 +1290,15 @@ class ShiftCalendar {
 
         const renderSpecialBadge = (code) => {
             if (!code) return '';
-            const fullLabel = code === 'not_hired' ? 'Not Hired' : code === 'terminated' ? 'Terminated' : code === 'onboarding' ? 'Onboarding' : code;
-            const label = fullLabel;
-            const isOnboarding = code === 'onboarding';
+            const label = code === 'not_hired' ? 'Not Hired' : code === 'terminated' ? 'Terminated' : code === 'onboarding' ? 'Onboarding' : String(code);
+            const cls = code === 'terminated' ? 'badge badge-terminated'
+                      : code === 'onboarding' ? 'badge badge-onboarding'
+                      : code === 'not_hired' ? 'badge badge-nothired'
+                      : 'badge';
             const cellStyle = `background-image: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(156,163,175,0.08) 6px, rgba(156,163,175,0.08) 7px); background-color: #fafafa; border-radius: 6px;`;
-            const pillBg = isOnboarding ? '#fef3c7' : '#e5e7eb';
-            const pillText = isOnboarding ? '#92400e' : '#4b5563';
-            const fontSize = this.isMobile ? '10.5px' : '10px';
-            const padX = this.isMobile ? '6px' : '5px';
-            const wrapStyle = this.isMobile
-                ? 'white-space:normal; line-height:1.1; max-height:2.4em; overflow:hidden; word-break:break-word;'
-                : 'white-space:nowrap; line-height:1; overflow:hidden; text-overflow:clip;';
-            const pill = `<span style="display:inline-block; max-width:100%; padding:2px ${padX}; border-radius:9999px; background:${pillBg}; color:${pillText}; font-weight:700; font-size:${fontSize}; ${wrapStyle} text-align:center;">${label}</span>`;
-            return `<div class="special-cell" style="${cellStyle}; width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:2px;">${pill}</div>`;
+            return `<div class="special-cell" style="${cellStyle}; width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:2px;">
+                <span class="${cls}" style="font-size:${this.isMobile ? '10.5px' : '10px'}; line-height:1;">${label}</span>
+            </div>`;
         };
 
         return `
@@ -1344,11 +1364,17 @@ class ShiftCalendar {
                 }
             }
             textColor = THEME.textPrimary;
-        } else if (shift.day_status === 'completed') {
-            // success: muted/darker green like approve, but less "salad"
-            bgColor = 'rgba(22, 163, 74, 0.15)';   // darker, warmer green fill
-            borderColor = 'rgba(22, 163, 74, 0.45)';
-            textColor = '#166534';                 // dark green text
+        } else if (shift.schedule_type === 'fact schedule') {
+            // Actual (FACT) shifts: past = darker, today/future = light (like future cards in Actual)
+            if (isPastShift) {
+                bgColor = 'rgba(22, 163, 74, 0.15)';   // darker, warmer green fill
+                borderColor = 'rgba(22, 163, 74, 0.45)';
+                textColor = '#166534';                 // dark green text
+            } else {
+                bgColor = '#dcfce7';                   // light future style
+                borderColor = 'rgba(22, 163, 74, 0.35)';
+                textColor = '#166534';
+            }
         } else if (shift.day_status === 'missed') {
             // danger: muted red like reject
             bgColor = 'rgba(239, 68, 68, 0.10)';
