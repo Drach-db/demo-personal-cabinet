@@ -4,7 +4,7 @@
    ======================================== */
 
 :root {
-    --header-height: 60px;
+    --header-height: 68px;
     --navbar-width: 260px;
     --navbar-collapsed-width: 72px;
     --layout-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);

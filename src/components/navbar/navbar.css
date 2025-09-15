@@ -197,10 +197,17 @@ html.navbar-pre-collapsed .navbar__logo-text {
 }
 
 /* Inline SVG brand logo */
-.navbar__brand-logo svg {
-    width: 28px; /* fits 60px header aesthetically */
-    height: auto;
-    display: block;
+.navbar__brand-logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navbar-text-active);
+    line-height: 1;
+    letter-spacing: -0.01em; /* slightly tighter for premium feel */
+}
+.navbar__brand-logo svg { display: none !important; }
+.navbar__brand-logo::after {
+    content: 'Your Company';
+    display: inline-block;
 }
 
 /* When collapsed, logo text wrapper already hides via .navbar__logo-text */
