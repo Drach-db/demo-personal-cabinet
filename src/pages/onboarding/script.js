@@ -187,7 +187,7 @@ const templates = {
     },
 
     employeeCard(employee, options = {}) {
-        const { locked = false } = options;
+        const { locked = false, animate = false } = options;
         const statusButtons = state.employeeStatuses[employee.employee_id];
         const testUrl = employee.english_proficiency_test || '#';
         
@@ -242,8 +242,8 @@ const templates = {
                             <span class="label-short">Action:</span>
                         </span>
                         ${statusButtons ? `
-                            <div class="decision-status decision-${statusButtons} ${locked ? 'decision-locked' : ''}"
-                                 ${locked ? 'title="Locked for completed group"' : `onclick="handleEmployeeDecision('${employee.employee_id}', 'null')"`}>
+                            <div class=\"decision-status decision-${statusButtons} ${locked ? 'decision-locked' : ''} ${animate ? 'animate' : ''}\"
+                                 ${locked ? 'title=\"Locked for completed group\"' : `onclick=\"handleEmployeeDecision(event, '${employee.employee_id}', 'null')\"`}>
                                 ${statusButtons === 'approved' ? icons.check : icons.x}
                                 <span>${statusButtons === 'approved' ? 'Approved' : 'Rejected'}</span>
                             </div>
@@ -256,12 +256,12 @@ const templates = {
                             ` : `
                                 <div class="action-buttons">
                                     <button class="btn btn-approve" 
-                                            onclick="handleEmployeeDecision('${employee.employee_id}', 'approved')">
+                                            onclick="handleEmployeeDecision(event, '${employee.employee_id}', 'approved')">
                                         ${icons.check}
                                         <span class="btn-text">Approve</span>
                                     </button>
                                     <button class="btn btn-reject" 
-                                            onclick="handleEmployeeDecision('${employee.employee_id}', 'rejected')">
+                                            onclick="handleEmployeeDecision(event, '${employee.employee_id}', 'rejected')">
                                         ${icons.x}
                                         <span class="btn-text">Reject</span>
                                     </button>
@@ -303,7 +303,7 @@ const templates = {
 
         // Determine if batch decisions should be locked (completed/done)
         const stage = ((batch && (batch.stage || batch.status)) || '').toLowerCase();
-        const locked = stage === 'completed' || stage === 'done';
+        const locked = stage === 'completed';
 
         return `
             <div class="batch-expanded">
@@ -796,11 +796,75 @@ function updateBatchCardUI(batch) {
         mPercent.style.color = progressColors.text;
     }
 
-    // Expanded section
+    // Do not re-render expanded section here to avoid re-creating
+    // existing employee decision buttons (prevents visual blinking).
+}
+
+// Update tab counters inside expanded section without re-rendering everything
+function updateExpandedTabCounts(batch) {
+    if (!batch || !Array.isArray(batch.employees)) return;
+    const card = document.querySelector(`[data-batch-id="${batch.id}"]`);
+    if (!card) return;
     const expanded = card.querySelector('.batch-expanded');
-    if (expanded) {
-        expanded.outerHTML = templates.expandedSection(batch);
+    if (!expanded) return;
+    const tabs = expanded.querySelectorAll('.employee-tabs .employee-tab');
+    if (!tabs || tabs.length < 4) return;
+
+    const emps = batch.employees;
+    const allCount = emps.length;
+    const approvedCount = emps.filter(e => state.employeeStatuses[e.employee_id] === 'approved').length;
+    const rejectedCount = emps.filter(e => state.employeeStatuses[e.employee_id] === 'rejected').length;
+    const unreviewedCount = allCount - approvedCount - rejectedCount;
+
+    // All
+    const allSpan = tabs[0].querySelector('.tab-count');
+    if (allSpan) allSpan.textContent = allCount;
+    // Unreviewed
+    const unrevSpan = tabs[1].querySelector('.tab-count');
+    if (unrevSpan) unrevSpan.textContent = unreviewedCount;
+    // Approved
+    const apprSpan = tabs[2].querySelector('.tab-count');
+    if (apprSpan) apprSpan.textContent = approvedCount;
+    // Rejected
+    const rejSpan = tabs[3].querySelector('.tab-count');
+    if (rejSpan) rejSpan.textContent = rejectedCount;
+}
+
+// Re-render only the employees list for current active tab
+function rerenderEmployeesListForActiveTab(batch) {
+    if (!batch) return;
+    const card = document.querySelector(`[data-batch-id="${batch.id}"]`);
+    if (!card) return;
+    const expanded = card.querySelector('.batch-expanded');
+    if (!expanded) return;
+    const list = expanded.querySelector('.employees-list');
+    if (!list) return;
+
+    if (!Array.isArray(batch.employees)) {
+        list.innerHTML = templates.noData(
+            icons.userSearch,
+            'No employees',
+            'Team members will be assigned to this group'
+        );
+        return;
     }
+
+    const filtered = getFilteredEmployees(batch.employees);
+    const stage = ((batch && (batch.stage || batch.status)) || '').toLowerCase();
+    const locked = stage === 'completed';
+    if (filtered.length === 0) {
+        const sub = state.activeTab === 'approved' ? 'Click "Approve" to confirm employees'
+                  : state.activeTab === 'rejected' ? 'Click "Reject" to decline employees'
+                  : state.activeTab === 'unreviewed' ? 'All employees are reviewed'
+                  : 'Employees will be assigned to this group';
+        list.innerHTML = templates.noData(
+            icons.userSearch,
+            `No ${state.activeTab === 'all' ? '' : state.activeTab} employees`,
+            sub
+        );
+        return;
+    }
+    list.innerHTML = filtered.map(emp => templates.employeeCard(emp, { locked })).join('');
 }
 
 // ========================================
@@ -843,14 +907,18 @@ window.handleToggleBatch = function(event, batchId) {
     }
 };
 
-window.handleEmployeeDecision = function(employeeId, status) {
+window.handleEmployeeDecision = function(evt, employeeId, status) {
+    if (evt) {
+        try { evt.preventDefault(); } catch {}
+        try { evt.stopPropagation(); } catch {}
+    }
     // Prevent changing decisions in completed/done batches
     const batchId = state.selectedCard;
     let isLocked = false;
     if (batchId) {
         const batch = state.batches.find(b => b.id === batchId);
         const stage = ((batch && (batch.stage || batch.status)) || '').toLowerCase();
-        isLocked = stage === 'completed' || stage === 'done';
+        isLocked = stage === 'completed';
     }
 
     if (isLocked) {
@@ -867,11 +935,34 @@ window.handleEmployeeDecision = function(employeeId, status) {
         state.employeeStatuses[employeeId] = status;
     }
     
-    // Обновляем только содержимое карточки, чтобы не триггерить hover-анимацию
+    // Update UI: batch header values, tab counters, and only the affected card/list
     const currentId = state.selectedCard;
     if (currentId) {
         const batch = state.batches.find(b => b.id === currentId);
-        if (batch) updateBatchCardUI(batch);
+        if (batch) {
+            // Update header stats/progress without re-rendering expanded section
+            updateBatchCardUI(batch);
+            // Update tab counters inside expanded section
+            updateExpandedTabCounts(batch);
+
+            const cardEl = document.querySelector(`[data-batch-id="${batch.id}"] .batch-expanded .employee-card[data-employee-id="${employeeId}"]`);
+            const stage = ((batch && (batch.stage || batch.status)) || '').toLowerCase();
+            const locked = stage === 'completed';
+
+            // Decide how to update list depending on current tab
+            if (state.activeTab === 'all') {
+                if (cardEl) {
+                    const emp = (batch.employees || []).find(e => e.employee_id === employeeId);
+                    if (emp) cardEl.outerHTML = templates.employeeCard(emp, { locked, animate: status !== 'null' });
+                }
+            } else if (state.activeTab === 'unreviewed') {
+                // Move out from list if approved/rejected, or re-add on reset
+                rerenderEmployeesListForActiveTab(batch);
+            } else if (state.activeTab === 'approved' || state.activeTab === 'rejected') {
+                // Keep list in sync for these filtered tabs
+                rerenderEmployeesListForActiveTab(batch);
+            }
+        }
     }
 };
 

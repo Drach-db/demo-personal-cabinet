@@ -504,8 +504,8 @@ class ShiftCalendar {
                 return matchesSearch && matchesProject && matchesStage && matchesPosition;
             })
             .sort((a, b) => {
-                // 0) Pin project "Customer support" to top
-                const PIN = 'customer support';
+                // 0) Pin project "Sales team" to top
+                const PIN = 'sales team';
                 const projA = (a.project || '').toString();
                 const projB = (b.project || '').toString();
                 const aPinned = projA.toLowerCase() === PIN;

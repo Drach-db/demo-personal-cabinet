@@ -863,12 +863,14 @@
     font-size: var(--font-body);
     font-weight: var(--font-semibold);
     border-radius: 0.375rem;
-    animation: slideIn 0.3s ease-out;
     transition: var(--transition);
     width: 15.375rem;
     height: 2rem;
     cursor: pointer;
   }
+
+  /* Apply slide-in animation only when explicitly requested */
+  .decision-status.animate { animation: slideIn 0.3s ease-out; }
 
   .decision-status:hover {
     transform: scale(0.98);
