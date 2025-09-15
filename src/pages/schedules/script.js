@@ -1049,7 +1049,32 @@ class ShiftCalendar {
 
         const calendar = document.getElementById('calendar-section');
         if (calendar) {
-            calendar.innerHTML = this.renderCalendar();
+            // Try to update the existing table in-place to avoid flicker
+            const scroller = document.getElementById('calendar-scroll');
+            const table = scroller ? scroller.querySelector('.calendar-table') : null;
+            const employeesInMonth = this.getEmployeesInMonth();
+            const filteredEmployees = this.getFilteredEmployees();
+            const canPatchInPlace = !!(scroller && table && employeesInMonth.length > 0 && (!(this.state.searchTerm||'').trim() || filteredEmployees.length > 0));
+
+            // Preserve current horizontal scroll
+            const savedLeft = scroller ? scroller.scrollLeft : 0;
+
+            if (canPatchInPlace) {
+                const newThead = this.renderCalendarHeader();
+                const newTbody = this.renderCalendarBody();
+                const theadEl = table.querySelector('thead');
+                const tbodyEl = table.querySelector('tbody');
+                if (theadEl) theadEl.outerHTML = newThead;
+                if (tbodyEl) tbodyEl.outerHTML = newTbody;
+                // Restore scroll and refresh thumb without rebuilding containers
+                if (scroller) scroller.scrollLeft = savedLeft;
+                if (typeof this.updateHScrollThumb === 'function') this.updateHScrollThumb();
+            } else {
+                // Fall back to full render (empty states or first paint). Keep scroll position if possible.
+                calendar.innerHTML = this.renderCalendar();
+                const sc = document.getElementById('calendar-scroll');
+                if (sc && savedLeft) sc.scrollLeft = savedLeft;
+            }
         }
 
         // Reattach listeners that bind to specific nodes
