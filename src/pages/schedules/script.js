@@ -1087,7 +1087,7 @@ class ShiftCalendar {
         return `
             <div class="empty-state">
                 <div class="empty-state-content" ${this.isMobile ? 'style="margin: 0;"' : ''}>
-                    <div class="empty-state-icon" style="color: #9ca3af;">${ICONS.search}</div>
+                    <div class="empty-state-icon">${ICONS.search}</div>
                     <h3 class="empty-state-title">No matches found</h3>
                     <p class="empty-state-text">Nothing matches “${term.replace(/</g,'&lt;').replace(/>/g,'&gt;')}” in ${this.getMonthName(this.state.currentMonth)} ${this.state.currentYear}</p>
                     <button type="button" class="empty-state-button" id="clear-search-empty">

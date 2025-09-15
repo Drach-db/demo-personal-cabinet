@@ -917,6 +917,30 @@ function renderEmployeeGrid() {
     const container = document.getElementById('employeeGrid');
     const filteredEmployees = getFilteredEmployees();
 
+    // Sort by project, then stage within project, with Backups at bottom of each project
+    const STAGE_ORDER = ['Active', 'Onboarding', 'Terminated'];
+    const sorted = [...filteredEmployees].sort((a, b) => {
+        const projA = (a.project || '').toString();
+        const projB = (b.project || '').toString();
+        const projDiff = projA.localeCompare(projB);
+        if (projDiff !== 0) return projDiff;
+
+        const aBackup = String(a.staffing_type || '').toLowerCase() === 'backup';
+        const bBackup = String(b.staffing_type || '').toLowerCase() === 'backup';
+        if (aBackup !== bBackup) return aBackup ? 1 : -1; // backups last within project
+
+        const idxA = STAGE_ORDER.indexOf(a.stage);
+        const idxB = STAGE_ORDER.indexOf(b.stage);
+        if (idxA !== -1 && idxB !== -1 && idxA !== idxB) return idxA - idxB;
+        if (idxA !== -1 && idxB === -1) return -1;
+        if (idxA === -1 && idxB !== -1) return 1;
+
+        // Fallback: by stage name, then by full name
+        const stageDiff = (a.stage || '').toString().localeCompare((b.stage || '').toString());
+        if (stageDiff !== 0) return stageDiff;
+        return (a.full_name || '').toString().localeCompare((b.full_name || '').toString());
+    });
+
     if (filteredEmployees.length === 0) {
         container.innerHTML = `
             <div style="text-align: center; padding: 48px; border-radius: 12px; background-color: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);">
@@ -928,7 +952,7 @@ function renderEmployeeGrid() {
         return;
     }
 
-    container.innerHTML = filteredEmployees.map(employee => renderEmployeeCard(employee)).join('');
+    container.innerHTML = sorted.map(employee => renderEmployeeCard(employee)).join('');
 }
 
 function refreshFiltersAndGrid() {

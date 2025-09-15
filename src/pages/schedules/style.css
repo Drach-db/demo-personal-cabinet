@@ -1033,8 +1033,8 @@ td.employee-cell {
     text-align: center;
     padding: 2rem;
     border-radius: 0.75rem;
-    background-color: #f0f9ff;
-    border: 1px solid #bae6fd;
+    background-color: rgba(255, 255, 255, 0.7); /* warm matte card */
+    border: 1px solid rgba(255, 255, 255, 0.4);
     max-width: 400px;
     width: 100%;
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -1044,7 +1044,7 @@ td.employee-cell {
     width: 3rem;
     height: 3rem;
     margin: 0 auto 0.75rem;
-    color: #0ea5e9;
+    color: rgba(204, 102, 51, 0.85); /* warm accent */
 }
 
 .empty-state-title {
@@ -1066,17 +1066,18 @@ td.employee-cell {
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
-    background-color: #cc6633;
-    color: white;
-    font-weight: 500;
+    background-color: rgba(204, 102, 51, 0.10); /* matte warm */
+    border: 1px solid rgba(204, 102, 51, 0.40);
+    color: #cc6633;
+    font-weight: 600;
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
-    border: none;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.2s, transform 0.2s;
 }
 
 .empty-state-button:hover {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: rgba(204, 102, 51, 0.15);
+    transform: translateY(-1px);
 }
 
 /* ========================================
