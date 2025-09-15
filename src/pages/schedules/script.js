@@ -340,10 +340,14 @@ class ShiftCalendar {
             return false;
         }
         
-        const isLate = actualStartMinutes - plannedStartMinutes >= 10;
-        const isEarlyLeave = plannedEndMinutes - actualEndMinutes >= 10;
+        // Underwork cases
+        const isLate = (actualStartMinutes - plannedStartMinutes) >= 10;          // опоздание
+        const isEarlyLeave = (plannedEndMinutes - actualEndMinutes) >= 10;        // ушел раньше
+        // Overtime cases
+        const isEarlyArrival = (plannedStartMinutes - actualStartMinutes) >= 10;  // пришел раньше
+        const isLateLeave = (actualEndMinutes - plannedEndMinutes) >= 10;         // ушел позже
         
-        return isLate || isEarlyLeave;
+        return isLate || isEarlyLeave || isEarlyArrival || isLateLeave;
     }
 
     // Special employment status for a given employee/day
@@ -1781,14 +1785,26 @@ class ShiftCalendar {
             const actualStart = this.parseTime(actual.start_shift_time);
             const actualEnd = this.parseTime(actual.end_shift_time);
             
-            const late = Math.max(0, actualStart - plannedStart);
-            const earlyLeave = Math.max(0, plannedEnd - actualEnd);
+            // Underwork
+            const late = Math.max(0, actualStart - plannedStart);           // late arrival (опоздание)
+            const earlyLeave = Math.max(0, plannedEnd - actualEnd);         // early leave (ушёл раньше)
+            // Overtime
+            const earlyArrival = Math.max(0, plannedStart - actualStart);   // early arrival (пришёл раньше)
+            const lateLeave = Math.max(0, actualEnd - plannedEnd);          // late leave (ушёл позже)
+            
+            const plannedDuration = plannedEnd - plannedStart;
+            const actualDuration = actualEnd - actualStart;
+            const totalDelta = actualDuration - plannedDuration;            // + => overtime, - => underwork
+            
+            const maxDeviation = Math.max(late, earlyLeave, earlyArrival, lateLeave);
             
             return {
-                late: late,
-                earlyLeave: earlyLeave,
-                totalUndework: late + earlyLeave,
-                severity: (late + earlyLeave) >= 30 ? 'high' : 'medium'
+                late,
+                earlyLeave,
+                earlyArrival,
+                lateLeave,
+                totalDelta,
+                severity: maxDeviation >= 30 ? 'high' : 'medium'
             };
         };
 
@@ -1798,7 +1814,12 @@ class ShiftCalendar {
         const isAbsence = isMissed || isCancelled;
         const isExtra = (!baselineShift || !baselineShift.start_shift_time || !baselineShift.end_shift_time)
             && !!(shift.start_shift_time && shift.end_shift_time) && !isAbsence;
-        const hasDiscrepancy = discrepancies && (discrepancies.late >= 10 || discrepancies.earlyLeave >= 10);
+        const hasDiscrepancy = discrepancies && (
+            discrepancies.late >= 10 ||
+            discrepancies.earlyLeave >= 10 ||
+            discrepancies.earlyArrival >= 10 ||
+            discrepancies.lateLeave >= 10
+        );
 
         const formatShiftDate = (dateStr) => {
             const date = this.formatDate(dateStr);
@@ -1941,25 +1962,31 @@ class ShiftCalendar {
                     <div style="padding-top: 0.5rem; margin-top: 0.5rem; border-top: 1px solid #e5e7eb;">
                         <span style="font-weight: 500; color: #374151; display: block; 
                                    margin-bottom: 0.5rem; font-size: ${isCompact ? '0.875rem' : '1rem'};">
-                            Issues detected:
+                            Time Discrepancy (10+ min):
                         </span>
                         <ul style="list-style: none; padding: 0;">
                             ${discrepancies.late >= 10 ? `
                                 <li style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                                    <div style="width: 0.5rem; height: 0.5rem; background-color: #f87171; 
-                                               border-radius: 50%;"></div>
-                                    <span>Late${isCompact ? '' : ' arrival'}: 
-                                        <strong>${discrepancies.late} min</strong>
-                                    </span>
+                                    <div style="width: 0.5rem; height: 0.5rem; background-color: #f87171; border-radius: 50%;"></div>
+                                    <span>Late ${isCompact ? '' : 'arrival'}: <strong>${discrepancies.late} min</strong></span>
                                 </li>
                             ` : ''}
                             ${discrepancies.earlyLeave >= 10 ? `
+                                <li style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                    <div style="width: 0.5rem; height: 0.5rem; background-color: #fb923c; border-radius: 50%;"></div>
+                                    <span>Early ${isCompact ? '' : 'departure'}: <strong>${discrepancies.earlyLeave} min</strong></span>
+                                </li>
+                            ` : ''}
+                            ${discrepancies.earlyArrival >= 10 ? `
+                                <li style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                    <div style="width: 0.5rem; height: 0.5rem; background-color: #22c55e; border-radius: 50%;"></div>
+                                    <span>Early ${isCompact ? '' : 'arrival'}: <strong>${discrepancies.earlyArrival} min</strong></span>
+                                </li>
+                            ` : ''}
+                            ${discrepancies.lateLeave >= 10 ? `
                                 <li style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <div style="width: 0.5rem; height: 0.5rem; background-color: #fb923c; 
-                                               border-radius: 50%;"></div>
-                                    <span>Early${isCompact ? '' : ' departure'}: 
-                                        <strong>${discrepancies.earlyLeave} min</strong>
-                                    </span>
+                                    <div style="width: 0.5rem; height: 0.5rem; background-color: #3b82f6; border-radius: 50%;"></div>
+                                    <span>Late ${isCompact ? '' : 'departure'}: <strong>${discrepancies.lateLeave} min</strong></span>
                                 </li>
                             ` : ''}
                         </ul>
@@ -1967,13 +1994,9 @@ class ShiftCalendar {
                         <div style="display:flex;justify-content:space-between;align-items:center; 
                                    margin-top:${isCompact ? '0.5rem' : '0.75rem'}; 
                                    padding-top:0.5rem;border-top:1px solid #f3f4f6;">
-                            <span style="font-weight:500;color:#374151;">
-                                Total${hasDiscrepancy ? ' underwork' : ''}:
-                            </span>
-                            <span style="font-weight: 700; color: ${
-                                discrepancies.totalUndework >= 30 ? '#dc2626' : '#f59e0b'
-                            };">
-                                ${discrepancies.totalUndework} min
+                            <span style="font-weight:500;color:#374151;">Total difference:</span>
+                            <span style="font-weight: 700; color: ${discrepancies.totalDelta > 0 ? '#16a34a' : discrepancies.totalDelta < 0 ? '#dc2626' : '#6b7280'};">
+                                ${discrepancies.totalDelta > 0 ? '+' : ''}${discrepancies.totalDelta} min
                             </span>
                         </div>
                     </div>
