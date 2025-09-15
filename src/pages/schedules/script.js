@@ -316,7 +316,10 @@ class ShiftCalendar {
 
     parseTime(timeStr) {
         if (!timeStr) return undefined;
-        const [hours, minutes] = timeStr.split(':').map(Number);
+        const parts = String(timeStr).split(':').map(Number);
+        const hours = Number.isFinite(parts[0]) ? parts[0] : undefined;
+        const minutes = Number.isFinite(parts[1]) ? parts[1] : 0;
+        if (!Number.isFinite(hours)) return undefined;
         return hours * 60 + minutes;
     }
 
@@ -331,7 +334,9 @@ class ShiftCalendar {
         const actualStartMinutes = this.parseTime(aStart);
         const actualEndMinutes = this.parseTime(aEnd);
         
-        if (!plannedStartMinutes || !plannedEndMinutes || !actualStartMinutes || !actualEndMinutes) {
+        // Treat 00:00 (0 minutes) as valid, only fail if undefined/NaN
+        if (![plannedStartMinutes, plannedEndMinutes, actualStartMinutes, actualEndMinutes]
+              .every(v => Number.isFinite(v))) {
             return false;
         }
         
