@@ -661,7 +661,8 @@ td.employee-cell {
 /* Today Indicator */
 .today-indicator {
     position: absolute !important;
-    left: -1px !important; /* sit right over the left border of the today column */
+    right: -1px !important; /* place the line before the next day (between today and tomorrow) */
+    left: auto !important;
     top: 0 !important;
     bottom: 0 !important;
     width: 2px; /* crisp matte line */

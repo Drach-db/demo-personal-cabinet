@@ -1340,7 +1340,9 @@ class ShiftCalendar {
     }
 
     renderShiftCell(shift, baselineShift, employee, isChildRow, viewType = 'Actual') {
-        const isPastShift = this.isPast(this.formatDate(shift.start_shift_date));
+        const shiftDate = this.formatDate(shift.start_shift_date);
+        const isPastShift = this.isPast(shiftDate);
+        const isTodayShift = this.isToday(shiftDate);
         
         let statusCode = null;
         let showDiscrepancy = false;
@@ -1384,8 +1386,8 @@ class ShiftCalendar {
             }
             textColor = THEME.textPrimary;
         } else if (shift.schedule_type === 'fact schedule') {
-            // Actual (FACT) shifts: past = darker, today/future = light (like future cards in Actual)
-            if (isPastShift) {
+            // Actual (FACT) shifts: past or today = darker; future = light
+            if (isPastShift || isTodayShift) {
                 bgColor = 'rgba(22, 163, 74, 0.15)';   // darker, warmer green fill
                 borderColor = 'rgba(22, 163, 74, 0.45)';
                 textColor = '#166534';                 // dark green text
@@ -2434,9 +2436,9 @@ class ShiftCalendar {
     applyRubberBandGuard() {
         const scroller = document.getElementById('calendar-scroll');
         if (!scroller) return;
-        // Блокируем эластик-скролл (как на десктопе): скролл только внутри контейнера
-        scroller.style.overscrollBehavior = 'contain';
-        scroller.style.overscrollBehaviorY = 'contain';
+        // Разрешаем скролл-ченинг по вертикали: при упоре в верх/низ — скролл переходит странице
+        scroller.style.overscrollBehavior = 'auto';
+        scroller.style.overscrollBehaviorY = 'auto';
         scroller.style.overscrollBehaviorX = 'contain';
         scroller.style.webkitOverflowScrolling = 'touch'; // сохранить инерцию внутри
 
@@ -2457,8 +2459,8 @@ class ShiftCalendar {
                 const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
                 const atLeft = scroller.scrollLeft <= 0;
                 const atRight = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1;
-                // Если тянем за пределы — блокируем дефолт, чтобы страница не прыгала
-                if ((atTop && dy > 0) || (atBottom && dy < 0) || (atLeft && dx > 0) || (atRight && dx < 0)) {
+                // Блокируем только горизонтальные края; вертикальные оставляем для скролл-ченинга
+                if ((atLeft && dx > 0) || (atRight && dx < 0)) {
                     e.preventDefault();
                 }
             }, { passive: false });
