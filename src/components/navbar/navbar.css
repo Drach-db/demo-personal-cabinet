@@ -286,7 +286,7 @@ html.navbar-pre-collapsed .navbar__logo-text {
     position: relative;
     background-color: transparent;
     cursor: pointer;
-    overflow: hidden;
+    overflow: visible; /* avoid clipping badges during transition */
 }
 
 /* When collapsed, allow badges to overflow without clipping */
@@ -352,6 +352,8 @@ html.navbar-pre-collapsed .navbar__logo-text {
     border-radius: 10px;
     min-width: 20px;
     text-align: center;
+    position: relative;
+    z-index: 2; /* keep above link while animating */
 }
 .navbar__link-badge.badge--empty {
     background: transparent;
@@ -553,19 +555,20 @@ html.navbar-pre-collapsed .navbar__logo-text {
 .navbar__user-avatar {
     width: 36px;
     height: 36px;
-    background: linear-gradient(135deg, #7b8794 0%, #4b5563 100%);
-    border: 1px solid var(--navbar-border);
-    border-radius: 12px;
+    background: #EEF2FB; /* soft matte blue */
+    border: 1px solid rgba(220,215,205,0.6);
+    border-radius: 50%; /* circular like on calendar */
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 .navbar__user-avatar svg {
     width: 20px;
     height: 20px;
-    color: white;
+    color: #1E3A8A; /* deep blue */
 }
 
 .navbar__user-info {

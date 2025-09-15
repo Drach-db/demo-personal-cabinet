@@ -43,11 +43,12 @@ const COLORS = {
 };
 
 const AVATAR_COLORS = [
-    { bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#ffffff' },
-    { bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', text: '#ffffff' },
-    { bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', text: '#ffffff' },
-    { bg: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', text: '#ffffff' },
-    { bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', text: '#ffffff' }
+    // Warm matte palette (no glossy gradients)
+    { bg: '#F4EDE6', text: '#374151' },
+    { bg: '#E9F2EE', text: '#166534' },
+    { bg: '#EEF2FB', text: '#1E3A8A' },
+    { bg: '#FDEEE7', text: '#92400E' },
+    { bg: '#F3F4F6', text: '#374151' }
 ];
 
 // ========================================
@@ -168,7 +169,7 @@ function toggleFilter(value, filterType) {
         }
     }
     enforceConsistentSelections();
-    render();
+    refreshFiltersAndGrid();
 }
 
 function clearAllFilters() {
@@ -930,6 +931,23 @@ function renderEmployeeGrid() {
     container.innerHTML = filteredEmployees.map(employee => renderEmployeeCard(employee)).join('');
 }
 
+function refreshFiltersAndGrid() {
+    // Preserve grid scroll to avoid jump on mobile
+    const gridEl = document.getElementById('employeeGrid');
+    const savedTop = gridEl ? gridEl.scrollTop : null;
+
+    renderDesktopFilters();
+    renderMobileFilters();
+    renderEmployeeGrid();
+
+    // Restore scroll
+    const gridAfter = document.getElementById('employeeGrid');
+    if (gridAfter && savedTop !== null) gridAfter.scrollTop = savedTop;
+
+    // Update mobile overlay UI if open
+    if (state.showMobileFilters) updateMobileFiltersUI();
+}
+
 function showLoading() {
     const loading = document.getElementById('loadingContainer');
     const error = document.getElementById('errorContainer');
@@ -1077,9 +1095,9 @@ window.toggleDropdown = function(type) {
     state.showStageDropdown = false;
     state.showPositionDropdown = false;
     
-    // Toggle the clicked dropdown
+    // Toggle the clicked dropdown (desktop only UI update)
     state[dropdownKey] = !state[dropdownKey];
-    render();
+    renderDesktopFilters();
 };
 
 window.toggleFilter = function(value, filterType) {
@@ -1090,7 +1108,7 @@ window.clearFilter = function(type) {
     const filterKey = `filter${type.charAt(0).toUpperCase() + type.slice(1)}`;
     state[filterKey] = [];
     enforceConsistentSelections();
-    render();
+    refreshFiltersAndGrid();
 };
 
 window.clearAllFilters = function() {

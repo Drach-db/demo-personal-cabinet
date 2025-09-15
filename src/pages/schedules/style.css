@@ -110,20 +110,36 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid transparent; /* чтобы не дергалось при hover */
     cursor: pointer;
-    color: #cc6633;
+    color: rgba(204, 102, 51, 0.85); /* match info i icon */
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
     transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    display: inline-flex;            /* center icon/text */
+    align-items: center;
+    justify-content: center;
+    line-height: 0;                  /* avoid baseline shifts */
+}
+
+/* Desktop + Mobile: ensure arrow icons match the orange tone */
+.nav-button svg {
+    stroke: rgba(204, 102, 51, 0.85);
+    display: block;                  /* kill inline svg baseline */
+}
+
+/* Today button desktop: same tone + subtle border */
+.nav-button#today-button {
+    color: rgba(204, 102, 51, 0.85);
+    border-color: rgba(204, 102, 51, 0.25);
 }
 
 @media (min-width: 785px) {
     .nav-button:hover {
-        background: rgba(204, 102, 51, 0.10); /* согласовано с Onboarding muted */
+        background: rgba(204, 102, 51, 0.10);
         border-color: rgba(204, 102, 51, 0.40);
-        color: #cc6633;
+        color: rgba(204, 102, 51, 0.85);
     }
 
     .nav-button:hover svg {
-        stroke: #cc6633;
+        stroke: rgba(204, 102, 51, 0.85);
     }
 }
 
@@ -204,6 +220,8 @@
 /* Desktop filter icon: gray by default, orange when filter is active */
 .filter-icon { color: #9ca3af; }
 .filter-dropdown.active .filter-icon { color: #cc6633; }
+.filter-icon { display: flex; align-items: center; justify-content: center; line-height: 0; }
+.filter-icon svg { display: block; }
 
 .filter-button {
     width: 100%;
@@ -220,6 +238,8 @@
     outline: none;
     display: flex;              /* keep text centered vertically */
     align-items: center;        /* aligns label with icons */
+    justify-content: flex-start;
+    line-height: 1;             /* stable label baseline */
 }
 
 /* Keep desktop filter labels on one line with ellipsis */
@@ -228,6 +248,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1;             /* prevent optical vertical shift */
 }
 
 .filter-button:hover {
@@ -265,6 +286,27 @@
     background-color: white;
     color: #6b7280;
 }
+
+/* Stable counter width: prevent width jump when numbers change */
+/* Match Team page count pill */
+.count-pill { 
+    padding: 10px 16px; 
+    border-radius: 8px; 
+    font-size: 14px; 
+    font-weight: 600; 
+    white-space: nowrap; 
+    text-align: center; 
+    background-color: rgba(204, 102, 51, 0.1); 
+    color: #cc6633; 
+    min-width: 96px; /* enough for '99 of 99' */
+    font-variant-numeric: tabular-nums; 
+}
+
+/* Clear (x) button and chevron: force perfect centering */
+.clear-filter { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+.clear-filter svg { display: block; }
+.filter-chevron { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+.filter-chevron svg { display: block; }
 
 .mobile-filters-btn.only-icon { padding: 8px; width: 40px; height: 40px; justify-content: center; }
 .mobile-filters-btn.active { background-color: #ffffff; color: #cc6633; border-color: #cc6633; box-shadow: 0 2px 4px rgba(204,102,51,0.15); }
@@ -314,6 +356,21 @@
 
 .filter-option:hover {
     background-color: #f9fafb;
+}
+
+/* Make special-status pills fit inside mobile calendar cells */
+@media (max-width: 784px) {
+    .calendar-table .special-cell .badge {
+        display: inline-block;
+        margin: 0 auto;
+        font-size: 9px;               /* slightly smaller to fit 70px cells */
+        padding: 2px 6px;             /* tighter horizontal padding */
+        max-width: 100%;
+        white-space: normal;          /* allow wrapping to next line */
+        word-break: break-word;       /* break long words like Onboarding */
+        text-align: center;
+        line-height: 1.15;
+    }
 }
 
 .filter-dropdown-menu .filter-checkbox {
@@ -508,7 +565,8 @@ td.employee-cell {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); /* matte, no glossy drop */
+    border: 1px solid rgba(220, 215, 205, 0.6); /* warm subtle ring */
     cursor: pointer;
     position: relative;
     flex: 0 0 auto;            /* prevent shrinking in flex rows */
@@ -522,13 +580,25 @@ td.employee-cell {
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
-    background-color: #cc6633;
-    color: white;
+    background-color: transparent;
+    color: rgba(204, 102, 51, 0.85);
+    border: 1px solid rgba(204, 102, 51, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    font-weight: 600;
     font-size: 0.875rem;
+}
+
+/* Mobile: make the "i" pill more subtle and compact */
+@media (max-width: 784px) {
+    .avatar-info-btn {
+        width: 1.25rem;
+        height: 1.25rem;
+        font-size: 0.75rem;
+        color: rgba(204, 102, 51, 0.8);
+        border-color: rgba(204, 102, 51, 0.35);
+    }
 }
 
 /* ========================================
@@ -559,6 +629,21 @@ td.employee-cell {
     color: white;
     flex-shrink: 0;
     font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 0 2px;
+    overflow: hidden;
+}
+
+.shift-bookmark .bookmark-text {
+    display: inline-block;
+    white-space: nowrap;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    font-size: 9px; /* default desktop */
+}
+
+@media (max-width: 784px) {
+    .shift-bookmark .bookmark-text { font-size: 8px; }
 }
 
 .shift-time {

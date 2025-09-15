@@ -99,12 +99,20 @@ const utils = {
     },
     
     getAvatarColor(name) {
-        if (!name) return config.avatarGradients[0];
+        // Matte warm palette, no gradients
+        const palette = [
+            { bg: '#F4EDE6', text: '#374151' },
+            { bg: '#E9F2EE', text: '#166534' },
+            { bg: '#EEF2FB', text: '#1E3A8A' },
+            { bg: '#FDEEE7', text: '#92400E' },
+            { bg: '#F3F4F6', text: '#374151' }
+        ];
+        if (!name) return palette[0];
         let hash = 0;
         for (let i = 0; i < name.length; i++) {
             hash = name.charCodeAt(i) + ((hash << 5) - hash);
         }
-        return config.avatarGradients[Math.abs(hash) % config.avatarGradients.length];
+        return palette[Math.abs(hash) % palette.length];
     },
     
     getProgressColor(progress) {
@@ -159,11 +167,10 @@ const templates = {
     avatar(name) {
         const avatarColor = utils.getAvatarColor(name);
         const initials = utils.getInitials(name);
-        
         return `
             <div class="avatar-wrapper">
-                <div class="avatar" style="background: ${avatarColor}">
-                    <span style="color: #fff">${initials}</span>
+                <div class="avatar" style="background: ${avatarColor.bg}">
+                    <span style="color: ${avatarColor.text}">${initials}</span>
                 </div>
             </div>
         `;

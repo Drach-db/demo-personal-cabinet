@@ -365,11 +365,13 @@ class ShiftCalendar {
     }
 
     getAvatarColor(name) {
+        // Warm matte palette (no glossy gradients)
         const colors = [
-            { bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#ffffff' },
-            { bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', text: '#ffffff' },
-            { bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', text: '#ffffff' },
-            { bg: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', text: '#ffffff' }
+            { bg: '#F4EDE6', text: '#374151' }, // warm cream
+            { bg: '#E9F2EE', text: '#166534' }, // soft green
+            { bg: '#EEF2FB', text: '#1E3A8A' }, // soft blue
+            { bg: '#FDEEE7', text: '#92400E' }, // soft amber
+            { bg: '#F3F4F6', text: '#374151' }  // soft gray
         ];
         let hash = 0;
         for (let i = 0; i < name.length; i++) {
@@ -725,8 +727,8 @@ class ShiftCalendar {
                 <div class="flex items-center gap-3" style="margin-bottom: 0.25rem;">
                     <div style="width: 2rem; height: 2rem; border-radius: 0.5rem; 
                                 background-color: ${iconBg}; border: 1px solid ${iconBorder};
-                                display: flex; align-items: center; justify-content: center;">
-                        <div style="color: ${data.color};">${ICONS[data.icon]}</div>
+                                display: flex; align-items: center; justify-content: center; line-height: 0; box-sizing: border-box;">
+                        <div style="color: ${data.color}; display:flex; align-items:center; justify-content:center; line-height:0;">${ICONS[data.icon]}</div>
                     </div>
                     <div>
                         <h3 class="analytics-title" style="margin:0; font-size: ${isMobile ? '1.125rem' : '0.875rem'}; font-weight: 600;">
@@ -838,7 +840,7 @@ class ShiftCalendar {
             return `
                 <div class="desktop-only" style="padding: 0; position: relative; z-index: 100;">
                     <div class="flex items-center gap-4" style="margin-bottom: 1rem;">
-                        <div class="search-container" style="width: clamp(12rem, 18vw, 16rem);">
+                        <div class="search-container" style="width: 100%; min-width: 320px;">
                             <span class="search-icon">${ICONS.search}</span>
                             <input type="text" 
                                    class="search-input" 
@@ -863,9 +865,7 @@ class ShiftCalendar {
                             ${this.renderFilterDropdown('position')}
                         </div>
 
-                        <div style="padding: 0.625rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; 
-                                    font-weight: 600; background-color: rgba(204, 102, 51, 0.1); 
-                                    color: #cc6633; white-space: nowrap;">
+                        <div class="count-pill" id="results-count">
                             ${filteredEmployees.length} of ${employeesInMonth.length}
                         </div>
                     </div>
@@ -876,7 +876,7 @@ class ShiftCalendar {
                         <div class="flex gap-2">
                             <button type="button" class="nav-button" id="prev-month" ${this.state.isMonthLoading ? 'disabled' : ''}>${ICONS.chevronLeft}</button>
                             <button type="button" class="nav-button" id="next-month" ${this.state.isMonthLoading ? 'disabled' : ''}>${ICONS.chevronRight}</button>
-                            <button type="button" class="nav-button" id="today-button" ${this.state.isMonthLoading ? 'disabled' : ''} style="padding: 0.5rem 1rem;">Today</button>
+                    <button type="button" class="nav-button" id="today-button" ${this.state.isMonthLoading ? 'disabled' : ''} style="padding: 0.5rem 1rem; color: rgba(204,102,51,0.85); border-color: rgba(204,102,51,0.25);">Today</button>
                         </div>
                         
                         <h2 style="font-size: 1.5rem; font-weight: 600; color:#374151;">
@@ -927,7 +927,7 @@ class ShiftCalendar {
                             </svg>
                         </button>
                     ` : ''}
-                    <span style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                    <span class="filter-chevron" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); pointer-events: none;">
                         ${ICONS.chevronDown}
                     </span>
                 </div>
@@ -974,7 +974,7 @@ class ShiftCalendar {
                         Legend
                         </span>
                         <div style="width: 1rem; height: 1rem; border-radius: 50%; 
-                                    border: 1px solid ${COLORS.BRAND}; color: ${COLORS.BRAND};
+                                    border: 1px solid rgba(204,102,51,0.45); color: rgba(204,102,51,0.85);
                                     display: flex; align-items: center; justify-content: center;">
                             <span style="font-size: 0.75rem; font-weight: 700;">?</span>
                         </div>
@@ -992,9 +992,14 @@ class ShiftCalendar {
 
     renderCalendar() {
         const employeesInMonth = this.getEmployeesInMonth();
+        const filteredEmployees = this.getFilteredEmployees();
         
         if (employeesInMonth.length === 0) {
             return this.renderEmptyState();
+        }
+        // If search term is present and nothing found, show an empty notice similar to month-empty
+        if ((this.state.searchTerm || '').trim().length > 0 && filteredEmployees.length === 0) {
+            return this.renderNoSearchResults();
         }
         
         const days = this.getDays();
@@ -1071,6 +1076,23 @@ class ShiftCalendar {
                     <button type="button" class="empty-state-button" id="go-to-today">
                         ${ICONS.calendar}
                         Go to current month
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    renderNoSearchResults() {
+        const term = (this.state.searchTerm || '').trim();
+        return `
+            <div class="empty-state">
+                <div class="empty-state-content" ${this.isMobile ? 'style="margin: 0;"' : ''}>
+                    <div class="empty-state-icon" style="color: #9ca3af;">${ICONS.search}</div>
+                    <h3 class="empty-state-title">No matches found</h3>
+                    <p class="empty-state-text">Nothing matches “${term.replace(/</g,'&lt;').replace(/>/g,'&gt;')}” in ${this.getMonthName(this.state.currentMonth)} ${this.state.currentYear}</p>
+                    <button type="button" class="empty-state-button" id="clear-search-empty">
+                        ${ICONS.x}
+                        Clear search
                     </button>
                 </div>
             </div>
@@ -1418,10 +1440,10 @@ class ShiftCalendar {
                             background-color: ${bookmarkColor}; 
                             border-bottom: 1px solid ${hasIssue ? 'transparent' : 'rgba(255, 255, 255, 0.3)'};">
                     ${hasIssue ? (
-                        statusCode === 'sick' ? '<span style="font-size: 0.75rem; font-weight: 700;">SICK</span>' :
-                        statusCode === 'cancelled' ? '<span style="font-size: 0.75rem; font-weight: 700;">CANC</span>' :
-                        statusCode === 'missed' ? '<span style="font-size: 0.75rem; font-weight: 700;">MISS</span>' :
-                        statusCode === 'extra' ? '<span style="font-size: 0.75rem; font-weight: 700;">EXTRA</span>' :
+                        statusCode === 'sick' ? '<span class="bookmark-text">SICK</span>' :
+                        statusCode === 'cancelled' ? '<span class="bookmark-text">CANCELLED</span>' :
+                        statusCode === 'missed' ? '<span class="bookmark-text">MISSED</span>' :
+                        statusCode === 'extra' ? '<span class="bookmark-text">EXTRA</span>' :
                         ICONS.alertTriangle
                     ) : ''}
                 </div>
@@ -2005,6 +2027,12 @@ class ShiftCalendar {
                 this.state.searchTerm = '';
                 this.updateCalendarContent();
             }
+            // Clear search from empty-state card
+            if (e.target.closest('#clear-search-empty')) {
+                e.preventDefault();
+                this.state.searchTerm = '';
+                this.updateCalendarContent();
+            }
 
             // Avatar click
             if (e.target.closest('.avatar')) {
@@ -2113,8 +2141,32 @@ class ShiftCalendar {
         // Input events
         this.container.addEventListener('input', (e) => {
             if (e.target.id === 'search-input') {
-                this.state.searchTerm = e.target.value;
-                this.updateCalendarContent();
+                const el = e.target;
+                this.state.searchTerm = el.value;
+
+                // Preserve calendar scroll while updating only the necessary parts
+                const scroller = document.getElementById('calendar-scroll');
+                const savedLeft = scroller ? scroller.scrollLeft : null;
+                const savedTop = scroller ? scroller.scrollTop : null;
+
+                // Update count pill like on Team (without re-rendering toolbar)
+                const employeesInMonth = this.getEmployeesInMonth();
+                const filteredEmployees = this.getFilteredEmployees();
+                const countEl = document.getElementById('results-count');
+                if (countEl) countEl.textContent = `${filteredEmployees.length} of ${employeesInMonth.length}`;
+
+                // Update only calendar section (no toolbar flicker)
+                const calendar = document.getElementById('calendar-section');
+                if (calendar) calendar.innerHTML = this.renderCalendar();
+
+                // Restore scroll position
+                requestAnimationFrame(() => {
+                    const sc = document.getElementById('calendar-scroll');
+                    if (sc) {
+                        if (savedLeft !== null) sc.scrollLeft = savedLeft;
+                        if (savedTop !== null) sc.scrollTop = savedTop;
+                    }
+                });
             }
         });
 
@@ -2385,11 +2437,36 @@ class ShiftCalendar {
     applyRubberBandGuard() {
         const scroller = document.getElementById('calendar-scroll');
         if (!scroller) return;
-        // Разрешаем скролл-ченинг вверх/вниз к странице
-        scroller.style.overscrollBehavior = 'auto';
-        scroller.style.overscrollBehaviorY = 'auto';
-        scroller.style.overscrollBehaviorX = 'auto';
-        scroller.style.webkitOverflowScrolling = 'touch';
+        // Блокируем эластик-скролл (как на десктопе): скролл только внутри контейнера
+        scroller.style.overscrollBehavior = 'contain';
+        scroller.style.overscrollBehaviorY = 'contain';
+        scroller.style.overscrollBehaviorX = 'contain';
+        scroller.style.webkitOverflowScrolling = 'touch'; // сохранить инерцию внутри
+
+        // iOS Safari: принудительно гасим резинку на краях жестами
+        if (!scroller.__overscrollLockInstalled) {
+            let startX = 0, startY = 0;
+            scroller.addEventListener('touchstart', (e) => {
+                const t = e.touches && e.touches[0];
+                if (!t) return;
+                startX = t.clientX; startY = t.clientY;
+            }, { passive: true });
+            scroller.addEventListener('touchmove', (e) => {
+                const t = e.touches && e.touches[0];
+                if (!t) return;
+                const dx = t.clientX - startX;
+                const dy = t.clientY - startY;
+                const atTop = scroller.scrollTop <= 0;
+                const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
+                const atLeft = scroller.scrollLeft <= 0;
+                const atRight = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1;
+                // Если тянем за пределы — блокируем дефолт, чтобы страница не прыгала
+                if ((atTop && dy > 0) || (atBottom && dy < 0) || (atLeft && dx > 0) || (atRight && dx < 0)) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            scroller.__overscrollLockInstalled = true;
+        }
     }
 
     // ========================================
