@@ -9,29 +9,25 @@ window.supabase = supabase;
  * @throws {Error} If required fields are missing or invalid
  */
 function validateBillingRecord(record) {
-  // Check all required NOT NULL fields
-  const requiredFields = [
-    'id', 
-    'start_date', 
-    'end_date', 
-    'planned_hours', 
-    'actual_hours', 
-    'hourly_rate',
-    'payment_status',
-    'period_type',
-    'created_date'
-  ];
-  
+  // Some backends use created_at instead of created_date.
+  // Define required fields with allowed aliases per field.
+  const required = {
+    id: ['id'],
+    start_date: ['start_date', 'startDate'],
+    end_date: ['end_date', 'endDate'],
+    planned_hours: ['planned_hours', 'plannedHours'],
+    actual_hours: ['actual_hours', 'actualHours'],
+    hourly_rate: ['hourly_rate', 'hourlyRate'],
+    payment_status: ['payment_status', 'paymentStatus'],
+    period_type: ['period_type', 'periodType'],
+    created_date: ['created_date', 'created_at', 'createdAt']
+  };
+
   const missingFields = [];
-  
-  for (const field of requiredFields) {
-    // Check both snake_case and camelCase variants
-    const snakeValue = record[field];
-    const camelValue = record[field.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())];
-    
-    if (snakeValue === undefined && camelValue === undefined) {
-      missingFields.push(field);
-    }
+
+  for (const [key, aliases] of Object.entries(required)) {
+    const hasAny = aliases.some(k => record[k] !== undefined && record[k] !== null);
+    if (!hasAny) missingFields.push(key);
   }
   
   if (missingFields.length > 0) {
@@ -39,13 +35,13 @@ function validateBillingRecord(record) {
   }
   
   // Validate enum values
-  const paymentStatus = record.payment_status || record.paymentStatus;
+  const paymentStatus = String(record.payment_status || record.paymentStatus || '').toLowerCase();
   const validPaymentStatuses = ['pending', 'overdue', 'paid'];
   if (!validPaymentStatuses.includes(paymentStatus)) {
     throw new Error(`Invalid payment_status "${paymentStatus}" for record ${record.id}. Must be one of: ${validPaymentStatuses.join(', ')}`);
   }
   
-  const periodType = record.period_type || record.periodType;
+  const periodType = String(record.period_type || record.periodType || '').toLowerCase();
   const validPeriodTypes = ['regular', 'custom'];
   if (!validPeriodTypes.includes(periodType)) {
     throw new Error(`Invalid period_type "${periodType}" for record ${record.id}. Must be one of: ${validPeriodTypes.join(', ')}`);
@@ -73,10 +69,10 @@ function validateBillingRecord(record) {
  */
 export async function getBillingRecords() {
   try {
+    // Fetch without DB-side ordering to avoid errors if column differs (created_at vs created_date).
     const { data, error } = await supabase
       .from('billing')
-      .select('*')
-      .order('created_date', { ascending: false });  // Add ordering for consistency
+      .select('*');
 
     if (error) {
       console.error('Database error fetching billing records:', error);
@@ -112,7 +108,14 @@ export async function getBillingRecords() {
       // throw new Error(`Validation failed for ${errors.length} records`);
     }
 
-    return validatedRecords;
+    // Client-side order by created_date/created_at descending
+    const ordered = validatedRecords.sort((a, b) => {
+      const da = new Date(a.created_date).getTime() || 0;
+      const db = new Date(b.created_date).getTime() || 0;
+      return db - da;
+    });
+
+    return ordered;
 
   } catch (error) {
     console.error('Error in getBillingRecords:', error);
