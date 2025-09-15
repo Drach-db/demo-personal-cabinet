@@ -1127,6 +1127,7 @@ class ShiftCalendar {
                                         ` : ''}
                                     </div>
                                 </div>
+                                ${this.isToday(day) ? '<span class="today-badge">ToDay</span>' : ''}
                             </div>
                         </th>
                     `).join('')}
@@ -1277,13 +1278,9 @@ class ShiftCalendar {
 
         let displayShifts = [];
         if (scheduleType === 'Actual') {
-            // In Actual view: for past dates show fact (fallback to baseline);
-            // for today/future always show baseline
-            if (isBeforeToday) {
-                displayShifts = actualShifts.length > 0 ? actualShifts : baselineShifts;
-            } else {
-                displayShifts = baselineShifts;
-            }
+            // Actual view: if ACTUAL exists, it overrides BASELINE for any date.
+            // Otherwise, fall back to BASELINE.
+            displayShifts = actualShifts.length > 0 ? actualShifts : baselineShifts;
         } else if (scheduleType === 'Baseline') {
             displayShifts = baselineShifts;
         }
