@@ -201,7 +201,18 @@ class ShiftCalendar {
                 
                 console.log('📍 Data received:', monthData);
                 
-                const employees = monthData.employees || [];
+                const pickId = (...vals) => {
+                    for (const v of vals) {
+                        const t = (v === undefined || v === null) ? '' : String(v).trim();
+                        if (t) return t;
+                    }
+                    return '';
+                };
+                const employees = (monthData.employees || []).map(e => ({
+                    ...e,
+                    // Normalize id to non-empty trimmed string
+                    employee_id: pickId(e.employee_id, e.id, e.contacts_id)
+                }));
                 const rawShifts = monthData.shifts || [];
                 // Normalize to canonical names (per schema)
                 const normalizeDate = (v) => this.canonicalDate(v);
@@ -213,6 +224,7 @@ class ShiftCalendar {
                 };
                 const shifts = rawShifts.map(s => ({
                     ...s,
+                    employee_id: pickId(s.employee_id, s.emp_id, s.contact_id, s.contacts_id),
                     start_shift_date: normalizeDate(s.start_shift_date || s.shift_date || s.date || s.day),
                     start_shift_time: s.start_shift_time || s.start_time || null,
                     end_shift_time: s.end_shift_time || s.end_time || null,
@@ -420,9 +432,10 @@ class ShiftCalendar {
 
     getShiftsForEmployeeAndDate(employeeId, date) {
         const dateStr = this.toDateStr(date);
-        const id = String(employeeId);
+        const norm = (v) => (v === undefined || v === null) ? '' : String(v).trim();
+        const id = norm(employeeId);
         return this.shiftsData.filter(shift => {
-            const sid = String(shift.employee_id);
+            const sid = norm(shift.employee_id);
             const sdate = this.canonicalDate(shift.start_shift_date);
             return sid === id && sdate === dateStr;
         });
@@ -448,17 +461,21 @@ class ShiftCalendar {
 
             // Helper: check if employee has any shift within the month window
             const hasShiftsInMonth = (empId) => this.shiftsData.some(s => {
-                if (s.employee_id !== empId) return false;
+                const norm = (v) => (v === undefined || v === null) ? '' : String(v).trim();
+                if (norm(s.employee_id) !== norm(empId)) return false;
                 const d = s.start_shift_date;
                 return d >= monthStartStr && d <= monthEndStr;
             });
 
             // Build candidate employees set from current API payload + any cached months (to avoid API omissions)
             const byId = new Map();
-            (this.employeesData || []).forEach(e => byId.set(e.employee_id, e));
+            (this.employeesData || []).forEach(e => byId.set(String(e.employee_id).trim(), e));
             for (const entry of this.monthCache.values()) {
                 const arr = entry && entry.employees ? entry.employees : [];
-                arr.forEach(e => { if (!byId.has(e.employee_id)) byId.set(e.employee_id, e); });
+                arr.forEach(e => {
+                    const key = String(e.employee_id).trim();
+                    if (!byId.has(key)) byId.set(key, e);
+                });
             }
             const candidates = Array.from(byId.values());
 
@@ -1482,8 +1499,9 @@ class ShiftCalendar {
             statusCode = 'extra';
         }
         
-        if (shift.day_status === 'completed' && baselineShift && 
-            baselineShift.start_shift_time && baselineShift.end_shift_time && 
+        // Compare ACTUAL vs BASELINE for discrepancy regardless of completion status
+        if (shift.schedule_type === 'fact schedule' && baselineShift &&
+            baselineShift.start_shift_time && baselineShift.end_shift_time &&
             shift.start_shift_time && shift.end_shift_time) {
             const baselineTime = `${baselineShift.start_shift_time}-${baselineShift.end_shift_time}`;
             const actualTime = `${shift.start_shift_time}-${shift.end_shift_time}`;
@@ -1775,7 +1793,7 @@ class ShiftCalendar {
         const isAbsence = isMissed || isCancelled;
         const isExtra = (!baselineShift || !baselineShift.start_shift_time || !baselineShift.end_shift_time)
             && !!(shift.start_shift_time && shift.end_shift_time) && !isAbsence;
-        const hasDiscrepancy = discrepancies && (discrepancies.late > 0 || discrepancies.earlyLeave > 0);
+        const hasDiscrepancy = discrepancies && (discrepancies.late >= 10 || discrepancies.earlyLeave >= 10);
 
         const formatShiftDate = (dateStr) => {
             const date = this.formatDate(dateStr);
@@ -1921,7 +1939,7 @@ class ShiftCalendar {
                             Issues detected:
                         </span>
                         <ul style="list-style: none; padding: 0;">
-                            ${discrepancies.late > 0 ? `
+                            ${discrepancies.late >= 10 ? `
                                 <li style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
                                     <div style="width: 0.5rem; height: 0.5rem; background-color: #f87171; 
                                                border-radius: 50%;"></div>
@@ -1930,7 +1948,7 @@ class ShiftCalendar {
                                     </span>
                                 </li>
                             ` : ''}
-                            ${discrepancies.earlyLeave > 0 ? `
+                            ${discrepancies.earlyLeave >= 10 ? `
                                 <li style="display: flex; align-items: center; gap: 0.5rem;">
                                     <div style="width: 0.5rem; height: 0.5rem; background-color: #fb923c; 
                                                border-radius: 50%;"></div>
@@ -2165,7 +2183,7 @@ class ShiftCalendar {
             // Avatar click
             if (e.target.closest('.avatar')) {
                 const employeeId = e.target.closest('.avatar').dataset.employeeId;
-                const employee = this.employeesData.find(e => e.employee_id === employeeId);
+                const employee = this.employeesData.find(e => String(e.employee_id).trim() === String(employeeId).trim());
                 if (employee) {
                     this.showEmployeeModal(employee);
                 }
@@ -2850,6 +2868,48 @@ document.addEventListener('DOMContentLoaded', () => {
     
     try {
         const calendar = new ShiftCalendar('calendar-container');
+        // Expose for quick debugging in DevTools
+        window.shiftCalendar = calendar;
+        window.debugShifts = (empId) => {
+            const out = { ok: false };
+            try {
+                const id = String(empId).trim();
+                const cal = window.shiftCalendar;
+                const days = cal.getDays();
+                const emp = (cal.employeesData || []).find(e => String(e.employee_id).trim() === id);
+                const all = (cal.shiftsData || []).filter(s => String(s.employee_id).trim() === id);
+                const perFirstWeek = (days && days.length)
+                  ? days.slice(0, 7).map(d => ({ day: cal.toDateStr(d), count: cal.getShiftsForEmployeeAndDate(id, d).length }))
+                  : [];
+                out.ok = true;
+                out.id = id;
+                out.employee = emp || null;
+                out.shiftCount = all.length;
+                out.firstWeek = perFirstWeek;
+                out.sample = all.slice(0, 3);
+            } catch (e) { out.error = e?.message || String(e); }
+            console.log('[debugShifts]', out);
+            return out;
+        };
+
+        window.debugShiftsByName = (name) => {
+            const cal = window.shiftCalendar;
+            const emp = (cal.employeesData || []).find(e => String(e.full_name || '').trim().toLowerCase() === String(name || '').trim().toLowerCase());
+            if (!emp) return { ok: false, error: 'employee not found' };
+            return window.debugShifts(emp.employee_id);
+        };
+
+        window.listShiftIds = () => {
+            const cal = window.shiftCalendar;
+            const map = new Map();
+            (cal.shiftsData || []).forEach(s => {
+                const key = String(s.employee_id).trim();
+                map.set(key, (map.get(key) || 0) + 1);
+            });
+            const arr = Array.from(map.entries()).map(([id, count]) => ({ id, count }));
+            console.table(arr);
+            return arr;
+        };
         console.log('📍 ShiftCalendar instance created');
     } catch (error) {
         console.error('❌ Failed to create ShiftCalendar:', error);

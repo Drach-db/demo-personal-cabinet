@@ -196,6 +196,15 @@ html.navbar-pre-collapsed .navbar__logo-text {
     padding: 0;
 }
 
+/* Inline SVG brand logo */
+.navbar__brand-logo svg {
+    width: 28px; /* fits 60px header aesthetically */
+    height: auto;
+    display: block;
+}
+
+/* When collapsed, logo text wrapper already hides via .navbar__logo-text */
+
 /* Collapse button */
 .navbar__collapse {
     width: 32px;
