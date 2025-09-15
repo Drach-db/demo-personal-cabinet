@@ -1008,11 +1008,18 @@ class ShiftCalendar {
         const minTableWidth = employeeColWidth + (days.length * cellWidth);
         
         return `
-            <div class="calendar-scroll" id="calendar-scroll">
-                <table class="calendar-table" style="min-width: ${minTableWidth}px;">
-                    ${this.renderCalendarHeader()}
-                    ${this.renderCalendarBody()}
-                </table>
+            <div class="calendar-scroll-container">
+                <div class="calendar-hscroll" id="calendar-hscroll">
+                    <div class="calendar-hscroll-rail">
+                        <div class="calendar-hscroll-thumb" id="calendar-hscroll-thumb"></div>
+                    </div>
+                </div>
+                <div class="calendar-scroll" id="calendar-scroll">
+                    <table class="calendar-table" style="min-width: ${minTableWidth}px;">
+                        ${this.renderCalendarHeader()}
+                        ${this.renderCalendarBody()}
+                    </table>
+                </div>
             </div>
         `;
     }
@@ -1060,7 +1067,104 @@ class ShiftCalendar {
         if (this.isMobile) {
             this.setupCarouselScroll();
         }
+        // Sync desktop horizontal scrollbar with main scroller
+        this.setupHorizontalScrollbarSync();
         // (removed) mini horizontal scrollbar interactions
+    }
+
+    setupHorizontalScrollbarSync() {
+        const scroller = document.getElementById('calendar-scroll');
+        const hscroll = document.getElementById('calendar-hscroll');
+        const rail = hscroll ? hscroll.querySelector('.calendar-hscroll-rail') : null;
+        const thumb = hscroll ? hscroll.querySelector('.calendar-hscroll-thumb') : null;
+        if (!scroller || !hscroll || !rail || !thumb) return;
+
+        // Avoid duplicate setup
+        if (hscroll.__syncInstalled) {
+            // refresh on rerender
+            requestAnimationFrame(() => this.updateHScrollThumb());
+            return;
+        }
+
+        const update = () => this.updateHScrollThumb();
+        scroller.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update, { passive: true });
+
+        // Drag support
+        let dragging = false;
+        let dragOffsetX = 0;
+
+        const onPointerDown = (e) => {
+            e.preventDefault();
+            const railRect = rail.getBoundingClientRect();
+            const thumbRect = thumb.getBoundingClientRect();
+            const x = e.clientX;
+            if (x < thumbRect.left || x > thumbRect.right) {
+                // Jump to click position (center the thumb)
+                const pos = x - railRect.left - thumbRect.width / 2;
+                this.setScrollByThumbPos(pos);
+                this.updateHScrollThumb();
+            }
+            dragging = true;
+            dragOffsetX = x - thumb.getBoundingClientRect().left;
+            document.addEventListener('mousemove', onPointerMove, { passive: false });
+            document.addEventListener('mouseup', onPointerUp, { passive: true });
+        };
+        const onPointerMove = (e) => {
+            if (!dragging) return;
+            e.preventDefault();
+            const railRect = rail.getBoundingClientRect();
+            const newLeft = e.clientX - railRect.left - dragOffsetX;
+            this.setScrollByThumbPos(newLeft);
+            this.updateHScrollThumb();
+        };
+        const onPointerUp = () => {
+            dragging = false;
+            document.removeEventListener('mousemove', onPointerMove);
+            document.removeEventListener('mouseup', onPointerUp);
+        };
+
+        rail.addEventListener('mousedown', onPointerDown);
+
+        hscroll.__syncInstalled = true;
+        // initial position
+        requestAnimationFrame(() => this.updateHScrollThumb());
+    }
+
+    setScrollByThumbPos(posPx) {
+        const scroller = document.getElementById('calendar-scroll');
+        const hscroll = document.getElementById('calendar-hscroll');
+        const rail = hscroll ? hscroll.querySelector('.calendar-hscroll-rail') : null;
+        const thumb = hscroll ? hscroll.querySelector('.calendar-hscroll-thumb') : null;
+        if (!scroller || !rail || !thumb) return;
+        const railWidth = rail.clientWidth;
+        const content = scroller.scrollWidth;
+        const viewport = scroller.clientWidth;
+        const maxThumb = Math.max(24, Math.round(railWidth * (viewport / content)));
+        const maxLeft = Math.max(0, railWidth - maxThumb);
+        const clamped = Math.max(0, Math.min(posPx, maxLeft));
+        const ratio = maxLeft > 0 ? clamped / maxLeft : 0;
+        const maxScroll = content - viewport;
+        scroller.scrollLeft = Math.round(ratio * maxScroll);
+    }
+
+    updateHScrollThumb() {
+        const scroller = document.getElementById('calendar-scroll');
+        const hscroll = document.getElementById('calendar-hscroll');
+        if (!scroller || !hscroll) return;
+        const rail = hscroll.querySelector('.calendar-hscroll-rail');
+        const thumb = hscroll.querySelector('.calendar-hscroll-thumb');
+        if (!rail || !thumb) return;
+        const railWidth = rail.clientWidth;
+        const content = scroller.scrollWidth;
+        const viewport = scroller.clientWidth;
+        const maxScroll = Math.max(0, content - viewport);
+        const minThumb = 24; // px
+        const thumbWidth = Math.max(minThumb, Math.round(railWidth * (viewport / content)));
+        const maxLeft = Math.max(0, railWidth - thumbWidth);
+        const left = maxScroll > 0 ? Math.round((scroller.scrollLeft / maxScroll) * maxLeft) : 0;
+        thumb.style.width = `${thumbWidth}px`;
+        thumb.style.left = `${left}px`;
     }
 
 
