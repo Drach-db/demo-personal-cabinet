@@ -1238,7 +1238,8 @@ import '../../components/header/header.js';
                                   `color:${isNow?'var(--primary)':(isMajor?'var(--dark)':'var(--gray)')};` +
                                   `transition:all 0.2s;position:relative;white-space:nowrap;line-height:1;` +
                                   `border-left:${i ? '1px solid ' + GRID_LINE_COLOR : 'none'};`;
-                const content = text + (isNow ? '<div style="position:absolute;top:calc(100% + 0.2rem);left:50%;transform:translateX(-50%);font-size:0.625rem;font-weight:700;color:var(--primary);background:white;padding:0.0625rem 0.3rem;border-radius:0.1875rem;white-space:nowrap;letter-spacing:0.02em;box-shadow:0 0.0625rem 0.1875rem rgba(0,0,0,0.12);z-index:2;">NOW</div>' : '');
+                // Mobile: убираем плашку NOW, оставляем только подписи часов
+                const content = text;
                 html += h('div', 'text-center', baseStyle, content);
             }
             

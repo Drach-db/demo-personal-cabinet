@@ -32,12 +32,12 @@ body {
     /* Гарантируем вертикальную прокрутку на странице Today (в случае конфликтов со вложенными overflow) */
     .app-main { overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
 
-    /* Горизонтальные внутренние скроллеры не должны мешать вертикальному скроллу страницы */
+    /* На мобильных для горизонтальных рядов разрешаем горизонтальное свайп-скроллирование */
     .latest-activity-row,
     .status-scroll-row,
     .timeline-hours-scroll,
     .timeline-data-scroll,
-    .metrics-mobile { touch-action: pan-y; }
+    .metrics-mobile { touch-action: pan-x; }
 
     /* Metrics - горизонтальный скролл со snap */
     .metrics-mobile { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 1rem; padding: 0 0 0.5rem 0; margin-bottom: 0; -webkit-overflow-scrolling: touch; }
