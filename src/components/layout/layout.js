@@ -75,18 +75,17 @@ class LayoutController {
                 </div>`;
             document.body.appendChild(overlay);
 
-            const openModal = () => {
-                // Apollo blocks embedding via X-Frame-Options/CSP on many domains.
-                // Always open in a new tab/window for maximum compatibility.
-                try {
-                    const w = window.open(link, '_blank', 'noopener');
-                    if (!w) {
-                        // Popup blocked — fallback to same-tab navigation
-                        window.location.href = link;
-                    }
-                } catch (_) {
-                    window.location.href = link;
-                }
+            const openModal = (ev) => {
+                // Open ONLY in a new tab, never navigate the current LK tab
+                try { if (ev && ev.preventDefault) ev.preventDefault(); } catch {}
+                const a = document.createElement('a');
+                a.href = link; a.target = '_blank'; a.rel = 'noopener noreferrer';
+                // Append to DOM to maximize compatibility with mobile browsers
+                document.body.appendChild(a);
+                a.click();
+                // Clean up
+                setTimeout(() => { try { a.remove(); } catch {} }, 0);
+                return false;
             };
             const closeModal = () => {
                 overlay.classList.remove('open');
