@@ -76,12 +76,17 @@ class LayoutController {
             document.body.appendChild(overlay);
 
             const openModal = () => {
-                if (window.innerWidth < 1024) {
-                    window.open(link, '_blank');
-                    return;
+                // Apollo blocks embedding via X-Frame-Options/CSP on many domains.
+                // Always open in a new tab/window for maximum compatibility.
+                try {
+                    const w = window.open(link, '_blank', 'noopener');
+                    if (!w) {
+                        // Popup blocked — fallback to same-tab navigation
+                        window.location.href = link;
+                    }
+                } catch (_) {
+                    window.location.href = link;
                 }
-                overlay.classList.add('open');
-                document.body.classList.add('modal-open');
             };
             const closeModal = () => {
                 overlay.classList.remove('open');
@@ -89,8 +94,10 @@ class LayoutController {
             };
 
             btn.addEventListener('click', openModal);
-            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
-            overlay.querySelector('.meet-close').addEventListener('click', closeModal);
+            // Keep overlay assets for future use, but do not show modal anymore
+            overlay.addEventListener('click', (e) => { /* no-op: modal disabled */ });
+            const closeBtn = overlay.querySelector('.meet-close');
+            if (closeBtn) closeBtn.addEventListener('click', (e) => e.preventDefault());
 
             // Animation & hint on mobile for better CTA clarity
             btn.classList.add('pulse', 'shake');
