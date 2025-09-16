@@ -728,23 +728,41 @@ import '../../components/header/header.js';
             html += '<div style="display:grid;grid-template-columns:repeat(24, 1fr);padding:0 0.5rem;gap:0;">';
             
             for (let i = 0; i < 24; i++) {
-                const isNow = i === 15, isMajor = i % 6 === 0;
+                // NOW moment on the page is fixed to 15:30 (930 minutes)
+                const nowMinutes = 930; // 15*60 + 30
+                const nowHour = Math.floor(nowMinutes / 60);
+                const nowMinute = nowMinutes % 60;
+                const isNow = i === nowHour;
+                const isMajor = i % 6 === 0;
                 let text;
-                
+
                 if (isNow) {
-                    // Показываем реальное текущее время для десктопа
-                    const now = new Date();
-                    const currentHour = now.getHours();
-                    const currentMinute = now.getMinutes();
-                    const period = currentHour >= 12 ? 'PM' : 'AM';
-                    const displayHour = currentHour === 0 ? 12 : currentHour > 12 ? currentHour - 12 : currentHour;
-                    text = `${displayHour}:${currentMinute.toString().padStart(2, '0')} ${period}`;
+                    // Show page logical minute marker succinctly
+                    text = '3:30';
                 } else {
                     text = i === 0 ? '12 AM' : i === 6 ? '6 AM' : i === 12 ? '12 PM' : i === 18 ? '6 PM' : i < 12 ? `${i}` : `${i-12}`;
                 }
-                
-                html += h('div', 'text-center', `font-size:${isMajor||isNow?'clamp(0.5rem, 1vw, 0.625rem)':'clamp(0.4375rem, 0.8vw, 0.5625rem)'};font-weight:${isMajor||isNow?700:500};padding:0.1875rem 0.0625rem;color:${isNow?'white':isMajor?'var(--dark)':'var(--gray)'};${isNow?'background:var(--primary);border-radius:0.375rem;box-shadow:0 0.125rem 0.5rem rgba(204,102,51,0.3);':''}transition:all 0.2s;position:relative;white-space:nowrap;line-height:1;border-left:${i ? '1px solid ' + GRID_LINE_COLOR : 'none'};`, 
-                     text + (isNow ? '<div style="position:absolute;top:-0.75rem;left:50%;transform:translateX(-50%);font-size:0.5rem;font-weight:700;color:var(--primary);background:white;padding:0.0625rem 0.25rem;border-radius:0.1875rem;white-space:nowrap;box-shadow:0 0.0625rem 0.1875rem rgba(0,0,0,0.1);">NOW</div>' : ''));
+
+                // Typography: smaller and non-bold for NOW badge so it fits
+                const fontSize = isNow
+                    ? 'clamp(0.4375rem, 0.8vw, 0.5625rem)'
+                    : (isMajor ? 'clamp(0.5rem, 1vw, 0.625rem)' : 'clamp(0.4375rem, 0.8vw, 0.5625rem)');
+                const fontWeight = isNow ? 700 : (isMajor ? 700 : 500);
+
+                // Prevent cell from expanding track width: force shrinkability
+                const baseStyle = `font-size:${fontSize};` +
+                                  `font-weight:${fontWeight};` +
+                                  `padding:0.125rem 0.125rem;` +
+                                  `color:${isNow ? 'var(--primary)' : (isMajor ? 'var(--dark)' : 'var(--gray)')};` +
+                                  `transition:all 0.2s;position:relative;line-height:1;` +
+                                  `border-left:${i ? '1px solid ' + GRID_LINE_COLOR : 'none'};` +
+                                  `min-width:0;overflow:visible;white-space:nowrap;`;
+
+                const content = text;
+
+                html += h('div', 'text-center', baseStyle,
+                    content + (isNow ? '<div style="position:absolute;top:-0.75rem;left:50%;transform:translateX(-50%);font-size:0.5rem;font-weight:700;color:var(--primary);background:white;padding:0.0625rem 0.25rem;border-radius:0.1875rem;white-space:nowrap;box-shadow:0 0.0625rem 0.1875rem rgba(0,0,0,0.1);">NOW</div>' : '')
+                );
             }
             
             html += '</div>';
