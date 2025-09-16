@@ -41,18 +41,10 @@ function parseEmployeeIds(employeeIdField) {
         return [];
     }
     
-    // 7. Разбиваем по запятой и очищаем каждый элемент
+    // 7. Разбиваем по запятой и очищаем каждый элемент (всегда возвращаем строки — сохраняем ведущие нули)
     const ids = idString.split(',').map(id => {
-        // Убираем пробелы и кавычки
-        let cleanId = id.trim().replace(/["']/g, '');
-        
-        // Проверяем, является ли ID числом (например, 00000001)
-        if (/^\d+$/.test(cleanId)) {
-            // Преобразуем в число, чтобы убрать ведущие нули
-            return parseInt(cleanId, 10);
-        }
-        
-        // Возвращаем как строку (для recXXX формата)
+        // Убираем пробелы и кавычки. НЕ преобразуем в число.
+        const cleanId = id.trim().replace(/["']/g, '');
         return cleanId;
     }).filter(id => {
         // Фильтруем пустые значения
@@ -137,17 +129,27 @@ async function getEmployeesByIds(employeeIds) {
         
         // Объединяем данные
         const mergedData = employees.map(emp => {
-            const contact = contacts.find(c => c.id === emp.contacts_id);
+            const contact = contacts.find(c => c.id === emp.contacts_id) || {};
+            // Нормализуем поля из contacts
+            const rawEnglish = Number(contact.english_level);
+            const english = Number.isFinite(rawEnglish)
+                ? Math.round((rawEnglish <= 1 ? rawEnglish * 100 : rawEnglish))
+                : 0;
+            const rawTyping = Number(contact.typing_speed);
+            const typing = Number.isFinite(rawTyping) ? Math.round(rawTyping) : 0;
+            const rawExp = Number(contact.bpo_experience);
+            const exp = Number.isFinite(rawExp) ? Math.max(0, Math.round(rawExp)) : 0;
+
             return {
                 ...emp,
-                // Добавляем данные из contacts
-                bpo_experience: contact?.bpo_experience || 0,
-                english_proficiency_test: contact?.english_proficiency_test || '',
-                english_level: contact?.english_level || 0,
-                typing_speed: contact?.typing_speed || 0,
-                avatar: contact?.avatar || null,
-                gender: contact?.gender || '',
-                date_of_birth: contact?.date_of_birth || null
+                // Добавляем нормализованные данные из contacts
+                bpo_experience: exp,
+                english_proficiency_test: contact.english_proficiency_test || '',
+                english_level: english,
+                typing_speed: typing,
+                avatar: contact.avatar || null,
+                gender: contact.gender || '',
+                date_of_birth: contact.date_of_birth || null
             };
         });
         
@@ -229,12 +231,20 @@ export async function getBatchesWithEmployees() {
                 const contact = contactById.get(id);
                 const emp = employeeByContactId.get(id);
                 if (!emp) return null;
+                const rawEnglish = Number(contact?.english_level);
+                const english = Number.isFinite(rawEnglish)
+                    ? Math.round((rawEnglish <= 1 ? rawEnglish * 100 : rawEnglish))
+                    : 0;
+                const rawTyping = Number(contact?.typing_speed);
+                const typing = Number.isFinite(rawTyping) ? Math.round(rawTyping) : 0;
+                const rawExp = Number(contact?.bpo_experience);
+                const exp = Number.isFinite(rawExp) ? Math.max(0, Math.round(rawExp)) : 0;
                 return {
                     ...emp,
-                    bpo_experience: contact?.bpo_experience || 0,
+                    bpo_experience: exp,
                     english_proficiency_test: contact?.english_proficiency_test || '',
-                    english_level: contact?.english_level || 0,
-                    typing_speed: contact?.typing_speed || 0,
+                    english_level: english,
+                    typing_speed: typing,
                     avatar: contact?.avatar || null,
                     gender: contact?.gender || '',
                     date_of_birth: contact?.date_of_birth || null

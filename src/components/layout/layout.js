@@ -18,6 +18,7 @@ class LayoutController {
         this.loadState();
         this.bindEvents();
         this.applyInitialState();
+        this.mountMeetingWidget();
     }
     
     cacheElements() {
@@ -28,6 +29,87 @@ class LayoutController {
             overlay: document.querySelector('.app-overlay'),
             navbarElement: document.getElementById('navbar')
         };
+    }
+
+    // ========================================
+    // Floating Meeting Widget (Apollo)
+    // ========================================
+    mountMeetingWidget() {
+        try {
+            // Avoid duplicates
+            if (document.getElementById('meet-widget-fab')) return;
+
+            const link = 'https://app.apollo.io/#/meet/pjz-lax-iol/30-min';
+
+            // Button
+            const btn = document.createElement('button');
+            btn.id = 'meet-widget-fab';
+            btn.className = 'meet-fab';
+            btn.setAttribute('type', 'button');
+            btn.setAttribute('aria-label', 'Book a discovery meeting');
+            // Meeting-themed calendar + clock icon (inline SVG for crispness)
+            btn.innerHTML = `
+                <span class="meet-fab__icon" aria-hidden="true">
+                  <svg class="meet-fab__svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <circle cx="16" cy="16" r="4" fill="none"></circle>
+                    <line x1="16" y1="16" x2="16" y2="14"></line>
+                    <line x1="16" y1="16" x2="18" y2="16"></line>
+                  </svg>
+                </span>
+                <span class="meet-fab__text">Book a meeting</span>
+            `;
+            document.body.appendChild(btn);
+
+            // Overlay (desktop modal)
+            const overlay = document.createElement('div');
+            overlay.id = 'meet-widget-overlay';
+            overlay.className = 'meet-overlay';
+            overlay.innerHTML = `
+                <div class="meet-dialog" role="dialog" aria-modal="true" aria-label="Discovery meeting">
+                    <button class="meet-close" aria-label="Close">×</button>
+                    <iframe class="meet-iframe" src="${link}" title="Discovery Meeting"></iframe>
+                </div>`;
+            document.body.appendChild(overlay);
+
+            const openModal = () => {
+                if (window.innerWidth < 1024) {
+                    window.open(link, '_blank');
+                    return;
+                }
+                overlay.classList.add('open');
+                document.body.classList.add('modal-open');
+            };
+            const closeModal = () => {
+                overlay.classList.remove('open');
+                document.body.classList.remove('modal-open');
+            };
+
+            btn.addEventListener('click', openModal);
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+            overlay.querySelector('.meet-close').addEventListener('click', closeModal);
+
+            // Animation & hint on mobile for better CTA clarity
+            btn.classList.add('pulse', 'shake');
+            if (window.innerWidth < 1024) {
+                const hintKey = 'meet-widget-hint-dismissed-v1';
+                const dismissed = (() => { try { return localStorage.getItem(hintKey) === '1'; } catch { return false; }})();
+                if (!dismissed) {
+                    const hint = document.createElement('div');
+                    hint.className = 'meet-hint';
+                    hint.innerHTML = '<span>Book a meeting</span>';
+                    document.body.appendChild(hint);
+                    const hide = () => { hint.remove(); try { localStorage.setItem(hintKey, '1'); } catch {} };
+                    setTimeout(hide, 6000);
+                    btn.addEventListener('click', hide, { once: true });
+                }
+            }
+        } catch (e) {
+            console.warn('Meeting widget mount failed:', e);
+        }
     }
     
     loadState() {

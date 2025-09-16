@@ -10,23 +10,159 @@ import '../../components/header/header.js';
         const STATUS_CONFIG = {
             active: ['#22c55e', 'Active'], inactive: ['#f97316', 'Inactive ⚠️'], break: ['#3b82f6', 'Break'],
             lunch: ['#3b82f6', 'Lunch'], missed: ['#dc2626', 'Overtime'], future: ['#f3f4f6', 'Future'],
-            off: ['#f3f4f6', 'Off']
+            // Off: сделать заметнее на белом фоне (для таймлайна) — используем более тёмный серый
+            off: ['#e5e7eb', 'Off']
         };
         // Единый цвет вертикальных линий сетки часов (слегка заметные, но читаемые)
         const GRID_LINE_COLOR = 'rgba(17, 24, 39, 0.16)';
         
         const MOCK_DATA = {
-            schedule: [{ 
-                name: 'John D.', 
-                role: 'Chat', 
-                shift: { start: '10:00', end: '18:00' },
-                shift_projected: { start: '10:00', end: '18:00' }
-            }],
+            schedule: [
+                { name: 'Dela Cruz James Allen', role: 'Team lead', shift: {start: '00:00', end: '12:00'}, shift_projected: {start: '00:00', end: '12:00'} },
+                { name: 'Velasquez Harper Mae', role: 'Agent CS', shift: {start: '00:00', end: '08:00'}, shift_projected: {start: '00:00', end: '08:00'} },
+                { name: 'Alonzo Mia Nicole', role: 'Agent CS', shift: {start: '08:00', end: '16:00'}, shift_projected: {start: '08:00', end: '16:00'} },
+                { name: 'Quiambao Abigail Hope', role: 'Agent CS', shift: {start: '08:00', end: '16:00'}, shift_projected: {start: '08:00', end: '16:00'} },
+                { name: 'Tolentino Ava Grace', role: 'Agent CS', shift: {start: '08:15', end: '16:00'}, shift_projected: {start: '08:15', end: '16:00'} },
+                { name: 'Mendoza Robert Thomas', role: 'Sales Rep', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Flores David Anthony', role: 'Sales Rep', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Bautista Joseph Mark', role: 'Sales Rep', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Navarro Christopher Patrick', role: 'Sales Rep', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Cruz Andrew Michael', role: 'Technical Support L1', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Villanueva Joshua Dean', role: 'Bookkeeper', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Castillo Benjamin Lucas', role: 'Social Media Planner', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Mercado Alexander William', role: 'Data entry', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Aquino Samuel John', role: 'Virtual Assistant', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Dizon Emma Marie', role: 'Data entry', shift: {start: '09:00', end: '18:00'}, shift_projected: {start: '09:00', end: '18:00'} },
+                { name: 'Garcia John Edward', role: 'Team lead', shift: {start: '12:00', end: '23:59'}, shift_projected: {start: '12:00', end: '23:59'} },
+                { name: 'Evangelista Sophia Elizabeth', role: 'Agent CS', shift: {start: '16:00', end: '23:59'}, shift_projected: {start: '16:00', end: '23:59'} },
+                { name: 'Domingo Evelyn Claire', role: 'Agent CS', shift: {start: '16:00', end: '23:59'}, shift_projected: {start: '16:00', end: '23:59'} },
+                { name: 'Soriano Grace Faith', role: 'Agent CS', shift: {start: '16:00', end: '23:59'}, shift_projected: {start: '16:00', end: '23:59'} }
+            ],
             events: [
-                { name: 'John D.', time: '10:08', status: 'active' }, { name: 'John D.', time: '12:00', status: 'break' },
-                { name: 'John D.', time: '12:15', status: 'lunch' }, { name: 'John D.', time: '13:00', status: 'active' },
-                { name: 'John D.', time: '14:30', status: 'break' }, { name: 'John D.', time: '15:00', status: 'active' },
-                { name: 'John D.', time: '15:25', status: 'inactive' }
+                {name: 'Alonzo Mia Nicole', time: '08:00', status: 'Active'},
+{name: 'Alonzo Mia Nicole', time: '10:00', status: 'Break'},
+{name: 'Alonzo Mia Nicole', time: '10:10', status: 'Active'},
+{name: 'Alonzo Mia Nicole', time: '11:50', status: 'Break'},
+{name: 'Alonzo Mia Nicole', time: '12:00', status: 'Active'},
+{name: 'Alonzo Mia Nicole', time: '12:10', status: 'Lunch'},
+{name: 'Alonzo Mia Nicole', time: '12:40', status: 'Active'},
+{name: 'Alonzo Mia Nicole', time: '14:14', status: 'Break'},
+{name: 'Alonzo Mia Nicole', time: '14:24', status: 'Active'},
+{name: 'Aquino Samuel John', time: '09:00', status: 'Active'},
+{name: 'Aquino Samuel John', time: '11:17', status: 'Break'},
+{name: 'Aquino Samuel John', time: '11:27', status: 'Active'},
+{name: 'Aquino Samuel John', time: '13:39', status: 'Break'},
+{name: 'Aquino Samuel John', time: '13:49', status: 'Active'},
+{name: 'Aquino Samuel John', time: '13:58', status: 'Lunch'},
+{name: 'Aquino Samuel John', time: '14:28', status: 'Active'},
+{name: 'Bautista Joseph Mark', time: '09:00', status: 'Active'},
+{name: 'Bautista Joseph Mark', time: '11:26', status: 'Break'},
+{name: 'Bautista Joseph Mark', time: '11:36', status: 'Active'},
+{name: 'Bautista Joseph Mark', time: '13:39', status: 'Break'},
+{name: 'Bautista Joseph Mark', time: '13:49', status: 'Active'},
+{name: 'Bautista Joseph Mark', time: '13:59', status: 'Lunch'},
+{name: 'Bautista Joseph Mark', time: '14:29', status: 'Active'},
+{name: 'Castillo Benjamin Lucas', time: '09:00', status: 'Active'},
+{name: 'Castillo Benjamin Lucas', time: '11:31', status: 'Break'},
+{name: 'Castillo Benjamin Lucas', time: '11:41', status: 'Active'},
+{name: 'Castillo Benjamin Lucas', time: '13:04', status: 'Break'},
+{name: 'Castillo Benjamin Lucas', time: '13:14', status: 'Active'},
+{name: 'Castillo Benjamin Lucas', time: '13:24', status: 'Lunch'},
+{name: 'Castillo Benjamin Lucas', time: '13:54', status: 'Active'},
+{name: 'Cruz Andrew Michael', time: '09:00', status: 'Active'},
+{name: 'Cruz Andrew Michael', time: '11:25', status: 'Break'},
+{name: 'Cruz Andrew Michael', time: '11:35', status: 'Active'},
+{name: 'Cruz Andrew Michael', time: '13:30', status: 'Break'},
+{name: 'Cruz Andrew Michael', time: '13:40', status: 'Active'},
+{name: 'Cruz Andrew Michael', time: '13:50', status: 'Lunch'},
+{name: 'Cruz Andrew Michael', time: '14:20', status: 'Active'},
+{name: 'Dela Cruz James Allen', time: '00:00', status: 'Active'},
+{name: 'Dela Cruz James Allen', time: '02:13', status: 'Break'},
+{name: 'Dela Cruz James Allen', time: '02:23', status: 'Active'},
+{name: 'Dela Cruz James Allen', time: '04:00', status: 'Break'},
+{name: 'Dela Cruz James Allen', time: '04:10', status: 'Active'},
+{name: 'Dela Cruz James Allen', time: '05:47', status: 'Lunch'},
+{name: 'Dela Cruz James Allen', time: '06:17', status: 'Active'},
+{name: 'Dela Cruz James Allen', time: '06:37', status: 'Break'},
+{name: 'Dela Cruz James Allen', time: '06:47', status: 'Active'},
+{name: 'Dela Cruz James Allen', time: '08:14', status: 'Break'},
+{name: 'Dela Cruz James Allen', time: '08:24', status: 'Active'},
+{name: 'Dela Cruz James Allen', time: '10:01', status: 'Break'},
+{name: 'Dela Cruz James Allen', time: '10:11', status: 'Active'},
+{name: 'Dela Cruz James Allen', time: '12:00', status: 'Logout'},
+{name: 'Dizon Emma Marie', time: '09:00', status: 'Active'},
+{name: 'Dizon Emma Marie', time: '11:45', status: 'Break'},
+{name: 'Dizon Emma Marie', time: '11:55', status: 'Active'},
+{name: 'Dizon Emma Marie', time: '14:15', status: 'Lunch'},
+{name: 'Dizon Emma Marie', time: '14:20', status: 'Break'},
+{name: 'Dizon Emma Marie', time: '14:30', status: 'Active'},
+{name: 'Dizon Emma Marie', time: '14:45', status: 'Active'},
+{name: 'Flores David Anthony', time: '09:00', status: 'Active'},
+{name: 'Flores David Anthony', time: '11:33', status: 'Break'},
+{name: 'Flores David Anthony', time: '11:43', status: 'Active'},
+{name: 'Flores David Anthony', time: '13:22', status: 'Break'},
+{name: 'Flores David Anthony', time: '13:32', status: 'Active'},
+{name: 'Flores David Anthony', time: '13:42', status: 'Lunch'},
+{name: 'Flores David Anthony', time: '14:12', status: 'Active'},
+{name: 'Garcia John Edward', time: '12:00', status: 'Active'},
+{name: 'Garcia John Edward', time: '14:11', status: 'Break'},
+{name: 'Garcia John Edward', time: '14:21', status: 'Active'},
+{name: 'Mendoza Robert Thomas', time: '09:00', status: 'Active'},
+{name: 'Mendoza Robert Thomas', time: '11:20', status: 'Break'},
+{name: 'Mendoza Robert Thomas', time: '11:30', status: 'Active'},
+{name: 'Mendoza Robert Thomas', time: '13:25', status: 'Lunch'},
+{name: 'Mendoza Robert Thomas', time: '13:55', status: 'Active'},
+{name: 'Mendoza Robert Thomas', time: '14:15', status: 'Break'},
+{name: 'Mendoza Robert Thomas', time: '14:25', status: 'Active'},
+{name: 'Mercado Alexander William', time: '09:00', status: 'Active'},
+{name: 'Mercado Alexander William', time: '11:24', status: 'Break'},
+{name: 'Mercado Alexander William', time: '11:34', status: 'Active'},
+{name: 'Mercado Alexander William', time: '13:21', status: 'Break'},
+{name: 'Mercado Alexander William', time: '13:31', status: 'Active'},
+{name: 'Mercado Alexander William', time: '13:41', status: 'Lunch'},
+{name: 'Mercado Alexander William', time: '14:11', status: 'Active'},
+{name: 'Navarro Christopher Patrick', time: '09:00', status: 'Active'},
+{name: 'Navarro Christopher Patrick', time: '11:32', status: 'Break'},
+{name: 'Navarro Christopher Patrick', time: '11:42', status: 'Active'},
+{name: 'Navarro Christopher Patrick', time: '13:13', status: 'Break'},
+{name: 'Navarro Christopher Patrick', time: '13:23', status: 'Active'},
+{name: 'Navarro Christopher Patrick', time: '13:53', status: 'Lunch'},
+{name: 'Navarro Christopher Patrick', time: '14:23', status: 'Active'},
+{name: 'Quiambao Abigail Hope', time: '08:00', status: 'Active'},
+{name: 'Quiambao Abigail Hope', time: '10:20', status: 'Break'},
+{name: 'Quiambao Abigail Hope', time: '10:30', status: 'Active'},
+{name: 'Quiambao Abigail Hope', time: '12:40', status: 'Break'},
+{name: 'Quiambao Abigail Hope', time: '12:50', status: 'Lunch'},
+{name: 'Quiambao Abigail Hope', time: '12:50', status: 'Active'},
+{name: 'Quiambao Abigail Hope', time: '13:20', status: 'Active'},
+{name: 'Quiambao Abigail Hope', time: '14:34', status: 'Break'},
+{name: 'Quiambao Abigail Hope', time: '14:44', status: 'Active'},
+{name: 'Tolentino Ava Grace', time: '08:15', status: 'Active'},
+{name: 'Tolentino Ava Grace', time: '10:42', status: 'Break'},
+{name: 'Tolentino Ava Grace', time: '10:52', status: 'Active'},
+{name: 'Tolentino Ava Grace', time: '13:21', status: 'Break'},
+{name: 'Tolentino Ava Grace', time: '13:26', status: 'Lunch'},
+{name: 'Tolentino Ava Grace', time: '13:31', status: 'Active'},
+{name: 'Tolentino Ava Grace', time: '13:56', status: 'Active'},
+{name: 'Tolentino Ava Grace', time: '14:48', status: 'Break'},
+{name: 'Tolentino Ava Grace', time: '14:58', status: 'Active'},
+{name: 'Velasquez Harper Mae', time: '00:00', status: 'Active'},
+{name: 'Velasquez Harper Mae', time: '02:19', status: 'Break'},
+{name: 'Velasquez Harper Mae', time: '02:29', status: 'Active'},
+{name: 'Velasquez Harper Mae', time: '03:41', status: 'Break'},
+{name: 'Velasquez Harper Mae', time: '03:51', status: 'Active'},
+{name: 'Velasquez Harper Mae', time: '04:01', status: 'Lunch'},
+{name: 'Velasquez Harper Mae', time: '04:31', status: 'Active'},
+{name: 'Velasquez Harper Mae', time: '06:13', status: 'Break'},
+{name: 'Velasquez Harper Mae', time: '06:23', status: 'Active'},
+{name: 'Velasquez Harper Mae', time: '08:00', status: 'Logout'},
+{name: 'Villanueva Joshua Dean', time: '09:00', status: 'Active'},
+{name: 'Villanueva Joshua Dean', time: '11:18', status: 'Break'},
+{name: 'Villanueva Joshua Dean', time: '11:28', status: 'Active'},
+{name: 'Villanueva Joshua Dean', time: '13:07', status: 'Lunch'},
+{name: 'Villanueva Joshua Dean', time: '13:37', status: 'Active'},
+{name: 'Villanueva Joshua Dean', time: '13:57', status: 'Break'},
+{name: 'Villanueva Joshua Dean', time: '14:07', status: 'Active'}
             ]
         };
         
@@ -54,12 +190,67 @@ import '../../components/header/header.js';
             const hours12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
             return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
         };
+
+        // Helper: Abbreviate names like "Dela Cruz James Allen" -> "Dela Cruz J. A."
+        const abbreviateName = (full) => {
+            if (!full || typeof full !== 'string') return full;
+            const parts = full.trim().split(/\s+/);
+            if (parts.length === 1) return parts[0];
+            const lower = parts.map(p => p.toLowerCase());
+            const prefixes = new Set(['de','del','dela','delos','de la','van','von','da','dos','di','la','le','du','mc','mac',"o'"]);
+            let sEnd = 1;
+            if (prefixes.has(lower[0])) {
+                sEnd = Math.min(2, parts.length - 1);
+                if (lower[0] === 'de' && lower[1] === 'la' && parts.length >= 3) sEnd = 3; // "De la Cruz"
+            }
+            const surname = parts.slice(0, sEnd).join(' ');
+            const given = parts.slice(sEnd);
+            const initials = given.slice(0, 2).map(w => (w && w[0]) ? (w[0].toUpperCase() + '.') : '').filter(Boolean).join(' ');
+            return initials ? `${surname} ${initials}` : surname;
+        };
+
+        // Нормализация приходящих статусов событий к единому набору
+        const normalizeStatus = (s) => {
+            const k = String(s || '').toLowerCase().trim();
+            if (k === 'logout' || k === 'log out' || k === 'logged out') return 'inactive';
+            if (k === 'overtime') return 'missed';
+            if (k === 'brk') return 'break';
+            if (k === 'meal') return 'lunch';
+            if (k === 'online' || k === 'work') return 'active';
+            if (k === 'idle' || k === 'offline' || k === 'off') return 'inactive';
+            return k; // active, break, lunch, inactive, missed, future, off
+        };
         
         // Функции для метрик слайдера
         const updateMetricDots = () => {
             const dots = document.querySelectorAll('.metric-dot');
             dots.forEach((dot, i) => {
                 dot.classList.toggle('active', i === state.activeMetricSlide);
+            });
+        };
+
+        // Forward vertical wheel from horizontal scrollers to page scroll (trackpads)
+        const enableVerticalScrollPassthrough = () => {
+            const appMain = document.getElementById('appMain');
+            if (!appMain) return;
+            const sels = [
+                '.latest-activity-row', '.screenshot-card', '.screenshot-thumb', '.mobile-screenshot',
+                '.status-scroll-row', '.timeline-hours-scroll', '.timeline-data-scroll', '.metrics-mobile'
+            ];
+            const onWheel = (ev) => {
+                const vert = Math.abs(ev.deltaY) >= Math.abs(ev.deltaX);
+                if (!vert) return; // user intends horizontal scroll; don't interfere
+                const before = appMain.scrollTop;
+                appMain.scrollBy({ top: ev.deltaY, behavior: 'auto' });
+                const changed = appMain.scrollTop !== before;
+                if (changed) ev.preventDefault();
+            };
+            sels.forEach(sel => {
+                document.querySelectorAll(sel).forEach(el => {
+                    if (el.__wheelPassthrough) return;
+                    el.addEventListener('wheel', onWheel, { passive: false });
+                    el.__wheelPassthrough = true;
+                });
             });
         };
         
@@ -102,13 +293,12 @@ import '../../components/header/header.js';
             members.forEach(member => {
                 if (member.timeline) {
                     for (let i = 0; i < 1440; i++) {
-                        if (member.timeline[i] === 'active') {
-                            totalMinutes++;
-                        }
+                        if (member.timeline[i] === 'active') totalMinutes++;
                     }
                 }
             });
-            return Math.round(totalMinutes / 60 * 100) / 100;
+            // Возвращаем «сые» часы (без округления) — округлим в отображении
+            return totalMinutes / 60;
         };
         
         // Helper: Universal function for calculating hours
@@ -131,20 +321,21 @@ import '../../components/header/header.js';
             // (reverted) — remove notification expand toggle
             const hourlyRate = 15;
             
-            const factHours = calculateFactHours(members);
-            const projectedHours = calculateHours(MOCK_DATA.schedule, 'shift_projected');
-            const plannedHours = calculateHours(MOCK_DATA.schedule, 'shift');
+            const round1 = (v) => Math.round(v * 10) / 10;
+            const factHoursRaw = calculateFactHours(members);
+            const projectedHoursRaw = calculateHours(MOCK_DATA.schedule, 'shift_projected');
+            const plannedHoursRaw = calculateHours(MOCK_DATA.schedule, 'shift');
             
             return {
                 today: {
-                    fact: { hours: factHours, cost: Math.round(factHours * hourlyRate) },
-                    projected: { hours: projectedHours, cost: Math.round(projectedHours * hourlyRate) },
-                    planned: { hours: plannedHours, cost: Math.round(plannedHours * hourlyRate) }
+                    fact: { hours: round1(factHoursRaw), cost: Math.round(factHoursRaw * hourlyRate) },
+                    projected: { hours: round1(projectedHoursRaw), cost: Math.round(projectedHoursRaw * hourlyRate) },
+                    planned: { hours: round1(plannedHoursRaw), cost: Math.round(plannedHoursRaw * hourlyRate) }
                 },
                 month: {
-                    fact: { hours: factHours, cost: Math.round(factHours * hourlyRate) },
-                    projected: { hours: projectedHours, cost: Math.round(projectedHours * hourlyRate) },
-                    planned: { hours: plannedHours, cost: Math.round(plannedHours * hourlyRate) }
+                    fact: { hours: round1(factHoursRaw), cost: Math.round(factHoursRaw * hourlyRate) },
+                    projected: { hours: round1(projectedHoursRaw), cost: Math.round(projectedHoursRaw * hourlyRate) },
+                    planned: { hours: round1(plannedHoursRaw), cost: Math.round(plannedHoursRaw * hourlyRate) }
                 }
             };
         };
@@ -209,7 +400,7 @@ import '../../components/header/header.js';
                     ${visual.icon}
                     <div style="position:absolute;bottom:0.25rem;right:0.25rem;background:rgba(0,0,0,0.8);color:white;padding:0.125rem 0.375rem;border-radius:0.1875rem;font-size:clamp(0.5rem, 1vw, 0.625rem);font-weight:600;">${screenshot.time}</div>
                 </div>
-                ${!isThumb && showMember ? `<div class="value" style="font-size:clamp(0.6875rem, 1.2vw, 0.8125rem);margin-bottom:0.5rem;">${screenshot.member}</div>` : ''}
+                ${!isThumb && showMember ? `<div class="value" style="font-size:clamp(0.6875rem, 1.2vw, 0.8125rem);margin-bottom:0.5rem;">${abbreviateName(screenshot.member)}</div>` : ''}
                 ${!isThumb && showMember ? `<div class="badge" style="--c:var(--success);justify-content:center;"><span style="color:var(--c)">●</span><span style="color:var(--c)">${visual.label}</span></div>` : ''}
             </div>`;
         };
@@ -311,16 +502,31 @@ import '../../components/header/header.js';
             setTimeout(callback, delay);
         };
         
-        // Helper: Scroll to SCREENSHOTS section
+        // Helper: Scroll so that the employee's timeline row is at the top (under sticky header)
         const scrollToScreenshots = (memberName) => {
             scrollWithDelay(() => {
-                const expandedSection = document.querySelector(`[data-member="${memberName}"] + .expanded`);
-                if (expandedSection) {
-                    const screenshotsLabel = expandedSection.querySelector('.label');
-                    if (screenshotsLabel && screenshotsLabel.textContent.includes('SCREENSHOTS')) {
-                        screenshotsLabel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (!isMobile()) {
+                    const container = document.querySelector('.today-timeline-scroll');
+                    const row = document.querySelector(`[data-member="${memberName}"]`);
+                    const sticky = document.querySelector('.today-timeline-sticky');
+                    if (container && row) {
+                        const card = container.closest('.card');
+                        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        // wait briefly for page scroll, then align inside container
+                        setTimeout(() => {
+                            const cRect = container.getBoundingClientRect();
+                            const rRect = row.getBoundingClientRect();
+                            const stickyH = sticky ? sticky.getBoundingClientRect().height : 0;
+                            const delta = rRect.top - cRect.top;
+                            const target = Math.max(0, container.scrollTop + delta - stickyH - 8);
+                            container.scrollTo({ top: target, behavior: 'smooth' });
+                        }, 150);
+                        return;
                     }
                 }
+                // Fallback: scroll to expanded section on mobile
+                const expandedSection = document.querySelector(`[data-member="${memberName}"] + .expanded`);
+                if (expandedSection) expandedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         };
         
@@ -385,7 +591,10 @@ import '../../components/header/header.js';
         // Helper: Generate HTML element with common pattern
         const createBadge = (status) => {
             const config = STATUS_CONFIG[status] || STATUS_CONFIG.active;
-            return `<div class="badge" style="--c:${config[0]}"><span style="color:var(--c)">●</span><span style="color:var(--c)">${config[1]}</span></div>`;
+            // Для Off используем более контрастный серый для текста/точки бейджа,
+            // чтобы не терялся на белом фоне, но при этом таймлайн остаётся светлее
+            const badgeColor = status === 'off' ? '#9ca3af' : config[0];
+            return `<div class="badge" style="--c:${badgeColor}"><span style="color:var(--c)">●</span><span style="color:var(--c)">${config[1]}</span></div>`;
         };
         
         const component = (type, data) => {
@@ -405,8 +614,11 @@ import '../../components/header/header.js';
             if (!emp) return timeline;
             
             const shiftStart = timeToMinutes(emp.shift.start), shiftEnd = timeToMinutes(emp.shift.end), currentTime = 930;
-            const employeeEvents = events.filter(e => e.name === name).map(e => ({...e, minute: timeToMinutes(e.time)})).sort((a,b) => a.minute - b.minute);
-            const firstEvent = employeeEvents[0]?.minute;
+            const employeeEvents = events
+                .filter(e => e.name === name)
+                .map(e => ({...e, status: normalizeStatus(e.status), minute: timeToMinutes(e.time)}))
+                .sort((a,b) => a.minute - b.minute);
+            const firstEvent = employeeEvents.length ? employeeEvents[0].minute : undefined;
             
             if (currentTime < shiftEnd) {
                 for (let i = Math.max(currentTime + 1, shiftStart); i < shiftEnd; i++) {
@@ -414,7 +626,7 @@ import '../../components/header/header.js';
                 }
             }
             
-            if (!firstEvent || firstEvent >= shiftStart + 30) {
+            if (firstEvent === undefined || firstEvent >= shiftStart + 30) {
                 if (currentTime >= shiftStart + 30) {
                     for (let i = shiftStart; i <= Math.min(currentTime, shiftEnd - 1); i++) {
                         timeline[i] = 'missed';
@@ -423,53 +635,63 @@ import '../../components/header/header.js';
                 return timeline;
             }
             
-            if (firstEvent > shiftStart) {
+            if (firstEvent !== undefined && firstEvent > shiftStart) {
                 for (let i = shiftStart; i < firstEvent; i++) {
                     timeline[i] = 'missed';
                 }
             }
             
+            // Respect Logout: after logout minute, timeline becomes 'off'
+            const logoutMinute = employeeEvents.find(e => e.status === 'logout')?.minute;
             employeeEvents.forEach((event, i) => {
                 const nextEvent = employeeEvents[i + 1]?.minute || Math.min(shiftEnd, currentTime + 1);
                 const duration = nextEvent - event.minute;
                 const overtimeLimit = event.status === 'break' ? 10 : event.status === 'lunch' ? 30 : null;
-                
-                for (let j = event.minute; j < nextEvent; j++) {
-                    timeline[j] = overtimeLimit && duration > overtimeLimit && j >= event.minute + overtimeLimit ? 'missed' : event.status;
+                const stop = logoutMinute !== undefined ? Math.min(nextEvent, logoutMinute) : nextEvent;
+                for (let j = event.minute; j < stop; j++) {
+                    const val = overtimeLimit && duration > overtimeLimit && j >= event.minute + overtimeLimit ? 'missed' : event.status;
+                    timeline[j] = val;
                 }
             });
+            if (logoutMinute !== undefined) {
+                for (let j = logoutMinute; j < 1440; j++) timeline[j] = 'off';
+            }
             
             return timeline;
         };
         
         const generateNotifications = () => {
             const notifications = [], currentTime = 930;
+            const noon = 12 * 60;
             
             MOCK_DATA.schedule.forEach(emp => {
                 const shiftStart = timeToMinutes(emp.shift.start);
-                const events = MOCK_DATA.events.filter(e => e.name === emp.name).map(e => ({...e, minute: timeToMinutes(e.time)})).sort((a,b) => a.minute - b.minute);
-                const firstEvent = events[0]?.minute;
+                const events = MOCK_DATA.events
+                    .filter(e => e.name === emp.name)
+                    .map(e => ({...e, status: normalizeStatus(e.status), minute: timeToMinutes(e.time)}))
+                    .sort((a,b) => a.minute - b.minute);
+                const firstEvent = events.length ? events[0].minute : undefined;
                 
                 if (currentTime >= shiftStart + 5) {
-                    if (!firstEvent || firstEvent >= shiftStart + 30) {
+                    if (firstEvent === undefined || firstEvent >= shiftStart + 30) {
                         [5, 15, 25].forEach(delay => {
                             const notifTime = shiftStart + delay;
                             if (notifTime <= currentTime) {
                                 const time = `${Math.floor(notifTime/60)}:${(notifTime%60).toString().padStart(2,'0')}`;
                                 notifications.push({
                                     id: `late-${emp.name}-${delay}`, time: formatTime12Hour(time), minute: notifTime, color: '#f97316',
-                                    msg: `${emp.name} - ${delay < 30 ? `Is late for shift (${delay} minutes)` : 'Did not show up for shift (30+ minutes)'}`, read: false
+                                    msg: `${emp.name} - ${delay < 30 ? `Is late for shift (${delay} minutes)` : 'Did not show up for shift (30+ minutes)'}`, read: !(notifTime >= noon)
                                 });
                             }
                         });
-                        if (!firstEvent && currentTime >= shiftStart + 30) {
+                        if (firstEvent === undefined && currentTime >= shiftStart + 30) {
                             const time = `${Math.floor((shiftStart + 30)/60)}:${((shiftStart + 30)%60).toString().padStart(2,'0')}`;
                             notifications.push({
                                 id: `no-show-${emp.name}`, time: formatTime12Hour(time), minute: shiftStart + 30, color: '#dc2626',
-                                msg: `${emp.name} - Did not show up for shift (30+ minutes)`, read: false
+                                msg: `${emp.name} - Did not show up for shift (30+ minutes)`, read: !((shiftStart + 30) >= noon)
                             });
                         }
-                    } else if (firstEvent > shiftStart + 5) {
+                    } else if (firstEvent !== undefined && firstEvent > shiftStart + 5) {
                         const delay = firstEvent - shiftStart;
                         [5, 15, 25].filter(d => d < delay).forEach(d => {
                             const notifTime = shiftStart + d;
@@ -477,13 +699,13 @@ import '../../components/header/header.js';
                                 const time = `${Math.floor(notifTime/60)}:${(notifTime%60).toString().padStart(2,'0')}`;
                                 notifications.push({
                                     id: `late-${emp.name}-${d}`, time: formatTime12Hour(time), minute: notifTime, color: '#f97316',
-                                    msg: `${emp.name} - Is late for shift (${d} minutes)`, read: false
+                                    msg: `${emp.name} - Is late for shift (${d} minutes)`, read: !(notifTime >= noon)
                                 });
                             }
                         });
                         notifications.push({
                             id: `arrived-${emp.name}`, time: formatTime12Hour(`${Math.floor(firstEvent/60)}:${(firstEvent%60).toString().padStart(2,'0')}`),
-                            minute: firstEvent, color: '#22c55e', msg: `${emp.name} - Late employee started shift (${delay} min delay)`, read: false
+                            minute: firstEvent, color: '#22c55e', msg: `${emp.name} - Late employee started shift (${delay} min delay)`, read: !(firstEvent >= noon)
                         });
                     }
                 }
@@ -506,7 +728,7 @@ import '../../components/header/header.js';
                                 const totalOvertime = Math.min(overtime + interval - 1, duration - limit);
                                 notifications.push({
                                     id: `${event.status}-${emp.name}-${notifTime}`, time: formatTime12Hour(time), minute: notifTime,
-                                    color: colors[event.status], read: false,
+                                    color: colors[event.status], read: !(notifTime >= noon),
                                     msg: `${emp.name} - Employee is ${labels[event.status]} (${event.status === 'inactive' ? `no activity for ${limit + totalOvertime}` : `${totalOvertime} minutes overtime`})`
                                 });
                             }
@@ -528,10 +750,20 @@ import '../../components/header/header.js';
             const working = members.filter(m => ['active', 'break', 'inactive'].includes(m.status));
             const active = members.filter(m => m.status === 'active');
             
+            // Compute planned at current logical time (15:30 => 930 minutes)
+            const currentTime = 930;
+            const planned = MOCK_DATA.schedule.filter(emp => {
+                const st = timeToMinutes(emp.shift.start);
+                const en = timeToMinutes(emp.shift.end);
+                return st <= currentTime && currentTime < en;
+            }).length;
+            const activeCount = active.length;
+            const coveragePct = planned ? Math.round((activeCount / planned) * 100) : 0;
+
             return {
                 members,
-                coverage: { actual: working.length, planned: 1, pct: working.length * 100 },
-                active: { count: active.length, total: members.length },
+                coverage: { actual: activeCount, planned, pct: coveragePct },
+                active: { count: activeCount, total: members.length },
                 status: {
                     active, available: members.filter(m => m.status === 'break'),
                     problems: members.filter(m => ['inactive', 'missed'].includes(m.status))
@@ -646,24 +878,25 @@ import '../../components/header/header.js';
                 ].map((item, i) => 
                     h('div', i ? 'mt-4' : '', '', h('div', 'label mb-2', '', item.period) +
                     h('div', 'flex justify-between', '', [
-                        component('metric', {value: item.data.fact.cost.toString(), label: `fact (${item.data.fact.hours}h)`, size: i ? 'clamp(0.75rem, 1.3vw, 0.875rem)' : 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--success)'}),
-                        component('metric', {value: item.data.projected.cost.toString(), label: `projected (${item.data.projected.hours}h)`, size: i ? 'clamp(0.75rem, 1.3vw, 0.875rem)' : 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--info)'}),
-                        component('metric', {value: item.data.planned.cost.toString(), label: `plan (${item.data.planned.hours}h)`, size: i ? 'clamp(0.75rem, 1.3vw, 0.875rem)' : 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--gray)'})
+                        component('metric', {value: `$${item.data.fact.cost}`, label: `fact (${item.data.fact.hours}h)`, size: i ? 'clamp(0.75rem, 1.3vw, 0.875rem)' : 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--success)'}),
+                        component('metric', {value: `$${item.data.projected.cost}`, label: `projected (${item.data.projected.hours}h)`, size: i ? 'clamp(0.75rem, 1.3vw, 0.875rem)' : 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--info)'}),
+                        component('metric', {value: `$${item.data.planned.cost}`, label: `plan (${item.data.planned.hours}h)`, size: i ? 'clamp(0.75rem, 1.3vw, 0.875rem)' : 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--gray)'})
                     ].join('')))
                 ).join(''));
             
             // Coverage
             html += MetricCard('activity', 'COVERAGE', 'var(--info)',
                 h('div', 'text-center', '', h('div', 'metric-lg', `color:var(--danger)`, `${coverage.pct}%`) +
-                component('progress', {value: coverage.pct, color: coverage.pct >= 80 ? 'var(--success)' : 'var(--danger)'}) +
+                component('progress', {value: Math.max(0, Math.min(100, coverage.pct)), color: coverage.pct >= 80 ? 'var(--success)' : 'var(--danger)'}) +
                 h('div', 'subtitle', '', `Working: ${coverage.actual}/${coverage.planned} planned`)));
             
             // Active Now
             html += MetricCard('users', 'ACTIVE NOW', 'var(--success)',
                 h('div', 'text-center', '', h('div', 'metric-lg', `color:var(--success)`, `${active.count}`) +
-                component('progress', {value: Math.round(active.count / active.total * 100), color: 'var(--success)'}) +
+                component('progress', {value: Math.max(0, Math.min(100, Math.round(active.count / active.total * 100))), color: 'var(--success)'}) +
                 h('div', 'subtitle', '', `of ${active.total} staff | Others: break/inactive`)));
             
+            // Close metrics card
             html += '</div></div>';
             
             // Latest Activity (island placeholder)
@@ -681,10 +914,18 @@ import '../../components/header/header.js';
             ['active', 'problems', 'available'].forEach(key => {
                 const colors = {active: 'var(--success)', available: 'var(--info)', problems: 'var(--danger)'};
                 const count = status[key].length;
-                html += h('div', '', '', h('div', 'flex items-center gap-2 mb-2', '',
+                const listHtml = count
+                  ? status[key]
+                      .map(m => `${abbreviateName(m.name)} (${(STATUS_CONFIG[m.status] || STATUS_CONFIG.active)[1].replace(' ⚠️', '')})`)
+                      .map(s => h('div', '', '', s)).join('')
+                  : 'None';
+                html += h('div', '', '',
+                  h('div', 'flex items-center gap-2 mb-2', '',
                     h('span', '', `width:12px;height:12px;border-radius:50%;background:${colors[key]};`, '') +
-                    h('span', '', 'font-size:13px;font-weight:600;color:#374151;', `${key[0].toUpperCase()}${key.slice(1)} (${count})`)) +
-                    h('div', 'subtitle', '', count ? status[key].map(m => `${m.name} (${(STATUS_CONFIG[m.status] || STATUS_CONFIG.active)[1].replace(' ⚠️', '')})`).join(', ') : 'None'));
+                    h('span', '', 'font-size:13px;font-weight:600;color:#374151;', `${key[0].toUpperCase()}${key.slice(1)} (${count})`)
+                  ) +
+                  h('div', 'subtitle', '', listHtml)
+                );
             });
             html += '</div></div>';
             
@@ -703,8 +944,9 @@ import '../../components/header/header.js';
             state.notifs.filter(n => state.tab === 'unread' ? !n.read : n.read).forEach(n => {
                 html += h('div', 'notification', `background:${n.color}0d;`,
                     h('div', 'dot', `background:${n.color};`, '') +
-                    h('div', 'flex-1', `padding-right:${!n.read ? '36px' : '0'};`, h('div', '', 'font-size:13px;', n.msg) + h('div', 'subtitle', '', n.time)) +
-                    (!n.read ? h('button', 'btn', `position:absolute;top:12px;right:12px;width:24px;height:24px;background:white;border:1px solid ${n.color}40;color:${n.color};padding:0;font-size:12px;`, '✓').replace('<button', `<button data-id="${n.id}"`) : ''));
+                    h('div', 'flex-1', `padding-right:${!n.read ? '112px' : '0'};`, h('div', '', 'font-size:13px;', n.msg) + h('div', 'subtitle', '', n.time)) +
+                    (!n.read ? h('button', 'btn', `position:absolute;top:10px;right:12px;height:26px;padding:0 10px;background:white;border:1px solid ${n.color}40;color:${n.color};font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;`, '✓ Mark as read').replace('<button', `<button data-id="${n.id}" data-mark-read="1" title="Mark as read (move to Read tab)"`) : ''))
+                    .replace('<div', `<div data-id="${n.id}"`);
             });
             html += '</div></div></div></div>';
             
@@ -717,15 +959,18 @@ import '../../components/header/header.js';
             html += '<p class="subtitle">Realtime monitoring • Click employee timeline hour to view screenshots</p></div></div>';
             html += '<div class="text-right">';
             html += '<div class="value" style="margin-bottom:4px;">' + new Date().toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}) + '</div>';
-            html += '<div class="subtitle" style="color:var(--primary);">Current: 3:30 PM • Live Cost: ' + costs.today.fact.cost + ' ⚡</div>';
+            html += '<div class="subtitle" style="color:var(--primary);">Current: 3:30 PM • Live Cost: $' + costs.today.fact.cost + ' ⚡</div>';
             html += '</div></div></div>';
             
             // Добавляем легенду для десктопа
             html += renderLegend(false);
+
+            // Вертикальный скролл внутри блока таймлайна с "липкой" шапкой часов
+            html += '<div class="today-timeline-scroll">';
             
-            html += '<div style="display:grid;grid-template-columns:120px 1fr 100px;padding:clamp(1rem, 2.5vw, 1.25rem) clamp(1.25rem, 3vw, 1.5rem);background:linear-gradient(135deg,rgba(204,102,51,0.08),rgba(248,247,244,0.9));align-items:center;">';
+            html += '<div class="today-timeline-sticky" style="display:grid;grid-template-columns:120px 1fr 100px;padding:clamp(1rem, 2.5vw, 1.25rem) clamp(1.25rem, 3vw, 1.5rem);background:#f8f7f4;align-items:center;">';
             html += '<div class="label" style="color:var(--primary);font-weight:700;">TEAM MEMBER</div>';
-            html += '<div style="display:grid;grid-template-columns:repeat(24, 1fr);padding:0 0.5rem;gap:0;">';
+            html += '<div style="display:grid;grid-template-columns:repeat(24, 1fr);padding:0;gap:0;">';
             
             for (let i = 0; i < 24; i++) {
                 // NOW moment on the page is fixed to 15:30 (930 minutes)
@@ -767,13 +1012,13 @@ import '../../components/header/header.js';
             
             html += '</div>';
             html += '<div class="label text-center" style="color:var(--primary);font-weight:700;">STATUS</div>';
-            html += '</div>';
+            html += '</div>'; // end sticky header
             
             members.forEach(m => {
                 html += '<div>';
                 html += '<div class="employee-row" data-member="' + m.name + '">';
-                html += '<div><div class="value">' + m.name + '</div><div class="subtitle">' + m.role + '</div></div>';
-                html += '<div class="flex" style="height:clamp(2rem, 4vw, 2.5rem);background:rgba(229,231,235,0.5);padding:0 0.5rem;">';
+                html += '<div><div class="value">' + abbreviateName(m.name) + '</div><div class="subtitle">' + m.role + '</div></div>';
+                html += '<div class="flex" style="height:clamp(2rem, 4vw, 2.5rem);background:rgba(229,231,235,0.5);padding:0;">';
                 
                 for (let hour = 0; hour < 24; hour++) {
                     const hourStatuses = Array.from({length: 60}, (_, i) => m.timeline[hour * 60 + i] || 'off');
@@ -786,8 +1031,11 @@ import '../../components/header/header.js';
                         }
                     }
                     
-                    html += h('div', 'timeline-row', `opacity:${segments.every(s => ['off'].includes(s.status)) ? 0.5 : 1};border-left:${hour ? ('1px solid ' + GRID_LINE_COLOR) : 'none'};`,
-                        segments.map(seg => h('div', '', `background:${(STATUS_CONFIG[seg.status] || STATUS_CONFIG.active)[0]};width:${seg.width}%;height:100%;`, '')).join(''));
+                    const hasColor = segments.some(s => !['off', 'future'].includes(s.status));
+                    const row = h('div', 'timeline-row', `opacity:${segments.every(s => ['off'].includes(s.status)) ? 0.5 : 1};border-left:${hour ? ('1px solid ' + GRID_LINE_COLOR) : 'none'};`,
+                        segments.map(seg => h('div', '', `background:${(STATUS_CONFIG[seg.status] || STATUS_CONFIG.active)[0]};width:${seg.width}%;height:100%;`, '')).join(''))
+                        .replace('<div', `<div data-has-color="${hasColor ? '1' : '0'}"`);
+                    html += row;
                 }
                 
                 html += '</div>';
@@ -868,7 +1116,7 @@ import '../../components/header/header.js';
             html += '<div class="flex items-center gap-3 mb-4">' + component('iconBox', {icon: 'activity', color: 'var(--info)'}) + '<h3 class="title" style="color:var(--info)">COVERAGE</h3></div>';
             html += '<div class="text-center">';
             html += '<div class="metric-lg" style="color:var(--danger)">' + coverage.pct + '%</div>';
-            html += component('progress', {value: coverage.pct, color: coverage.pct >= 80 ? 'var(--success)' : 'var(--danger)'});
+            html += component('progress', {value: Math.max(0, Math.min(100, coverage.pct)), color: coverage.pct >= 80 ? 'var(--success)' : 'var(--danger)'});
             html += '<div class="subtitle">Working: ' + coverage.actual + '/' + coverage.planned + ' planned</div>';
             html += '</div></div>';
             
@@ -877,7 +1125,7 @@ import '../../components/header/header.js';
             html += '<div class="flex items-center gap-3 mb-4">' + component('iconBox', {icon: 'users', color: 'var(--success)'}) + '<h3 class="title" style="color:var(--success)">ACTIVE NOW</h3></div>';
             html += '<div class="text-center">';
             html += '<div class="metric-lg" style="color:var(--success)">' + active.count + '</div>';
-            html += component('progress', {value: Math.round(active.count / active.total * 100), color: 'var(--success)'});
+            html += component('progress', {value: Math.max(0, Math.min(100, Math.round(active.count / active.total * 100))), color: 'var(--success)'});
             html += '<div class="subtitle">of ' + active.total + ' staff | Others: break/inactive</div>';
             html += '</div></div>';
             
@@ -918,12 +1166,21 @@ import '../../components/header/header.js';
                 ['active', 'problems', 'available'].forEach(key => {
                     const colors = {active: 'var(--success)', available: 'var(--info)', problems: 'var(--danger)'};
                     const count = status[key].length;
-                    html += h('div', 'status-col', '', h('div', 'flex items-center gap-2 mb-2', '',
-                        h('span', '', 'width:12px;height:12px;border-radius:50%;background:' + colors[key] + ';', '') +
-                        h('span', '', 'font-size:13px;font-weight:600;color:#374151;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
-                        h('div', 'subtitle', '', count ? status[key].map(m => m.name).join(', ') : 'None'));
+                    const listHtml = count
+                      ? status[key].map(m => abbreviateName(m.name)).map(s => h('div','', '', s)).join('')
+                      : 'None';
+                    html += h('div', 'status-col', '',
+                        h('div', 'flex items-center gap-2 mb-2', '',
+                            h('span', '', 'width:12px;height:12px;border-radius:50%;background:' + colors[key] + ';', '') +
+                            h('span', '', 'font-size:13px;font-weight:600;color:#374151;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')
+                        ) +
+                        h('div', 'subtitle', '', listHtml)
+                    );
                 });
-                html += '</div></div>';
+                html += '</div>';
+                // Visible scrollbar track under the horizontal status row (mobile)
+                html += '<div class="today-mobile-scrollbar" aria-hidden="true"><div class="thumb"></div></div>';
+                html += '</div>';
             } else {
                 html += '<div style="padding: 0.75rem 1.25rem 1.25rem 1.25rem; height: 267px;">';
                 html += '<div class="flex gap-2 mb-2">';
@@ -938,13 +1195,13 @@ import '../../components/header/header.js';
                 state.notifs.filter(n => state.tab === 'unread' ? !n.read : n.read).forEach(n => {
                     html += h('div', 'notification', 'background:' + n.color + '0d;',
                         h('div', 'dot', 'background:' + n.color + ';', '') +
-                        h('div', 'flex-1', 'padding-right:' + (!n.read ? '2.25rem' : '0') + ';', h('div', '', 'font-size:0.8125rem;', n.msg) + h('div', 'subtitle', '', n.time)) +
-                        (!n.read ? h('button', 'btn', 'position:absolute;top:0.75rem;right:0.75rem;width:1.5rem;height:1.5rem;background:white;border:1px solid ' + n.color + '40;color:' + n.color + ';padding:0;font-size:0.75rem;', '✓').replace('<button', '<button data-id="' + n.id + '"') : ''));
+                        h('div', 'flex-1', 'padding-right:' + (!n.read ? '5rem' : '0') + ';', h('div', '', 'font-size:0.8125rem;', n.msg) + h('div', 'subtitle', '', n.time)) +
+                        (!n.read ? h('button', 'btn', 'position:absolute;top:0.5rem;right:0.75rem;height:2rem;padding:0 0.5rem;background:white;border:1px solid ' + n.color + '40;color:' + n.color + ';font-size:0.75rem;border-radius:0.375rem;display:inline-flex;align-items:center;gap:6px;', '✓ Read').replace('<button', '<button data-id="' + n.id + '" data-mark-read="1" title="Mark as read (move to Read tab)"') : ''));
                 });
                 html += '</div></div>';
             }
             
-            html += '</div>';
+            html += '</div>'; // end today-timeline-scroll
             
             html += '</div>';
             
@@ -959,9 +1216,9 @@ import '../../components/header/header.js';
             html += renderLegend(true);
             
             // Заголовочная строка
-            html += '<div style="display:grid;grid-template-columns:100px 1fr;padding:clamp(0.625rem, 1.5vw, 0.75rem) 0;background:#f8f7f4;align-items:center;overflow:hidden;border-bottom:1px solid rgba(204, 102, 51, 0.1);">';
+            html += '<div style="display:grid;grid-template-columns:100px 1fr;padding:clamp(0.625rem, 1.5vw, 0.75rem) 0 1rem 0;background:#f8f7f4;align-items:center;overflow:visible;border-bottom:1px solid rgba(204, 102, 51, 0.1);">';
             html += '<div class="label timeline-header-name" style="color:var(--primary);font-weight:700;position:sticky;left:0;background:#f8f7f4;z-index:10;padding:0 clamp(1.25rem, 3vw, 1.5rem);border-right:1px solid rgba(204, 102, 51, 0.1);">TEAM MEMBER</div>';
-            html += '<div class="timeline-hours-scroll" style="overflow-x:auto;padding:0 0.5rem;scrollbar-width:none;-ms-overflow-style:none;"><div style="scrollbar-width:none;-ms-overflow-style:none;"></div><style>.timeline-hours-scroll::-webkit-scrollbar{display:none;}</style>';
+            html += '<div class="timeline-hours-scroll" style="overflow-x:auto;padding:0;scrollbar-width:none;-ms-overflow-style:none;"><div style="scrollbar-width:none;-ms-overflow-style:none;"></div><style>.timeline-hours-scroll::-webkit-scrollbar{display:none;}</style>';
             html += '<div style="display:grid;grid-template-columns:repeat(24, 1fr);min-width:1400px;gap:0;">';
             
             for (let i = 0; i < 24; i++) {
@@ -969,13 +1226,20 @@ import '../../components/header/header.js';
                 let text;
                 
                 if (isNow) {
-                    // Показываем фиксированное время приложения 3:30 PM
+                    // Фиксированная логика времени страницы — показываем текст часа и маленькую плашку NOW как на десктопе
                     text = '3:30 PM';
                 } else {
                     text = i === 0 ? '12 AM' : i === 6 ? '6 AM' : i === 12 ? '12 PM' : i === 18 ? '6 PM' : i < 12 ? `${i}` : `${i-12}`;
                 }
                 
-                html += h('div', 'text-center', `font-size:${isMajor||isNow?'clamp(0.6875rem, 1.2vw, 0.75rem)':'clamp(0.5625rem, 1vw, 0.625rem)'};font-weight:${isMajor||isNow?700:500};padding:0.375rem 0.125rem;color:${isNow?'white':isMajor?'var(--dark)':'var(--gray)'};${isNow?'background:var(--primary);border-radius:0.375rem;box-shadow:0 0.125rem 0.5rem rgba(204,102,51,0.3);':''}transition:all 0.2s;position:relative;white-space:nowrap;line-height:1;border-left:${i ? '1px solid ' + GRID_LINE_COLOR : 'none'};`, text);
+                const baseStyle = `font-size:${isMajor||isNow?'clamp(0.6875rem, 1.2vw, 0.75rem)':'clamp(0.5625rem, 1vw, 0.625rem)'};` +
+                                  `font-weight:${isMajor||isNow?700:500};` +
+                                  `padding:0.375rem 0.125rem;` +
+                                  `color:${isNow?'var(--primary)':(isMajor?'var(--dark)':'var(--gray)')};` +
+                                  `transition:all 0.2s;position:relative;white-space:nowrap;line-height:1;` +
+                                  `border-left:${i ? '1px solid ' + GRID_LINE_COLOR : 'none'};`;
+                const content = text + (isNow ? '<div style="position:absolute;top:calc(100% + 0.2rem);left:50%;transform:translateX(-50%);font-size:0.625rem;font-weight:700;color:var(--primary);background:white;padding:0.0625rem 0.3rem;border-radius:0.1875rem;white-space:nowrap;letter-spacing:0.02em;box-shadow:0 0.0625rem 0.1875rem rgba(0,0,0,0.12);z-index:2;">NOW</div>' : '');
+                html += h('div', 'text-center', baseStyle, content);
             }
             
             html += '</div></div>';
@@ -985,8 +1249,8 @@ import '../../components/header/header.js';
             members.forEach(m => {
                 html += '<div>';
                 html += '<div class="employee-row" data-member="' + m.name + '" style="display:grid;grid-template-columns:100px 1fr;padding:clamp(0.625rem, 1.5vw, 0.75rem) 0;cursor:pointer;transition:background 0.2s;align-items:center;border-bottom:1px solid rgba(0,0,0,0.05);">';
-                html += '<div class="timeline-name-sticky" style="position:sticky;left:0;z-index:10;padding:0 clamp(1.25rem, 3vw, 1.5rem);border-right:1px solid rgba(204, 102, 51, 0.1);"><div class="value">' + m.name + '</div><div class="subtitle">' + m.role + '</div></div>';
-                html += '<div class="timeline-data-scroll" style="overflow-x:auto;padding:0 0.5rem;scrollbar-width:none;-ms-overflow-style:none;"><style>.timeline-data-scroll::-webkit-scrollbar{display:none;}</style>';
+                html += '<div class="timeline-name-sticky" style="position:sticky;left:0;z-index:10;padding:0 clamp(1.25rem, 3vw, 1.5rem);border-right:1px solid rgba(204, 102, 51, 0.1);"><div class="value">' + abbreviateName(m.name) + '</div><div class="subtitle">' + m.role + '</div></div>';
+                html += '<div class="timeline-data-scroll" style="overflow-x:auto;padding:0;scrollbar-width:none;-ms-overflow-style:none;"><style>.timeline-data-scroll::-webkit-scrollbar{display:none;}</style>';
                 html += '<div class="flex" style="height:clamp(3rem, 6vw, 3.5rem);background:rgba(229,231,235,0.5);min-width:1400px;">';
                 
                 for (let hour = 0; hour < 24; hour++) {
@@ -1084,11 +1348,15 @@ import '../../components/header/header.js';
             // Timeline scroll positions
             const headerScroll = document.querySelector('.timeline-hours-scroll');
             const dataScrolls = document.querySelectorAll('.timeline-data-scroll');
+            const desktopTimeline = document.querySelector('.today-timeline-scroll');
             if (headerScroll) {
                 positions.timelineHeader = headerScroll.scrollLeft;
             }
             if (dataScrolls.length > 0) {
                 positions.timelineData = dataScrolls[0].scrollLeft;
+            }
+            if (desktopTimeline) {
+                positions.timelineY = desktopTimeline.scrollTop;
             }
             
             return positions;
@@ -1136,6 +1404,12 @@ import '../../components/header/header.js';
                         });
                     }
                 }
+
+                // Restore desktop timeline vertical scroll
+                if (positions.timelineY !== undefined) {
+                    const container = document.querySelector('.today-timeline-scroll');
+                    if (container) container.scrollTop = positions.timelineY;
+                }
             }, 0);
         };
 
@@ -1163,12 +1437,21 @@ import '../../components/header/header.js';
                 ['active', 'problems', 'available'].forEach(key => {
                     const colors = {active: 'var(--success)', available: 'var(--info)', problems: 'var(--danger)'};
                     const count = status[key].length;
-                    newContent += h('div', 'status-col', '', h('div', 'flex items-center gap-2 mb-2', '',
-                        h('span', '', 'width:12px;height:12px;border-radius:50%;background:' + colors[key] + ';', '') +
-                        h('span', '', 'font-size:13px;font-weight:600;color:#374151;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')) +
-                        h('div', 'subtitle', '', count ? status[key].map(m => m.name).join(', ') : 'None'));
+                    const listHtml = count
+                      ? status[key].map(m => abbreviateName(m.name)).map(s => h('div','', '', s)).join('')
+                      : 'None';
+                    newContent += h('div', 'status-col', '',
+                        h('div', 'flex items-center gap-2 mb-2', '',
+                            h('span', '', 'width:12px;height:12px;border-radius:50%;background:' + colors[key] + ';', '') +
+                            h('span', '', 'font-size:13px;font-weight:600;color:#374151;', key.charAt(0).toUpperCase() + key.slice(1) + ' (' + count + ')')
+                        ) +
+                        h('div', 'subtitle', '', listHtml)
+                    );
                 });
-                newContent += '</div></div>';
+                newContent += '</div>';
+                // Visible scrollbar track under the horizontal status row (mobile)
+                newContent += '<div class="today-mobile-scrollbar" aria-hidden="true"><div class="thumb"></div></div>';
+                newContent += '</div>';
             } else {
                 newContent = '<div style="padding: 0.75rem 1.25rem 1.25rem 1.25rem; height: 267px;">';
                 newContent += '<div class="flex gap-2 mb-2">';
@@ -1184,8 +1467,9 @@ import '../../components/header/header.js';
                 state.notifs.filter(n => state.tab === 'unread' ? !n.read : n.read).forEach(n => {
                     newContent += h('div', 'notification', 'background:' + n.color + '0d;',
                         h('div', 'dot', 'background:' + n.color + ';', '') +
-                        h('div', 'flex-1', 'padding-right:' + (!n.read ? '2.25rem' : '0') + ';', h('div', '', 'font-size:0.8125rem;', n.msg) + h('div', 'subtitle', '', n.time)) +
-                        (!n.read ? h('button', 'btn', 'position:absolute;top:0.75rem;right:0.75rem;width:1.5rem;height:1.5rem;background:white;border:1px solid ' + n.color + '40;color:' + n.color + ';padding:0;font-size:0.75rem;', '✓').replace('<button', '<button data-id="' + n.id + '"') : ''));
+                        h('div', 'flex-1', 'padding-right:' + (!n.read ? '5rem' : '0') + ';', h('div', '', 'font-size:0.8125rem;', n.msg) + h('div', 'subtitle', '', n.time)) +
+                        (!n.read ? h('button', 'btn', 'position:absolute;top:0.5rem;right:0.75rem;height:2rem;padding:0 0.5rem;background:white;border:1px solid ' + n.color + '40;color:' + n.color + ';font-size:0.75rem;border-radius:0.375rem;display:inline-flex;align-items:center;gap:6px;', '✓ Read').replace('<button', '<button data-id="' + n.id + '" data-mark-read="1" title="Mark as read (move to Read tab)"') : ''))
+                        .replace('<div', '<div data-id="' + n.id + '"');
                 });
                 newContent += '</div></div>';
             }
@@ -1214,6 +1498,18 @@ import '../../components/header/header.js';
                     alertsTab.innerHTML = 'Alerts';
                 }
             }
+
+            // Инициализируем видимый горизонтальный скролл для Status на мобильных
+            if (state.mobileTab === 'status') {
+                const row = tabContentWrapper.querySelector('.status-scroll-row');
+                const track = tabContentWrapper.querySelector('.today-mobile-scrollbar');
+                if (row && track) {
+                    setupLatestActivityScrollbar(row, track);
+                }
+            }
+
+            // Re-attach wheel passthrough so вертикальный скролл всегда работает на тачпаде
+            enableVerticalScrollPassthrough();
         };
 
         // Desktop 'ATTENTION NEEDED' partial update (без перерендеринга страницы)
@@ -1240,8 +1536,9 @@ import '../../components/header/header.js';
                 state.notifs.filter(n => state.tab === 'unread' ? !n.read : n.read).forEach(n => {
                     html += h('div', 'notification', `background:${n.color}0d;`,
                         h('div', 'dot', `background:${n.color};`, '') +
-                        h('div', 'flex-1', `padding-right:${!n.read ? '36px' : '0'};`, h('div', '', 'font-size:13px;', n.msg) + h('div', 'subtitle', '', n.time)) +
-                        (!n.read ? h('button', 'btn', `position:absolute;top:12px;right:12px;width:24px;height:24px;background:white;border:1px solid ${n.color}40;color:${n.color};padding:0;font-size:12px;`, '✓').replace('<button', `<button data-id="${n.id}"`) : ''));
+                        h('div', 'flex-1', `padding-right:${!n.read ? '112px' : '0'};`, h('div', '', 'font-size:13px;', n.msg) + h('div', 'subtitle', '', n.time)) +
+                        (!n.read ? h('button', 'btn', `position:absolute;top:10px;right:12px;height:26px;padding:0 10px;background:white;border:1px solid ${n.color}40;color:${n.color};font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;`, '✓ Mark as read').replace('<button', `<button data-id="${n.id}" data-mark-read="1" title="Mark as read (move to Read tab)"`) : ''))
+                        .replace('<div', `<div data-id="${n.id}"`);
                 });
                 list.innerHTML = html;
             }
@@ -1365,6 +1662,93 @@ const handleClick = e => {
                 return;
             }
             const {members} = getTeamData();
+
+            // Explicit handler for "Mark as read" button (works if inner span/icon clicked)
+            const markBtn = e.target.closest && e.target.closest('[data-mark-read]');
+            if (markBtn) {
+                const id = markBtn.dataset.id;
+                // Mobile anchoring to minimize jump when removing bottom item
+                let anchorId = null, anchorOffset = 0;
+                let scroller = null, notifEl = null, next = null, removing = false;
+                if (isMobile()) {
+                    scroller = document.querySelector('.alerts-scroll');
+                    notifEl = markBtn.closest('.notification');
+                    if (notifEl && notifEl.classList.contains('is-removing')) return; // already processing
+                    if (scroller && notifEl) {
+                        next = notifEl.nextElementSibling && notifEl.nextElementSibling.classList.contains('notification') ? notifEl.nextElementSibling : null;
+                        if (next) {
+                            anchorOffset = next.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+                            anchorId = next.dataset.id || null;
+                        }
+                    }
+                }
+
+                let notif = null;
+                if (id) notif = state.notifs.find(n => n.id === id);
+                if (!notif) notif = state.notifs.find(n => !n.read);
+                if (notif) notif.read = true;
+
+                if (isMobile()) {
+                    // In-place removal with scroll anchoring; avoid full rerender to prevent jumpiness
+                    if (notifEl && scroller) {
+                        const h = notifEl.offsetHeight;
+                        notifEl.style.height = h + 'px';
+                        // trigger height-to-zero animation via class
+                        requestAnimationFrame(() => { notifEl.classList.add('is-removing'); });
+                        setTimeout(() => {
+                            const parent = notifEl.parentNode;
+                            notifEl.remove();
+                            // Restore scroll position using the next sibling as anchor
+                            if (anchorId) {
+                                const el = parent && parent.querySelector('.notification[data-id="' + anchorId + '"]');
+                                if (el) scroller.scrollTop = el.offsetTop - anchorOffset;
+                            } else {
+                                scroller.scrollTop = scroller.scrollHeight; // keep bottom pinned
+                            }
+                        }, 180);
+
+                        // Update counts in the small tab buttons above list
+                        try {
+                            const unread = state.notifs.filter(n => !n.read).length;
+                            const read = state.notifs.length - unread;
+                            const btnBar = scroller.previousElementSibling; // .flex.gap-2.mb-2
+                            if (btnBar) {
+                                const btns = btnBar.querySelectorAll('.today-tab-btn');
+                                if (btns[0]) btns[0].textContent = `Unread (${unread})`;
+                                if (btns[1]) btns[1].textContent = `Read (${read})`;
+                            }
+                            // Update Alerts tab badge in header
+                            const alertsTab = document.querySelector('.mobile-tab[data-tab="alerts"]');
+                            if (alertsTab) {
+                                let badge = alertsTab.querySelector('span');
+                                if (unread > 0) {
+                                    if (!badge) {
+                                        alertsTab.innerHTML = 'Alerts<span style="background:#ef4444;color:white;border-radius:50%;min-width:1.125rem;height:1.125rem;display:flex;align-items:center;justify-content:center;font-size:0.625rem;font-weight:700;padding:0 0.25rem;">' + (unread > 99 ? '99+' : unread) + '</span>';
+                                    } else {
+                                        badge.textContent = unread > 99 ? '99+' : String(unread);
+                                    }
+                                } else if (badge) {
+                                    alertsTab.innerHTML = 'Alerts';
+                                }
+                            }
+                        } catch (_) {}
+                    }
+                } else {
+                    updateDesktopAttentionTabs();
+                }
+
+                // Update navbar badge immediately
+                try {
+                    const unread = state.notifs.filter(n => !n.read).length;
+                    localStorage.setItem('today-unread-count', String(unread));
+                    const badge = document.getElementById('navbar-today-badge') || document.querySelector('.navbar__link[data-nav="today"] .navbar__link-badge');
+                    if (badge) {
+                        if (unread > 0) { badge.textContent = unread > 99 ? '99+' : String(unread); badge.style.display = ''; }
+                        else { badge.style.display = 'none'; }
+                    }
+                } catch (_) {}
+                return;
+            }
             
             if (e.target.matches('.btn')) {
                 const text = e.target.textContent;
@@ -1378,7 +1762,7 @@ const handleClick = e => {
                 }
                 if (text.includes('Unread')) { state.tab = 'unread'; if (isTabBtn) { if (isMobile()) { updateMobileTabsContent(); restoreScrollPositions(saved); } else { updateDesktopAttentionTabs(); restoreScrollPositions(saved); } } else { rerenderPreservingScroll(); } return; }
                 if (text.includes('Read')) { state.tab = 'read'; if (isTabBtn) { if (isMobile()) { updateMobileTabsContent(); restoreScrollPositions(saved); } else { updateDesktopAttentionTabs(); restoreScrollPositions(saved); } } else { rerenderPreservingScroll(); } return; }
-                if (text === '✓') {
+                if (text === '✓') { // legacy fallback
                     const btn = e.target.closest('button');
                     const id = btn && btn.dataset.id;
                     // Mobile anchoring to minimize jump when removing bottom item
@@ -1698,6 +2082,9 @@ const handleClick = e => {
                     applyTimelineHoverEffects(members);
                 }, 0);
             }
+
+            // Ensure page scroll works when cursor is over horizontal scrollers
+            setTimeout(enableVerticalScrollPassthrough, 0);
         };
 
         // Visible scrollbar for Latest Activity (scoped to island)
@@ -1797,6 +2184,8 @@ const handleClick = e => {
                 if (info) info.textContent = (all.length - state.loadedScreenshots) + ' more';
             }
             setupLatestActivityScrollbar(row, track);
+            // New thumbnails added — make sure wheel passthrough is bound as well
+            enableVerticalScrollPassthrough();
         }
         
         // ИНИЦИАЛИЗАЦИЯ

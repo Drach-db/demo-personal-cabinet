@@ -750,7 +750,7 @@ html.navbar-pre-collapsed .navbar__logo-text {
     .navbar__header {
         height: 60px;
         min-height: 60px;
-        padding: 0 16px;
+        padding: 0 20px; /* align brand with menu items */
         justify-content: space-between;
         flex-shrink: 0;
         border-bottom: 1px solid var(--navbar-border);
@@ -766,6 +766,9 @@ html.navbar-pre-collapsed .navbar__logo-text {
         align-items: center;
         gap: 12px;
     }
+
+    /* Align brand icon with link icons below (use same 20px size) */
+    .navbar__logo-icon { width: 20px; height: 20px; }
     
     /* Показываем текст логотипа */
     .navbar__logo-text {
@@ -807,7 +810,7 @@ html.navbar-pre-collapsed .navbar__logo-text {
     .navbar__link {
         height: 48px;
         min-height: 48px;
-        padding: 0 16px;
+        padding: 0 20px; /* align with header and page content */
         justify-content: flex-start;
     }
     

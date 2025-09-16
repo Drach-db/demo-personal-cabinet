@@ -66,6 +66,16 @@
     .header__container { max-width: calc(1600px + 200px); }
 }
 
+/* Align header side paddings to .app-main across desktop breakpoints */
+@media (max-width: 1366px) and (min-width: 1025px) {
+    .header__container { padding: 0 50px; }
+    .navbar-collapsed .header__container { padding-left: 50px; padding-right: 50px; }
+}
+@media (max-width: 1024px) and (min-width: 769px) {
+    .header__container { padding: 0 30px; }
+    .navbar-collapsed .header__container { padding-left: 30px; padding-right: 30px; }
+}
+
 /* Content section (левая часть) */
 .header__content {
     display: flex;
@@ -161,11 +171,9 @@
 
 /* Mobile styles */
 @media (max-width: 768px) {
-    .header__container { padding: 0 16px; max-width: none; }
-    
-    .navbar-collapsed .header__container {
-        padding: 0 16px;
-    }
+    /* Match .app-main mobile paddings (layout.css: 16px 20px) */
+    .header__container { padding: 0 20px; max-width: none; }
+    .navbar-collapsed .header__container { padding: 0 20px; }
     
     .header__breadcrumbs {
         display: none;
@@ -224,4 +232,10 @@
     .header__mobile-toggle:active svg {
         transform: scale(0.9);
     }
+}
+
+/* Ultra-small phones: match .app-main (12px 16px) */
+@media (max-width: 450px) {
+    .header__container { padding: 0 16px; }
+    .navbar-collapsed .header__container { padding: 0 16px; }
 }
