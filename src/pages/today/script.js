@@ -177,7 +177,8 @@ import '../../components/header/header.js';
             activeMember: null, 
             loadedScreenshots: 20, 
             mobileTab: 'status',
-            activeMetricSlide: 0 
+            activeMetricSlide: 0,
+            timelineMobileCentered: false 
         };
         
         // Утилиты
@@ -319,7 +320,7 @@ import '../../components/header/header.js';
             const {members} = getTeamData();
 
             // (reverted) — remove notification expand toggle
-            const hourlyRate = 15;
+            const hourlyRate = 11;
             
             const round1 = (v) => Math.round(v * 10) / 10;
             const factHoursRaw = calculateFactHours(members);
@@ -870,19 +871,17 @@ import '../../components/header/header.js';
             // Metrics
             html += '<div class="card"><div class="grid grid-3 divide-x">';
             
-            // Cost Tracker
-            html += MetricCard('dollar', 'COST TRACKER ($15/hr)', 'var(--primary)',
-                [
-                    {period: 'MONTH (January 2025)', data: costs.month},
-                    {period: 'TODAY (Jan 10)', data: costs.today}
-                ].map((item, i) => 
-                    h('div', i ? 'mt-4' : '', '', h('div', 'label mb-2', '', item.period) +
+            // Cost Tracker (desktop): show only TODAY, hide MONTH
+            html += MetricCard('dollar', 'COST TRACKER ($11/hr)', 'var(--primary)',
+                h('div', '', '',
+                    h('div', 'label mb-2', '', 'TODAY (Jan 10)') +
                     h('div', 'flex justify-between', '', [
-                        component('metric', {value: `$${item.data.fact.cost}`, label: `fact (${item.data.fact.hours}h)`, size: i ? 'clamp(0.75rem, 1.3vw, 0.875rem)' : 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--success)'}),
-                        component('metric', {value: `$${item.data.projected.cost}`, label: `projected (${item.data.projected.hours}h)`, size: i ? 'clamp(0.75rem, 1.3vw, 0.875rem)' : 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--info)'}),
-                        component('metric', {value: `$${item.data.planned.cost}`, label: `plan (${item.data.planned.hours}h)`, size: i ? 'clamp(0.75rem, 1.3vw, 0.875rem)' : 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--gray)'})
-                    ].join('')))
-                ).join(''));
+                        component('metric', {value: `$${costs.today.fact.cost}`, label: `fact (${costs.today.fact.hours}h)`, size: 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--success)'}),
+                        component('metric', {value: `$${costs.today.projected.cost}`, label: `projected (${costs.today.projected.hours}h)`, size: 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--info)'}),
+                        component('metric', {value: `$${costs.today.planned.cost}`, label: `plan (${costs.today.planned.hours}h)`, size: 'clamp(0.875rem, 1.5vw, 1rem)', color: 'var(--gray)'})
+                    ].join(''))
+                )
+            );
             
             // Coverage
             html += MetricCard('activity', 'COVERAGE', 'var(--info)',
@@ -2007,65 +2006,56 @@ const handleClick = e => {
                 }
             }
 
-            // Синхронизация скролла для мобильного таймлайна
+            // Синхронизация скролла для мобильного таймлайна (без дёрганий)
             if (mobile) {
                 setTimeout(() => {
                     const headerScroll = document.querySelector('.timeline-hours-scroll');
                     const dataScrolls = document.querySelectorAll('.timeline-data-scroll');
                     
                     if (headerScroll && dataScrolls.length) {
-                        // Точное центрирование: считаем позицию по фактическим пикселям часа+минут
-                        const calcCenterPos = () => {
-                            const refScroll = dataScrolls[0];
-                            const refFlex = refScroll && refScroll.querySelector('.flex');
-                            if (!refScroll || !refFlex || !refFlex.children.length) return null;
+                        const refScroll = dataScrolls[0];
 
-                            // Artifact requirement: center fixed 'current' time at 3:30 PM
-                            const hour = 15; // 3 PM
-                            const minute = 30; // :30
-                            const hourEl = refFlex.children[Math.min(23, Math.max(0, hour))];
-                            if (!hourEl) return null;
-
-                            const hourRect = hourEl.getBoundingClientRect();
-                            const scrollRect = refScroll.getBoundingClientRect();
-                            const left = hourRect.left - scrollRect.left + refScroll.scrollLeft;
-                            const hourWidth = hourRect.width || (refScroll.scrollWidth / 24);
-                            const minuteOffset = hourWidth * (minute / 60);
-
-                            const targetX = left + minuteOffset; // X‑координата «сейчас» внутри скролла
-                            const viewport = refScroll.clientWidth;
-                            const maxScroll = Math.max(0, refScroll.scrollWidth - viewport);
-                            return Math.max(0, Math.min(maxScroll, Math.round(targetX - viewport / 2)));
-                        };
-
-                        const applyPos = () => {
+                        // Центрируем только один раз после первого рендера
+                        if (!state.timelineMobileCentered) {
+                            const calcCenterPos = () => {
+                                const refFlex = refScroll && refScroll.querySelector('.flex');
+                                if (!refScroll || !refFlex || !refFlex.children.length) return null;
+                                const hour = 15; // 3 PM
+                                const minute = 30; // :30
+                                const hourEl = refFlex.children[Math.min(23, Math.max(0, hour))];
+                                if (!hourEl) return null;
+                                const hourRect = hourEl.getBoundingClientRect();
+                                const scrollRect = refScroll.getBoundingClientRect();
+                                const left = hourRect.left - scrollRect.left + refScroll.scrollLeft;
+                                const hourWidth = hourRect.width || (refScroll.scrollWidth / 24);
+                                const minuteOffset = hourWidth * (minute / 60);
+                                const targetX = left + minuteOffset;
+                                const viewport = refScroll.clientWidth;
+                                const maxScroll = Math.max(0, refScroll.scrollWidth - viewport);
+                                return Math.max(0, Math.min(maxScroll, Math.round(targetX - viewport / 2)));
+                            };
                             const pos = calcCenterPos();
-                            if (pos == null) return;
-                            headerScroll.scrollLeft = pos;
-                            dataScrolls.forEach(c => { c.scrollLeft = pos; });
-                        };
+                            if (pos != null) {
+                                refScroll.scrollLeft = pos;
+                                headerScroll.scrollLeft = pos;
+                            }
+                            state.timelineMobileCentered = true;
+                        }
 
-                        // Несколько проходов для стабильной геометрии
-                        applyPos();
-                        setTimeout(applyPos, 60);
-                        setTimeout(applyPos, 180);
-                        
-                        // Настройка синхронизации скролла
-                        headerScroll.addEventListener('scroll', () => {
-                            dataScrolls.forEach(container => {
-                                container.scrollLeft = headerScroll.scrollLeft;
-                            });
-                        });
-                        
-                        dataScrolls.forEach(container => {
-                            container.addEventListener('scroll', () => {
-                                headerScroll.scrollLeft = container.scrollLeft;
-                                dataScrolls.forEach(otherContainer => {
-                                    if (otherContainer !== container) {
-                                        otherContainer.scrollLeft = container.scrollLeft;
-                                    }
-                                });
-                            });
+                        // Синхронизируем скролл с защитой от рекурсии и без дублирования
+                        const targets = [headerScroll, ...dataScrolls];
+                        targets.forEach(src => {
+                            if (src.__synced) return;
+                            let syncing = false;
+                            const onScroll = () => {
+                                if (syncing) return;
+                                syncing = true;
+                                const x = src.scrollLeft;
+                                targets.forEach(t => { if (t !== src) t.scrollLeft = x; });
+                                syncing = false;
+                            };
+                            src.addEventListener('scroll', onScroll, { passive: true });
+                            src.__synced = true;
                         });
                     }
                     

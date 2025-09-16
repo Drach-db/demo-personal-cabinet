@@ -37,7 +37,7 @@ body {
     .status-scroll-row,
     .timeline-hours-scroll,
     .timeline-data-scroll,
-    .metrics-mobile { touch-action: pan-x; }
+    .metrics-mobile { touch-action: pan-x; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
     /* Metrics - горизонтальный скролл со snap */
     .metrics-mobile { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 1rem; padding: 0 0 0.5rem 0; margin-bottom: 0; -webkit-overflow-scrolling: touch; }
