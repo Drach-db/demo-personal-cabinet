@@ -159,7 +159,21 @@ const components = {
                 break;
         }
 
+        // Apply optional overrides (e.g., September custom period)
+        const override = data && data.overrides && data.overrides[type];
+        if (override) {
+            value = override.value;
+            hours = override.hours;
+        }
+
         const iconBg = `rgba(var(--billing-color-${config.color}-rgb), 0.15)`;
+        // Format displays
+        const valueDisplay = override
+            ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)
+            : utils.formatters.currency(value);
+        const hoursDisplay = override
+            ? new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(hours)
+            : hours.toLocaleString();
         
         return `
             <div class="billing-analytics-card billing-analytics-card--${config.color}">
@@ -172,12 +186,13 @@ const components = {
                     </div>
                 </div>
                 <div class="billing-text-right">
-                    <div style="font-size: 1.875rem; font-weight: 700;" class="billing-text-${config.color}">
-                        ${utils.formatters.currency(value)}
-                    </div>
-                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--billing-color-gray); margin-top: 0.25rem;">
-                        ${hours} hours
-                    </div>
+                    <div style="font-size: 1.875rem; font-weight: 700;" class="billing-text-${config.color}">${valueDisplay}</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--billing-color-gray); margin-top: 0.25rem;">${hoursDisplay} hours</div>
+                    ${data && data.overrides && data.overrides.note ? `
+                        <div style="font-size: 0.75rem; font-weight: 500; color: var(--billing-color-gray); margin-top: 0.125rem;">
+                            ${data.overrides.note}
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -272,7 +287,7 @@ function getCurrentMonthData(billingData) {
     const plannedMonthTotal = plannedHoursMonth * hourlyRate;
     const projectedMonthTotal = (plannedMonthTotal / currentDay) * daysInMonth;
     
-    return {
+    const base = {
         month: currentMonth,
         hoursWorkedSoFar,
         plannedHoursMonth,
@@ -286,6 +301,20 @@ function getCurrentMonthData(billingData) {
         teamMembersCost: 9350,
         progressPercentage: (currentDay / daysInMonth) * 100
     };
+
+    // Hardcoded analytics for September 2025 (values for Sep 16–30)
+    if (currentDate.getFullYear() === 2025 && currentDate.getMonth() === 8) {
+        // Override totals display on dashboard card
+        base.currentTotal = 31439;
+        base.overrides = {
+            planned: { hours: 1613.00, value: 17743.00 },       // план
+            projected: { hours: 1902.74, value: 20930.14 },     // прогноз
+            current: { hours: 898.74, value: 9886.14 },         // факт
+            note: 'Sep 16–Sep 30'
+        };
+    }
+
+    return base;
 }
 
 const includedServices = [
