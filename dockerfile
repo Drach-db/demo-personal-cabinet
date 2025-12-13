@@ -12,7 +12,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN doppler run -- npm run build
 
 # Этап 2: Production с nginx
 FROM nginx:alpine
